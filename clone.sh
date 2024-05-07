@@ -5,4 +5,4 @@ read
 
 cd ~transport
 rm -rf ~transport/ansible
-git clone -q https://github.com/gatogatogato/ansible ~/ansible
+git clone https://github.com/gatogatogato/ansible ~/ansible
