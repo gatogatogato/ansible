@@ -7,4 +7,6 @@
     - name: "Install a list of packages"
       ansible.builtin.apt:
         pkg:
-        - ansible 
+        - ansible
+        - sshpass
+
