@@ -1,0 +1,10 @@
+---
+- hosts: ansibleservers
+  gather_facts: yes
+  become: yes
+  name: "Install stuff on ansibleservers"
+  tasks:
+    - name: "Install a list of packages"
+      ansible.builtin.apt:
+        pkg:
+        - ansible 

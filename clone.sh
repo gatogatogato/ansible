@@ -1,3 +1,5 @@
 #!/bin/bash
-echo "This should be run as user transport."
+sudo su - transport 
+cd 
+rm -rf ~transport/ansible
 git clone -q https://github.com/gatogatogato/ansible ~/ansible

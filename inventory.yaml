@@ -6,10 +6,6 @@ all:
     
 ungrouped:
   hosts:
-    flickr:
-      ansible_host: debian-flickr.local
-    ansible:
-      ansible_host: debian-ansible.local
     test:
       ansible_host: debian-test.local
       
@@ -22,3 +18,8 @@ flickrservers:
   hosts:
     flickr:
       ansible_host: debian-flickr.local
+
+ansibleservers:
+  hosts:
+    ansible:
+      ansible_host: debian-ansible.local
