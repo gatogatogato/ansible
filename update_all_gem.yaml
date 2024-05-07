@@ -1,0 +1,9 @@
+---
+- hosts: all
+  gather_facts: yes
+  become: yes
+  name: "Update ruby gems"
+  tasks:
+    - name: "Update ruby gems"
+      become: true
+      ansible.builtin.shell: gem update

@@ -1,0 +1,13 @@
+---
+- hosts: webservers
+  gather_facts: yes
+  become: yes
+  name: "Install stuff on webservers"
+  tasks:
+    - name: "Install a list of packages"
+      ansible.builtin.apt:
+        pkg:
+        - apache2 
+        - snapd
+        - ddclient
+        - hugo

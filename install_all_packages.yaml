@@ -1,0 +1,34 @@
+---
+- hosts: all
+  gather_facts: yes
+  become: yes
+  name: "Install stuff on all servers"
+  tasks:
+    - name: "Install a list of packages"
+      ansible.builtin.apt:
+        pkg:
+        - sudo
+        - zsh
+        - git
+        - mosh
+        - locales
+        - micro
+        - debsums
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - wget
+        - gnupg-agent
+        - mosh
+        - mutt
+        - net-tools
+        - reboot-notifier
+        - software-properties-common
+        - tmux
+        - unzip
+        - avahi-daemon
+        - qemu-guest-agent
+        - sysvbanner
+        - ruby
+        - rubygems
+        

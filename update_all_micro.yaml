@@ -1,0 +1,9 @@
+---
+- hosts: all
+  gather_facts: yes
+  become: yes
+  name: "Update micro plugins"
+  tasks:
+    - name: "micro plugin update"
+      become: true
+      ansible.builtin.shell: micro --plugin update

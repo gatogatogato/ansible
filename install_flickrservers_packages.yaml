@@ -1,0 +1,11 @@
+---
+- hosts: flickrservers
+  gather_facts: yes
+  become: yes
+  name: "Install stuff on flickr servers"
+  tasks:
+    - name: "Install a list of packages"
+      ansible.builtin.apt:
+        pkg:
+        - exiftool
+        - imagemagick
