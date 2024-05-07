@@ -8,7 +8,9 @@ ungrouped:
   hosts:
     test:
       ansible_host: debian-test.local
-      
+    testzz:
+      ansible_host: debian-testzz.local
+
 webservers:
   hosts:
     websrv:
