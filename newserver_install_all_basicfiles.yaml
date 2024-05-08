@@ -49,7 +49,7 @@
         dest: "/etc/update-motd.d/20-gato"
         content: |
           #!/bin/sh
-          banner $(hostname | awk 'BEGIN { FS = "-" } ; { print \$2 }')
+          banner $(hostname | awk 'BEGIN { FS = "-" } ; { print $2 }')
 
     - name: "Set permissions for uname"
       file:
