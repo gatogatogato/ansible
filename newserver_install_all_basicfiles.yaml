@@ -43,7 +43,7 @@
           #!/bin/sh
           uname -snvr
 
-    - name: "Create motd banner"
+    - name: "Create motd gato"
       become: yes
       copy:
         dest: "/etc/update-motd.d/20-gato"
@@ -51,3 +51,14 @@
           #!/bin/sh
           banner $(hostname | awk 'BEGIN { FS = "-" } ; { print \$2 }')
 
+    - name: "Set permissions for uname"
+      file:
+        path: "/etc/update-motd.d/10-uname"
+        state: touch
+        mode: u=rwx,g=rx,o=rx
+
+    - name: "Set permissions for gato"
+      file:
+        path: "/etc/update-motd.d/20-gato"
+        state: touch
+        mode: u=rwx,g=rx,o=rx
