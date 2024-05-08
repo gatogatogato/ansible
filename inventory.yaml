@@ -8,8 +8,8 @@ ungrouped:
   hosts:
     test:
       ansible_host: debian-test.local
-    testy:
-      ansible_host: debian-testy.local
+    testx:
+      ansible_host: debian-testx.local
 
 webservers:
   hosts:

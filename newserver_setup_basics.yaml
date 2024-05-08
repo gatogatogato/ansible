@@ -1,0 +1,22 @@
+---
+- hosts: all
+  gather_facts: yes
+  become: yes
+  name: "Set basic stuff on a new server"
+  tasks:
+    - name: "Set shell for user transport and add to sudo group"
+      ansible.builtin.user:
+        name: transport
+        shell: /bin/zsh
+        groups: sudo
+        append: yes
+    - name: "Set shell for user gato and add to sudo group"
+      ansible.builtin.user:
+        name: gato
+        shell: /bin/zsh
+        groups: sudo
+        append: yes
+    - name: "Set shell for user root"
+      ansible.builtin.user:
+        name: root
+        shell: /bin/zsh
