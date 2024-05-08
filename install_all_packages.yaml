@@ -7,29 +7,26 @@
     - name: "Install a list of packages"
       ansible.builtin.apt:
         pkg:
-        - sudo
-        - zsh
-        - git
-        - mosh
-        - locales
-        - micro
-        - debsums
         - apt-transport-https
+        - avahi-daemon
         - ca-certificates
         - curl
-        - wget
+        - debsums
+        - git
         - gnupg-agent
+        - locales
+        - micro
         - mosh
         - mutt
         - net-tools
-        - reboot-notifier
-        - software-properties-common
-        - tmux
-        - unzip
-        - avahi-daemon
         - qemu-guest-agent
-        - sysvbanner
+        - reboot-notifier
         - ruby
         - rubygems        
-        - net-tools
-        - reboot-notifier
+        - software-properties-common
+        - sudo
+        - sysvbanner
+        - tmux
+        - unzip
+        - wget
+        - zsh
