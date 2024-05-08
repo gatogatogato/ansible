@@ -30,13 +30,13 @@
         state: absent
       with_items: "{{ files_to_delete.files }}"
 
-      - name: "Create motd uname"
-        become: yes
-        copy:
-          dest: "/etc/update-motd.d/10-uname"
-          content: |
-            #!/bin/sh
-            uname -snvr
+    - name: "Create motd uname"
+      become: yes
+      copy:
+        dest: "/etc/update-motd.d/10-uname"
+        content: |
+          #!/bin/sh
+          uname -snvr
 
       - name: "Create motd banner"
         become: yes
