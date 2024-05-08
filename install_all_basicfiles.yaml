@@ -1,0 +1,47 @@
+---
+- hosts: all
+  gather_facts: yes
+  become: yes
+  name: "Create basic files on a new server"
+  tasks:
+    - name: "Create sudoers gato"
+      become: yes
+      copy:
+        dest: "/etc/sudoers.d/gato"
+        content: |
+          gato ALL=(ALL:ALL) NOPASSWD: /bin/su - transport
+    - name: "Create sudoers transport"
+      become: yes
+      copy:
+        dest: "/etc/sudoers.d/transport"
+        content: |
+          transport ALL=(ALL:ALL) NOPASSWD:ALL
+
+    - name: "Delete old motds"
+      become: yes
+      ansible.builtin.file:
+        state: absent
+        path: /etc/update-motd.d/* 
+
+    - name: "Delete old motd"
+      become: yes
+      ansible.builtin.file:
+        state: absent
+        path: /etc/motd
+
+    - name: "Create motd uname"
+      become: yes
+      copy:
+        dest: "/etc/update-motd.d/10-uname"
+        content: |
+          #!/bin/sh
+          uname -snvr
+
+    - name: "Create motd uname"
+      become: yes
+      copy:
+        dest: "/etc/update-motd.d/20-gato"
+        content: |
+          #!/bin/sh
+          banner \$(hostname | awk 'BEGIN { FS = "-" } ; { print \$2 }')
+

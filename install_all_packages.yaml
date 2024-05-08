@@ -30,5 +30,6 @@
         - qemu-guest-agent
         - sysvbanner
         - ruby
-        - rubygems
-        
+        - rubygems        
+        - net-tools
+        - reboot-notifier
