@@ -38,11 +38,11 @@
           #!/bin/sh
           uname -snvr
 
-      - name: "Create motd banner"
-        become: yes
-        copy:
-          dest: "/etc/update-motd.d/20-gato"
-          content: |
-            #!/bin/sh
-            banner \$(hostname | awk 'BEGIN { FS = "-" } ; { print \$2 }')
+    - name: "Create motd banner"
+      become: yes
+      copy:
+        dest: "/etc/update-motd.d/20-gato"
+        content: |
+          #!/bin/sh
+          banner \$(hostname | awk 'BEGIN { FS = "-" } ; { print \$2 }')
 
