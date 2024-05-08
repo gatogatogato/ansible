@@ -4,27 +4,32 @@
   become: yes
   name: "Create basic files on a new server"
   tasks:
-    - name: "Create sudoers gato"
+    - name: "Create sudoers for gato"
       become: yes
       copy:
         dest: "/etc/sudoers.d/gato"
         content: |
           gato ALL=(ALL:ALL) NOPASSWD: /bin/su - transport
  
-    - name: "Create sudoers transport"
+    - name: "Create sudoers file for transport"
       become: yes
       copy:
         dest: "/etc/sudoers.d/transport"
         content: |
           transport ALL=(ALL:ALL) NOPASSWD:ALL
 
-    - name: "Find motds to delete"
+    - name: "Delete /etc/motd"
+      ansible.builtin.file:
+        path: /etc/motd
+        state: absent
+
+    - name: "Find files in /etc/update-motd.d/"
       find:
         paths: /etc/update-motd.d/
         patterns: "*"
       register: files_to_delete
 
-    - name: "Delete motds"
+    - name: "Delete files in /etc/update-motd.d/"
       file:
         path: "{{ item.path }}"
         state: absent
@@ -44,5 +49,5 @@
         dest: "/etc/update-motd.d/20-gato"
         content: |
           #!/bin/sh
-          banner \$(hostname | awk 'BEGIN { FS = "-" } ; { print \$2 }')
+          banner $(hostname | awk 'BEGIN { FS = "-" } ; { print \$2 }')
 
