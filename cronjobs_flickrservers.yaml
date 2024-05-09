@@ -1,0 +1,37 @@
+---
+- hosts: flickservers
+  gather_facts: yes
+  become: yes
+  name: "Create cronjobs on flickservers"
+  tasks:
+    - name: "gato cronjob for commenter"
+      ansible.builtin.cron:
+        user: gato
+        minute: "00"
+        hour: "08,12,13,15,17,19,20"
+        name: "Start commenter every X hours"
+        job: /home/gato/Apps/flickr-commenter/flickr-commenter.rb
+
+    - name: "gato cronjob for preview pictures "
+      ansible.builtin.cron:
+        user: gato
+        minute: "01,10,20,30,40,50"
+        hour: "06-22"
+        name: "Create new preview pictures"
+        job: /home/gato/Dropbox/UPLOADS/uploader-scale-images.sh
+
+    - name: "gato cronjob for cleanup of old lock files 1"
+      ansible.builtin.cron:
+        user: gato
+        name: "cleanup of old lock files 1"
+        special_time: daily
+        job: rm -f /home/gato/Apps/flickr-commenter/indexer.lock
+
+    - name: "gato cronjob for cleanup of old lock files 2"
+      ansible.builtin.cron:
+        user: gato
+        name: "cleanup of old lock files 2"
+        special_time: reboot
+        job: rm -f /home/gato/Apps/flickr-commenter/indexer.lock
+
+
