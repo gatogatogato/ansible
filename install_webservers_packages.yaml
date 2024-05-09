@@ -12,12 +12,17 @@
         - ddclient
         - hugo
 
-    - name: "Enable the Apache2 module rewrite"
+    - name: "Install snap certbot"
+      community.general.snap:
+        name:
+          - certbot
+
+    - name: "Enable the apache2 module rewrite"
       community.general.apache2_module:
         state: present
         name: rewrite
 
-    - name: "Enable the Apache2 module ssl"
+    - name: "Enable the apache2 module ssl"
       community.general.apache2_module:
         state: present
         name: ssl
