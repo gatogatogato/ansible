@@ -2,8 +2,8 @@
 - hosts: webservers
   gather_facts: yes
   become: yes
-  name: "Run snap refresh only on webservers"
+  name: "Run snap refresh on webservers"
   tasks:
-    - name: "Update ruby gems"
+    - name: "Update snaps"
       become: true
       ansible.builtin.shell: snap refresh
