@@ -34,4 +34,9 @@
         special_time: reboot
         job: rm -f /home/gato/Apps/flickr-commenter/indexer.lock
 
-
+    - name: "root cronjob for restart of dropbox service"
+      ansible.builtin.cron:
+        user: root
+        name: "restart of dropbox service"
+        special_time: daily
+        job: systemctl restart dropbox.service
