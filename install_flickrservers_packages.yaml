@@ -1,10 +1,10 @@
 ---
 - hosts: flickrservers
   gather_facts: yes
+  become: yes
   name: "Install stuff on flickr servers"
   tasks:
     - name: "Install a list of apt packages"
-      become: yes
       ansible.builtin.apt:
         pkg:
         - exiftool
@@ -12,50 +12,60 @@
 
     - name: "Install ruby gem date"
       community.general.gem:
+        user_install: false
         name: date
         state: latest
 
     - name: "Install ruby gem flickr"
       community.general.gem:
+        user_install: false
         name: flickr
         state: latest
 
     - name: "Install ruby gem yaml"
       community.general.gem:
+        user_install: false
         name: yaml
         state: latest
 
     - name: "Install ruby gem yaml/store"
       community.general.gem:
+        user_install: false
         name: yaml/store
         state: latest
 
     - name: "Install ruby gem tempfile"
       community.general.gem:
+        user_install: false
         name: tempfile
         state: latest
 
     - name: "Install ruby gem json"
       community.general.gem:
+        user_install: false
         name: json
         state: latest
 
     - name: "Install ruby gem fileutils"
       community.general.gem:
+        user_install: false
         name: fileutils
         state: latest
 
     - name: "Install ruby gem mini_exiftool"
       community.general.gem:
+        user_install: false
         name: mini_exiftool
         state: latest
 
     - name: "Install ruby gem geocoder"
       community.general.gem:
+        user_install: false
         name: geocoder
         state: latest
 
     - name: "Install ruby gem htmlentities"
       community.general.gem:
+        user_install: false
         name: htmlentities
         state: latest
