@@ -9,6 +9,7 @@
         pkg:
         - exiftool
         - imagemagick
+        - ruby-dev
 
     - name: "Install ruby gem date"
       community.general.gem:
