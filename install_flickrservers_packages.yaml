@@ -33,7 +33,7 @@
     - name: "Install ruby gem yaml/store"
       community.general.gem:
         user_install: false
-        name: yaml/store
+        name: yaml_store
         state: latest
 
     - name: "Install ruby gem tempfile"
