@@ -10,6 +10,7 @@
         - exiftool
         - imagemagick
         - ruby-dev
+        - build-essential
 
     - name: "Install ruby gem date"
       community.general.gem:
