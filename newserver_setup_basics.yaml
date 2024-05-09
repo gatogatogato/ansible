@@ -10,13 +10,20 @@
         shell: /bin/zsh
         groups: sudo
         append: yes
+
     - name: "Set shell for user gato and add to sudo group"
       ansible.builtin.user:
         name: gato
         shell: /bin/zsh
         groups: sudo
         append: yes
+
     - name: "Set shell for user root"
       ansible.builtin.user:
         name: root
         shell: /bin/zsh
+
+    - name: "Set micro as the editor of choice"
+      community.general.alternatives:
+        name: editor
+        path: /usr/bin/micro
