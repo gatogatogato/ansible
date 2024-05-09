@@ -17,6 +17,14 @@
         name: certbot
         classic: true
 
+    - name: "Create symlink for certbot"
+      ansible.builtin.file:
+        src: /snap/bin/certbot
+        dest: /usr/bin/certbot
+        owner: root
+        group: root
+        state: link
+
     - name: "Enable the apache2 module rewrite"
       community.general.apache2_module:
         state: present
