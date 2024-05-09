@@ -7,20 +7,20 @@
     - name: "gato cronjob for backups"
       ansible.builtin.cron:
         user: gato
-        name: "daily job"
+        name: "backups"
         special_time: daily
         job: tar czvf "/home/gato/backups/website-backup-$(date +\%Y-\%m-\%d).tgz" /home/gato/gatogatogato.ch-hugo
 
     - name: "gato cronjob for cleanup of backups"
       ansible.builtin.cron:
         user: gato
-        name: "daily job"
+        name: "cleanup of backups"
         special_time: daily
         job: find /home/gato/backups/website-backup* -mtime +7 -type f -delete 2> /dev/null
 
     - name: "root cronjob for certbot renew"
       ansible.builtin.cron:
         user: root
-        name: "weekly job"
+        name: "certbot renew"
         special_time: weekly
         job: certbot renew --quiet
