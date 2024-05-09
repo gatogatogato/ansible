@@ -20,6 +20,13 @@
         name: "Create new preview pictures"
         job: /home/gato/Dropbox/UPLOADS/uploader-scale-images.sh
 
+    - name: "gato cronjob for cleanup of log files"
+      ansible.builtin.cron:
+        user: gato
+        name: "cleanup of log files"
+        special_time: daily
+        job: find /home/gato/Apps/flickr-commenter/logs/*.txt -mtime +7 -type f -delete 2> /dev/null
+
     - name: "gato cronjob for cleanup of old lock files 1"
       ansible.builtin.cron:
         user: gato
