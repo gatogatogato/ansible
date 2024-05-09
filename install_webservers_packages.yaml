@@ -14,8 +14,8 @@
 
     - name: "Install snap certbot"
       community.general.snap:
-        name:
-          - certbot
+        name: certbot
+        classic: true
 
     - name: "Enable the apache2 module rewrite"
       community.general.apache2_module:
