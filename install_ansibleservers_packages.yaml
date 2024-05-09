@@ -2,9 +2,9 @@
 - hosts: ansibleservers
   gather_facts: yes
   become: yes
-  name: "Install stuff on ansibleservers"
+  name: "Install stuff on ansible servers"
   tasks:
-    - name: "Install a list of packages"
+    - name: "Install a list of apt packages"
       ansible.builtin.apt:
         pkg:
         - ansible

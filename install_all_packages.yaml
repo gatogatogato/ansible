@@ -4,7 +4,7 @@
   become: yes
   name: "Install stuff on all servers"
   tasks:
-    - name: "Install a list of packages"
+    - name: "Install a list of apt packages"
       ansible.builtin.apt:
         pkg:
         - apt-transport-https

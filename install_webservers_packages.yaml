@@ -2,12 +2,22 @@
 - hosts: webservers
   gather_facts: yes
   become: yes
-  name: "Install stuff on webservers"
+  name: "Install stuff on web servers"
   tasks:
-    - name: "Install a list of packages"
+    - name: "Install a list of apt packages"
       ansible.builtin.apt:
         pkg:
         - apache2 
         - snapd
         - ddclient
         - hugo
+
+    - name: "Enable the Apache2 module rewrite"
+      community.general.apache2_module:
+        state: present
+        name: rewrite
+
+    - name: "Enable the Apache2 module ssl"
+      community.general.apache2_module:
+        state: present
+        name: ssl
