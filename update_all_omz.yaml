@@ -1,0 +1,20 @@
+---
+- hosts: all
+  gather_facts: yes
+  become: yes
+  name: "Run Oh my ZSH update on all servers"
+  tasks:
+    - name: "Oh my ZSH update for root"
+      ansible.builtin.command: omz update
+      become: yes
+      become_user: root
+
+    - name: "Oh my ZSH update for gato"
+      ansible.builtin.command: omz update
+      become: yes
+      become_user: gato
+
+    - name: "Oh my ZSH update for transport"
+      ansible.builtin.command: omz update
+      become: yes
+      become_user: transport
