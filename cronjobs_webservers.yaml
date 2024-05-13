@@ -9,7 +9,7 @@
         user: gato
         name: "backups"
         special_time: daily
-        job: tar czvf "/home/gato/backups/website-backup-$(date +\%Y-\%m-\%d).tgz" /home/gato/gatogatogato.ch-hugo
+        job: tar czf "/home/gato/backups/website-backup-$(date +\%Y-\%m-\%d).tgz" /home/gato/gatogatogato.ch-hugo > /dev/null 2> /dev/null
 
     - name: "gato cronjob for cleanup of backups"
       ansible.builtin.cron:
