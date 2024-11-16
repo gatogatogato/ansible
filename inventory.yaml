@@ -8,6 +8,8 @@ ungrouped:
   hosts:
     test:
       ansible_host: debian-test.local
+    uptimekuma:
+      ansible_host: debian-uptimekuma.local
 
 webservers:
   hosts:
