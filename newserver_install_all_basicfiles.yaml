@@ -62,3 +62,23 @@
         path: "/etc/update-motd.d/20-gato"
         state: touch
         mode: u=rwx,g=rx,o=rx
+
+# This is only for the one homer server
+- hosts: homer
+  gather_facts: yes
+  become: yes
+  name: "Create homer specific motd script"
+  tasks:
+    - name: "Create motd homer"
+      become: yes
+      copy:
+        dest: "/etc/update-motd.d/30-homer"
+        content: |
+          #!/bin/sh
+          echo "Homer setup is in /opt/homer/assets/config.yml"
+
+    - name: "Set permissions for homer"
+      file:
+        path: "/etc/update-motd.d/30-homer"
+        state: touch
+        mode: u=rwx,g=rx,o=rx
