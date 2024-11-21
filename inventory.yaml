@@ -12,6 +12,8 @@ ungrouped:
       ansible_host: debian-uptimekuma.local
     pihole:
       ansible_host: debian-pihole.local
+    homer:
+      ansible_host: debian-homer.local
 
 webservers:
   hosts:
