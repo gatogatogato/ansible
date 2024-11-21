@@ -10,6 +10,8 @@ ungrouped:
       ansible_host: debian-test.local
     uptimekuma:
       ansible_host: debian-uptimekuma.local
+    pihole:
+      ansible_host: debian-pihole.local
 
 webservers:
   hosts:
