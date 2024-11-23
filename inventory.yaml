@@ -29,5 +29,6 @@ ansibleservers:
       ansible_host: debian-ansible.local
 
 piholeservers:
+  hosts:
     pihole:
       ansible_host: debian-pihole.local
