@@ -9,11 +9,13 @@
         cmd: pihole -up
       become: yes
       become_user: root
+      
     - name: "Update pihole gravity"
       ansible.builtin.command:
         cmd: pihole -g
       become: yes
       become_user: root
+
     - name: "Reload lists"
       ansible.builtin.command:
         cmd: pihole restartdns reload

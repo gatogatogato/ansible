@@ -1,5 +1,6 @@
 # ansible
-Just my ansible stuff
+Just my ansible stuff to set up new LXCs and VMs in a structured manner.
+
 # Setup
 As user transport on ansible server run 
 cd ~transport && rm -rf ansible ; git clone -q https://github.com/gatogatogato/ansible ~/ansible
