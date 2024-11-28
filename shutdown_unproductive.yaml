@@ -1,18 +1,18 @@
 ---
 - hosts: flickrservers,testservers
-  gather_facts: yes
-  become: yes
+  gather_facts: true
+  become: true
   name: "Shutdown nonproductive servers"
   tasks:
-  - name: "Execute shutdown in 10s"
-    community.general.shutdown:
-        delay: 10
+    - name: "Execute shutdown in 10s"
+      community.general.shutdown:
+          delay: 10
 
 - hosts: ansibleservers
-  gather_facts: yes
-  become: yes
+  gather_facts: true
+  become: true
   name: "Shutdown nonproductive servers"
   tasks:
-  - name: "Execute shutdown in 10s"
-    community.general.shutdown:
-      delay: 30
+    - name: "Execute shutdown in 10s"
+      community.general.shutdown:
+        delay: 30
