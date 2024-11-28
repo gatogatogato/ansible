@@ -6,4 +6,4 @@
   tasks:
     - name: "Execute shutdown in 10s"
       community.general.shutdown:
-        delay: 10
+        delay: 30
