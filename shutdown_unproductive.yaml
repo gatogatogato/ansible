@@ -1,5 +1,14 @@
 ---
-- hosts: flickr,test,ansible 
+- hosts: flickr,test 
+  gather_facts: yes
+  become: yes
+  name: "Shutdown nonproductive servers"
+  tasks:
+    - name: "Execute shutdown in 10s"
+      community.general.shutdown:
+        delay: 10
+
+- hosts: ansible 
   gather_facts: yes
   become: yes
   name: "Shutdown nonproductive servers"
