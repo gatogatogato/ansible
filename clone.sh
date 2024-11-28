@@ -2,7 +2,8 @@
 echo "---------------------------------------"
 echo "This   M U S T   run as user transport!"
 echo "---------------------------------------"
-sleep 3
+echo "Waiting 5 seconds..."
+sleep 5
 
 echo "Continue..."
 cd ~transport
