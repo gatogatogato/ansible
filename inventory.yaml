@@ -8,8 +8,6 @@ testservers:
   hosts:
     test:
       ansible_host: debian-test.local
-    alpine-test:
-      ansible_host: alpine-test.local
 
 uptimekumaservers:
   hosts:
