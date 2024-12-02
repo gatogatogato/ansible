@@ -45,3 +45,8 @@ piholeservers:
   hosts:
     pihole:
       ansible_host: debian-pihole.local
+
+alpineservers:
+  hosts:
+    pihole:
+      ansible_host: alpine-test.local

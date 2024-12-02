@@ -1,0 +1,16 @@
+---
+- hosts: alpineservers
+  gather_facts: yes
+  become: yes
+  name: "Update Alpine Linux OS"
+  tasks:
+
+    - name: "Update repositories as a separate step"
+      community.general.apk:
+        update_cache: true
+      become_user: root
+
+    - name: "Update all installed packages to the latest versions"
+      community.general.apk:
+        upgrade: true
+      become_user: root
