@@ -48,5 +48,5 @@ piholeservers:
 
 alpineservers:
   hosts:
-    pihole:
+    alpine-test:
       ansible_host: alpine-test.local
