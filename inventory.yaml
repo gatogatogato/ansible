@@ -4,10 +4,10 @@ all:
     remote_user: transport
     ansible_ssh_private_key_file: ~transport/.ssh/id_ed25519
 
-proxmoxbackupservers:
-  hosts:
-    proxmox-backup-server:
-      ansible_host: proxmox-backup-server.local
+#proxmoxbackupservers:
+#  hosts:
+#    proxmox-backup-server:
+#      ansible_host: proxmox-backup-server.local
 
 proxmoxservers:
   hosts:
@@ -15,8 +15,8 @@ proxmoxservers:
       ansible_host: proxmox-n01.local
     proxmox-n02:
       ansible_host: proxmox-n02.local
-    proxmox-n03:
-      ansible_host: proxmox-n03.local
+#    proxmox-n03:
+#      ansible_host: proxmox-n03.local
 
 testservers:
   hosts:
