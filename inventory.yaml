@@ -18,6 +18,17 @@ proxmoxservers:
 #    proxmox-n03:
 #      ansible_host: proxmox-n03.local
 
+testservers2:
+  hosts:
+    test-a:
+      ansible_host: debian-test-a.local
+    test-b:
+      ansible_host: debian-test-b.local
+    test-c:
+      ansible_host: debian-test-c.local
+    test-d:
+      ansible_host: debian-test-d.local
+
 testservers:
   hosts:
     test:
