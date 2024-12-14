@@ -28,6 +28,8 @@ testservers2:
       ansible_host: debian-test-c.local
     test-d:
       ansible_host: debian-test-d.local
+    test-e:
+      ansible_host: debian-test-e.local
 
 testservers:
   hosts:
