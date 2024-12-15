@@ -4,6 +4,6 @@
   become: true
   name: "Shutdown nonproductive servers: flickrservers,testservers,ansibleservers"
   tasks:
-    - name: "Execute shutdown in 10s"
+    - name: "Execute shutdown in 30s"
       community.general.shutdown:
         delay: 30
