@@ -17,6 +17,8 @@ proxmoxservers:
       ansible_host: proxmox-n02.local
 #    proxmox-n03:
 #      ansible_host: proxmox-n03.local
+    proxmox-backup-server:
+      ansible_host: proxmox-backup-server.local
 
 testservers:
   hosts:
