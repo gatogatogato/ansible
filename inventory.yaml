@@ -57,3 +57,8 @@ piholeservers:
     pihole:
       ansible_host: debian-pihole.local
 
+changedetectionservers:
+  hosts:
+    changedetection:
+      ansible_host: debian-changedetection.local
+
