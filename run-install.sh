@@ -1,10 +1,26 @@
 #!/bin/bash
-RUNDIR=~transport/ansible/
-INVENTORY=inventory.yaml
-PARMS=""
+set -euo pipefail
 
-ACTIONS="install_all_packages install_webservers_packages install_flickrservers_packages install_ansibleservers_packages"
+# Constants
+readonly RUNDIR="${HOME}/transport/ansible"
+readonly INVENTORY="inventory.yaml"
+readonly PARMS=""
+readonly ACTIONS=(
+    "install_all_packages"
+    "install_webservers_packages"
+    "install_flickrservers_packages"
+    "install_ansibleservers_packages"
+)
 
-for ACTION in ${ACTIONS}; do
-	ansible-playbook ${RUNDIR}/${ACTION}.yaml ${PARMS} -i ${RUNDIR}/${INVENTORY}
-done
+# Main execution
+main() {
+    for action in "${ACTIONS[@]}"; do
+        echo "Running playbook: ${action}"
+        if ! ansible-playbook "${RUNDIR}/${action}.yaml" ${PARMS} -i "${RUNDIR}/${INVENTORY}"; then
+            echo "Error: Failed to execute playbook ${action}" >&2
+            exit 1
+        fi
+    done
+}
+
+main "$@"
