@@ -4,6 +4,7 @@
 set -euo pipefail
 
 # Constants
+readonly REQUIRED_USER="transport"
 readonly RUNDIR="${HOME}/ansible"
 readonly INVENTORY="inventory.yaml"
 readonly ACTIONS=(
