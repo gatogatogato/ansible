@@ -37,26 +37,29 @@ main() {
     if ! command -v ansible-playbook >/dev/null 2>&1; then
         echo "Error: Command 'ansible-playbook' not found" >&2
         exit 1
-    }
+    fi
 
     # Check if directory and files exist
     if [[ ! -d "${RUNDIR}" ]]; then
         echo "Error: Directory '${RUNDIR}' not found" >&2
         exit 1
-    }
+    fi
 
     if [[ ! -f "${RUNDIR}/${INVENTORY}" ]]; then
         echo "Error: Inventory file '${RUNDIR}/${INVENTORY}' not found" >&2
         exit 1
-    }
+    fi
 
     if [[ ! -f "${RUNDIR}/${PLAYBOOK}" ]]; then
-        echo "Error: Playbook not found at ${RUNDIR}/${PLAYBOOK}" >&2
+        echo "Error: Playbook '${RUNDIR}/${PLAYBOOK}' not found" >&2
         exit 1
-    }
+    fi
 
     # Run ansible playbook
-    ansible-playbook "${RUNDIR}/${PLAYBOOK}" ${PARMS:+${PARMS}} -i "${RUNDIR}/${INVENTORY}"
+    if ! ansible-playbook "${RUNDIR}/${PLAYBOOK}" -i "${RUNDIR}/${INVENTORY}"; then
+        echo "Error: Playbook '${PLAYBOOK}' exited with non-zero status" >&2
+        exit 1
+    fi
 }
 
 main "$@"
