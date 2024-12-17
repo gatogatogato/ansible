@@ -19,7 +19,17 @@ print_banner() {
 EOF
 }
 
+# Check if running as correct user
+check_user() {
+    if [[ "${USER}" != "${REQUIRED_USER}" ]]; then
+        echo "Error: Script must be run as user '${REQUIRED_USER}'"
+        echo "Current user: ${USER}"
+        exit 1
+    fi
+}
+
 main() {
+    check_user
     print_banner
 
     # Check if ansible-playbook exists

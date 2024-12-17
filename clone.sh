@@ -5,7 +5,7 @@ set -euo pipefail
 
 REQUIRED_USER="transport"
 REPO_URL="https://github.com/gatogatogato/ansible"
-ANSIBLE_DIR="$HOME/ansible"
+ANSIBLE_DIR="${HOME}/ansible"
 
 # Print header with consistent formatting
 print_header() {
@@ -16,9 +16,9 @@ print_header() {
 
 # Check if running as correct user
 check_user() {
-    if [[ "$USER" != "$REQUIRED_USER" ]]; then
-        echo "Error: Script must be run as user '$REQUIRED_USER'"
-        echo "Current user: $USER"
+    if [[ "${USER}" != "${REQUIRED_USER}" ]]; then
+        echo "Error: Script must be run as user '${REQUIRED_USER}'"
+        echo "Current user: ${USER}"
         exit 1
     fi
 }
@@ -32,18 +32,18 @@ main() {
     sleep 5
 
     echo "Cloning repository..."
-    if [[ -d "$ANSIBLE_DIR" ]]; then
+    if [[ -d "${ANSIBLE_DIR}" ]]; then
         echo "Removing existing ansible directory..."
-        rm -rf "$ANSIBLE_DIR"
+        rm -rf "${ANSIBLE_DIR}"
     fi
 
-    git clone "$REPO_URL" "$ANSIBLE_DIR" || {
+    git clone "${REPO_URL}" "${ANSIBLE_DIR}" || {
         echo "Error: Failed to clone repository"
         exit 1
     }
 
     echo "Backing up clone script..."
-    cp "$ANSIBLE_DIR/clone.sh" "$HOME/clone.sh" || {
+    cp "${ANSIBLE_DIR}/clone.sh" "${HOME}/clone.sh" || {
         echo "Error: Failed to backup clone script"
         exit 1
     }

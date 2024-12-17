@@ -29,12 +29,23 @@ EOF
     exit 1
 }
 
+# Check if running as correct user
+check_user() {
+    if [[ "${USER}" != "${REQUIRED_USER}" ]]; then
+        echo "Error: Script must be run as user '${REQUIRED_USER}'"
+        echo "Current user: ${USER}"
+        exit 1
+    fi
+}
+
 # Main execution function
 run_playbooks() {
-    local run_dir="$1"
-    local inventory="$2"
-    local params="$3"
+    local run_dir="${1}"
+    local inventory="${2}"
+    local params="${3}"
     local exit_status=0
+
+    check_user
 
     echo "Starting playbook execution..."
     for action in "${ACTIONS[@]}"; do
@@ -45,7 +56,7 @@ run_playbooks() {
         fi
     done
 
-    return $exit_status
+    return ${exit_status}
 }
 
 # Parse command line arguments
