@@ -17,8 +17,8 @@ print_header() {
 # Check if running as correct user
 check_user() {
     if [[ "${USER}" != "${REQUIRED_USER}" ]]; then
-        echo "Error: Script must be run as user '${REQUIRED_USER}'"
-        echo "Current user: ${USER}"
+        echo "Error: Script must be run as user '${REQUIRED_USER}'" >&2
+        echo "Error: Current user is '${USER}'" >&2
         exit 1
     fi
 }
@@ -38,7 +38,7 @@ main() {
     fi
 
     git clone "${REPO_URL}" "${ANSIBLE_DIR}" || {
-        echo "Error: Failed to clone repository"
+        echo "Error: Failed to clone repository '${REPO_URL}'" >&2
         exit 1
     }
 

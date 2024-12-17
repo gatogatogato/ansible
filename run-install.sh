@@ -4,7 +4,7 @@
 set -euo pipefail
 
 # Constants
-readonly RUNDIR="${HOME}/transport/ansible"
+readonly RUNDIR="${HOME}/ansible"
 readonly INVENTORY="inventory.yaml"
 readonly ACTIONS=(
     "install_all_packages"

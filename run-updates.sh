@@ -4,7 +4,7 @@
 set -euo pipefail
 
 # Constants
-readonly RUNDIR="${HOME}/transport/ansible"
+readonly RUNDIR="${HOME}/ansible"
 readonly INVENTORY="inventory.yaml"
 readonly ACTIONS=(
     "update_all_apt"
@@ -32,8 +32,8 @@ EOF
 # Check if running as correct user
 check_user() {
     if [[ "${USER}" != "${REQUIRED_USER}" ]]; then
-        echo "Error: Script must be run as user '${REQUIRED_USER}'"
-        echo "Current user: ${USER}"
+        echo "Error: Script must be run as user '${REQUIRED_USER}'" >&2
+        echo "Error: Current user is '${USER}'" >&2
         exit 1
     fi
 }
@@ -51,7 +51,7 @@ run_playbooks() {
     for action in "${ACTIONS[@]}"; do
         echo "Running playbook: ${action}"
         if ! ansible-playbook "${run_dir}/${action}.yaml" ${params} -i "${run_dir}/${inventory}"; then
-            echo "Error running playbook: ${action}" >&2
+            echo "Error: Failed to run playbook '${action}'" >&2
             exit_status=1
         fi
     done

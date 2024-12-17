@@ -4,7 +4,7 @@
 set -euo pipefail
 
 # Constants
-readonly RUNDIR="${HOME}/transport/ansible"
+readonly RUNDIR="${HOME}/ansible"
 readonly INVENTORY="inventory.yaml"
 readonly PLAYBOOK="shutdown_unproductive.yaml"
 
@@ -22,8 +22,8 @@ EOF
 # Check if running as correct user
 check_user() {
     if [[ "${USER}" != "${REQUIRED_USER}" ]]; then
-        echo "Error: Script must be run as user '${REQUIRED_USER}'"
-        echo "Current user: ${USER}"
+        echo "Error: Script must be run as user '${REQUIRED_USER}'" >&2
+        echo "Error: Current user is '${USER}'" >&2
         exit 1
     fi
 }
@@ -34,18 +34,18 @@ main() {
 
     # Check if ansible-playbook exists
     if ! command -v ansible-playbook >/dev/null 2>&1; then
-        echo "Error: ansible-playbook not found" >&2
+        echo "Error: Command 'ansible-playbook' not found" >&2
         exit 1
     }
 
     # Check if directory and files exist
     if [[ ! -d "${RUNDIR}" ]]; then
-        echo "Error: Ansible directory ${RUNDIR} not found" >&2
+        echo "Error: Directory '${RUNDIR}' not found" >&2
         exit 1
     }
 
     if [[ ! -f "${RUNDIR}/${INVENTORY}" ]]; then
-        echo "Error: Inventory file not found at ${RUNDIR}/${INVENTORY}" >&2
+        echo "Error: Inventory file '${RUNDIR}/${INVENTORY}' not found" >&2
         exit 1
     }
 
