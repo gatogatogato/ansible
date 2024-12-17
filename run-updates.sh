@@ -52,7 +52,7 @@ run_playbooks() {
     for action in "${ACTIONS[@]}"; do
         echo "Running playbook: ${action}"
         if ! ansible-playbook "${run_dir}/${action}.yaml" ${params} -i "${run_dir}/${inventory}"; then
-            echo "Error: Failed to run playbook '${action}'" >&2
+            echo "Error: Playbook '${action}' exited with non-zero status" >&2
             exit_status=1
         fi
     done
