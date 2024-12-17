@@ -3,7 +3,7 @@
 # Exit on error, undefined vars, and pipe failures
 set -euo pipefail
 
-# Define constants
+# Constants
 readonly RUNDIR="${HOME}/transport/ansible"
 readonly INVENTORY="inventory.yaml"
 readonly PLAYBOOK="shutdown_unproductive.yaml"

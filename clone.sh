@@ -1,4 +1,6 @@
 #!/bin/bash
+
+# Set strict error handling
 set -euo pipefail
 
 REQUIRED_USER="transport"

@@ -1,7 +1,9 @@
 #!/bin/bash
+
+# Exit on error, undefined vars, and pipe failures
 set -euo pipefail
 
-# Default configurations
+# Constants
 readonly RUNDIR="${HOME}/transport/ansible"
 readonly INVENTORY="inventory.yaml"
 readonly ACTIONS=(
