@@ -22,10 +22,10 @@ proxmoxservers:
 
 testservers:
   hosts:
-    test:
-      ansible_host: debian-test.local
     test1:
       ansible_host: debian-test1.local
+    test2:
+      ansible_host: debian-test2.local
 
 uptimekumaservers:
   hosts:
