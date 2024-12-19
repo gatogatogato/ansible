@@ -9,4 +9,20 @@
         pkg:
         - ansible
         - sshpass
+        - at
+       
+    - name: "Enable atd service"
+      ansible.builtin.systemd:
+        name: atd
+        enabled: yes
+        state: started
 
+    - name: "Check atd service status"
+      ansible.builtin.systemd:
+        name: atd
+      register: atd_status
+
+    - name: "Show atd service status"
+      ansible.builtin.debug:
+        var: atd_status.status
+      when: atd_status is defined
