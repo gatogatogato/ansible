@@ -28,9 +28,6 @@ main() {
     print_header
     check_user
 
-    echo "Starting in 5 seconds... (Ctrl+C to cancel)"
-    sleep 5
-
     echo "Cloning repository..."
     if [[ -d "${ANSIBLE_DIR}" ]]; then
         echo "Removing existing ansible directory..."
