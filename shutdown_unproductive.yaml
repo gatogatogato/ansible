@@ -3,7 +3,7 @@
 - hosts: testservers
   gather_facts: true
   become: true
-  name: "Shutdown nonproductive servers: flickrservers,testservers,ansibleservers"
+  name: "Shutdown nonproductive servers"
   tasks:
     - name: "Execute shutdown in 30s"
       community.general.shutdown:
