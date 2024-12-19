@@ -9,9 +9,12 @@ ANSIBLE_DIR="${HOME}/ansible"
 
 # Print header with consistent formatting
 print_header() {
-    echo "----------------------------------------"
-    echo "This script MUST run as user: $REQUIRED_USER"
-    echo "----------------------------------------"
+    printf '%s\n' \
+        "* * * * * * * * * * * * * * * * * * * * * * * *" \
+        "*                                             *" \
+        "*   This script must run as user ${REQUIRED_USER}" \
+        "*                                             *" \
+        "* * * * * * * * * * * * * * * * * * * * * * * *"
 }
 
 # Check if running as correct user
