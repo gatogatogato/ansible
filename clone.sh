@@ -42,11 +42,21 @@ main() {
         exit 1
     }
 
-    echo "Scheduling clone script backup..."
-    echo "cp '${ANSIBLE_DIR}/clone.sh' '${HOME}/clone.sh'" | at now || {
-        echo "Error: Failed to schedule backup of clone script" >&2
-        exit 1
-    }
+    echo "Backing up clone script..."
+    if command -v at >/dev/null 2>&1; then
+        echo "cp '${ANSIBLE_DIR}/clone.sh' '${HOME}/clone.sh'" | at now || {
+            echo "Error: Failed to schedule backup using 'at', falling back to direct copy" >&2
+            cp "${ANSIBLE_DIR}/clone.sh" "${HOME}/clone.sh" || {
+                echo "Error: Failed to backup clone script" >&2
+                exit 1
+            }
+        }
+    else
+        cp "${ANSIBLE_DIR}/clone.sh" "${HOME}/clone.sh" || {
+            echo "Error: Failed to backup clone script" >&2
+            exit 1
+        }
+    fi
 
     echo "Script completed successfully."
 }
