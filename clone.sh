@@ -42,9 +42,9 @@ main() {
         exit 1
     }
 
-    echo "Backing up clone script..."
-    cp "${ANSIBLE_DIR}/clone.sh" "${HOME}/clone.sh" || {
-        echo "Error: Failed to backup clone script"
+    echo "Scheduling clone script backup..."
+    echo "cp '${ANSIBLE_DIR}/clone.sh' '${HOME}/clone.sh'" | at now || {
+        echo "Error: Failed to schedule backup of clone script" >&2
         exit 1
     }
 
