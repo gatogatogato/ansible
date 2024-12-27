@@ -62,3 +62,8 @@ changedetectionservers:
     changedetection:
       ansible_host: debian-changedetection.local
 
+herculesservers:
+  hosts:
+    hercules:
+      ansible_host: debian-hercules.local
+
