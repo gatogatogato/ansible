@@ -1,6 +1,6 @@
 ---
 #- hosts: flickrservers,testservers,ansibleservers
-- hosts: testservers
+- hosts: testservers,herculesservers
   gather_facts: true
   become: true
   name: "Shutdown nonproductive servers"
