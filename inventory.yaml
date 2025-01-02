@@ -67,3 +67,8 @@ herculesservers:
     hercules:
       ansible_host: debian-hercules.local
 
+paperlessservers:
+  hosts:
+    paperless:
+      ansible_host: debian-paperless.local
+
