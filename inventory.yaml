@@ -47,11 +47,6 @@ ansibleservers:
     ansible:
       ansible_host: debian-ansible.local
 
-piholeservers:
-  hosts:
-    pihole:
-      ansible_host: debian-pihole.local
-
 blockyservers:
   hosts:
     blocky:
