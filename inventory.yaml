@@ -52,6 +52,11 @@ piholeservers:
     pihole:
       ansible_host: debian-pihole.local
 
+blockyservers:
+  hosts:
+    blocky:
+      ansible_host: debian-blocky.local
+
 changedetectionservers:
   hosts:
     changedetection:
