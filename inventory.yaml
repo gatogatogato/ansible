@@ -61,3 +61,8 @@ herculesservers:
   hosts:
     hercules:
       ansible_host: debian-hercules.local
+
+technitiumservers:
+  hosts:
+    technitium:
+      ansible_host: debian-technitium.local
