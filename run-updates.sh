@@ -12,7 +12,6 @@ readonly ACTIONS=(
     "update_all_gem"
     "update_all_micro"
     "update_webservers_snap"
-    "update_piholeservers"
 )
 
 # Function to display usage information
