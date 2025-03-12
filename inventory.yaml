@@ -47,11 +47,6 @@ ansibleservers:
     ansible:
       ansible_host: debian-ansible.local
 
-blockyservers:
-  hosts:
-    blocky:
-      ansible_host: debian-blocky.local
-
 changedetectionservers:
   hosts:
     changedetection:
