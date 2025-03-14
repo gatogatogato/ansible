@@ -61,8 +61,3 @@ technitiumservers:
   hosts:
     technitium:
       ansible_host: debian-technitium.local
-
-omadaservers:
-  hosts:
-    omada:
-      ansible_host: debian-omada.local
