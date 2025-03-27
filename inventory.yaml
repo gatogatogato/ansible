@@ -7,62 +7,57 @@ all:
 proxmoxservers:
   hosts:
     proxmox-n01:
-      ansible_host: proxmox-n01.local
+      ansible_host: proxmox-n01.lan
     proxmox-n02:
-      ansible_host: proxmox-n02.local
+      ansible_host: proxmox-n02.lan
     proxmox-n03:
-      ansible_host: proxmox-n03.local
+      ansible_host: proxmox-n03.lan
     proxmox-backup-server:
-      ansible_host: proxmox-backup-server.local
+      ansible_host: proxmox-backup-server.lan
 
 testservers:
   hosts:
     test1:
-      ansible_host: debian-test1.local
+      ansible_host: debian-test1.lan
     test2:
-      ansible_host: debian-test2.local
+      ansible_host: debian-test2.lan
 
 uptimekumaservers:
   hosts:
     uptimekuma:
-      ansible_host: debian-uptimekuma.local
+      ansible_host: debian-uptimekuma.lan
 
 homerservers:
   hosts:
     homer:
-      ansible_host: debian-homer.local
+      ansible_host: debian-homer.lan
 
 webservers:
   hosts:
     websrv:
-      ansible_host: debian-websrv.local
+      ansible_host: debian-websrv.lan
 
 flickrservers:
   hosts:
     flickr:
-      ansible_host: debian-flickr.local
+      ansible_host: debian-flickr.lan
 
 ansibleservers:
   hosts:
     ansible:
-      ansible_host: debian-ansible.local
+      ansible_host: debian-ansible.lan
 
 changedetectionservers:
   hosts:
     changedetection:
-      ansible_host: debian-changedetection.local
+      ansible_host: debian-changedetection.lan
 
 herculesservers:
   hosts:
     hercules:
-      ansible_host: debian-hercules.local
+      ansible_host: debian-hercules.lan
 
 technitiumservers:
   hosts:
     technitium:
-      ansible_host: debian-technitium.local
-
-headscaleservers:
-  hosts:
-    headscale:
-      ansible_host: debian-headscale.local
+      ansible_host: debian-technitium.lan
