@@ -61,8 +61,3 @@ technitiumservers:
   hosts:
     technitium:
       ansible_host: debian-technitium.lan
-
-unifiservers:
-  hosts:
-    unifi:
-      ansible_host: debian-unifi.lan
