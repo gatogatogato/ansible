@@ -62,7 +62,7 @@ technitiumservers:
     technitium:
       ansible_host: debian-technitium.lan
 
-immichservers:
+vaultwardenservers:
   hosts:
-    immich:
-      ansible_host: debian-immich.lan
+    vaultwarden:
+      ansible_host: debian-vaultwarden.lan
