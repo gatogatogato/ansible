@@ -71,3 +71,8 @@ cloudflaredservers:
   hosts:
     cloudflared:
       ansible_host: debian-cloudflared.lan
+
+glanceservers:
+  hosts:
+    glance:
+      ansible_host: debian-glance.lan
