@@ -1,5 +1,5 @@
 ---
-- hosts: webservers
+- hosts: websrv
   gather_facts: yes
   become: yes
   name: "Run snap refresh on webservers"
