@@ -15,59 +15,27 @@ proxmoxservers:
     proxmox-backup-server:
       ansible_host: proxmox-backup-server.lan
 
-testservers:
+debianservers:
   hosts:
     test1:
       ansible_host: debian-test1.lan
     test2:
       ansible_host: debian-test2.lan
-
-uptimekumaservers:
-  hosts:
     uptimekuma:
       ansible_host: debian-uptimekuma.lan
-
-homerservers:
-  hosts:
-    homer:
-      ansible_host: debian-homer.lan
-
-webservers:
-  hosts:
     websrv:
       ansible_host: debian-websrv.lan
-
-flickrservers:
-  hosts:
     flickr:
       ansible_host: debian-flickr.lan
-
-ansibleservers:
-  hosts:
     ansible:
       ansible_host: debian-ansible.lan
-
-changedetectionservers:
-  hosts:
     changedetection:
       ansible_host: debian-changedetection.lan
-
-herculesservers:
-  hosts:
     hercules:
       ansible_host: debian-hercules.lan
-
-technitiumservers:
-  hosts:
     technitium:
       ansible_host: debian-technitium.lan
-
-cloudflaredservers:
-  hosts:
     cloudflared:
       ansible_host: debian-cloudflared.lan
-
-glanceservers:
-  hosts:
     glance:
       ansible_host: debian-glance.lan
