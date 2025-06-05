@@ -8,7 +8,7 @@ readonly REQUIRED_USER="transport"
 readonly RUNDIR="${HOME}/ansible"
 readonly INVENTORY="inventory.yaml"
 readonly ACTIONS=(
-    "update_proxmoxserver_apt"
+    "update_proxmoxservers_apt"
 )
 
 # Function to display usage information
