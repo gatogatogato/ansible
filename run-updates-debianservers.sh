@@ -8,9 +8,9 @@ readonly REQUIRED_USER="transport"
 readonly RUNDIR="${HOME}/ansible"
 readonly INVENTORY="inventory.yaml"
 readonly ACTIONS=(
-    "update_all_apt"
-    "update_all_gem"
-    "update_all_micro"
+    "update_debianservers_apt"
+    "update_debianservers_gem"
+    "update_debianservers_micro"
     "update_webservers_snap"
 )
 

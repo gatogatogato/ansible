@@ -39,3 +39,8 @@ debianservers:
       ansible_host: debian-cloudflared.lan
     glance:
       ansible_host: debian-glance.lan
+
+alpineservers:
+  hosts:
+    vaultwarden:
+      ansible_host: alpine-vaultwarden.lan

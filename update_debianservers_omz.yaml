@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: debianservers
   gather_facts: yes
   become: yes
   name: "Run Oh my ZSH update on all servers"
