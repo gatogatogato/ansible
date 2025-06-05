@@ -62,11 +62,6 @@ technitiumservers:
     technitium:
       ansible_host: debian-technitium.lan
 
-vaultwardenservers:
-  hosts:
-    vaultwarden:
-      ansible_host: alpine-vaultwarden.lan
-
 cloudflaredservers:
   hosts:
     cloudflared:
