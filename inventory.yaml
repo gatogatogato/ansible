@@ -39,6 +39,8 @@ debianservers:
       ansible_host: debian-cloudflared.lan
     glance:
       ansible_host: debian-glance.lan
+    rclone:
+      ansible_host: debian-rclone.lan
 
 alpineservers:
   hosts:
