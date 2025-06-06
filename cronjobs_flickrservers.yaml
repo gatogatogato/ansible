@@ -18,7 +18,7 @@
         minute: "01,10,20,30,40,50"
         hour: "06-22"
         name: "Create new preview pictures"
-        job: /home/gato/Dropbox/UPLOADS/uploader-scale-images.sh
+        job: /home/gato/UPLOADS/uploader-scale-images.sh
 
     - name: "gato cronjob for nextcloud sync"
       ansible.builtin.cron:
