@@ -20,6 +20,13 @@
         name: "Create new preview pictures"
         job: /home/gato/Dropbox/UPLOADS/uploader-scale-images.sh
 
+    - name: "gato cronjob for nextcloud sync once per minute"
+      ansible.builtin.cron:
+        user: gato
+        name: "nextcloud sync once per minute"
+        minute: "*"
+        job: nextcloudcmd --silent --trust -n --path UPLOADS /home/gato/UPLOADS http://truenas.lan:30027
+
     - name: "gato cronjob for cleanup of log files"
       ansible.builtin.cron:
         user: gato
