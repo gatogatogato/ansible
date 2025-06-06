@@ -63,22 +63,22 @@
         state: touch
         mode: u=rwx,g=rx,o=rx
 
-# This is only for the one homer server
-- hosts: homer
+# This is only for the one glance server
+- hosts: glance
   gather_facts: yes
   become: yes
-  name: "Create homer specific motd script"
+  name: "Create glance specific motd script"
   tasks:
-    - name: "Create motd homer"
+    - name: "Create motd glance"
       become: yes
       copy:
-        dest: "/etc/update-motd.d/30-homer"
+        dest: "/etc/update-motd.d/30-glance"
         content: |
           #!/bin/sh
-          echo "Homer setup is in /opt/homer/assets/config.yml"
+          echo "edit glance config with edit.sh"
 
-    - name: "Set permissions for homer"
+    - name: "Set permissions for glance"
       file:
-        path: "/etc/update-motd.d/30-homer"
+        path: "/etc/update-motd.d/30-glance"
         state: touch
         mode: u=rwx,g=rx,o=rx
