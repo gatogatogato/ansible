@@ -1,5 +1,5 @@
 ---
-- hosts: webservers
+- hosts: websrv
   gather_facts: yes
   become: yes
   name: "Create cronjobs on webservers"

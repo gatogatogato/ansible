@@ -1,5 +1,5 @@
 ---
-- hosts: flickrservers
+- hosts: flickr
   gather_facts: yes
   become: yes
   name: "Create cronjobs on flickservers"
