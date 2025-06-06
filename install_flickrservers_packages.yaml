@@ -1,5 +1,5 @@
 ---
-- hosts: flickrservers
+- hosts: flickr
   gather_facts: yes
   become: yes
   name: "Install stuff on flickr servers"
