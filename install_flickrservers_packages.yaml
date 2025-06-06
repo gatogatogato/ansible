@@ -11,6 +11,7 @@
         - imagemagick
         - ruby-dev
         - build-essential
+        - nextcloud-desktop-cmd
 
     - name: "Install ruby gem date"
       community.general.gem:
