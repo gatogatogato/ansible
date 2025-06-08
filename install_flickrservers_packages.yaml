@@ -13,6 +13,7 @@
         - build-essential
         - nextcloud-desktop-cmd
         - lighttpd
+        - rsync
 
     - name: "Install ruby gem date"
       community.general.gem:
