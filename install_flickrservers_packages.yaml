@@ -12,6 +12,7 @@
         - ruby-dev
         - build-essential
         - nextcloud-desktop-cmd
+        - lighttpd
 
     - name: "Install ruby gem date"
       community.general.gem:
