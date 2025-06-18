@@ -41,6 +41,8 @@ debianservers:
       ansible_host: debian-glance.lan
     rclone:
       ansible_host: debian-rclone.lan
+    nginxproxymanager:
+      ansible_host: debian-nginxproxymanager.lan
 
 alpineservers:
   hosts:
