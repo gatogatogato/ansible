@@ -43,6 +43,8 @@ debianservers:
       ansible_host: debian-rclone.lan
     nginxproxymanager:
       ansible_host: debian-nginxproxymanager.lan
+    immich:
+      ansible_host: debian-immich.lan
 
 alpineservers:
   hosts:
