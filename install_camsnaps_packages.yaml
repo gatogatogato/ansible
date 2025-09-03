@@ -35,14 +35,14 @@
         groups: root
         append: yes
 
-    - name: "transport cronjob for backups"
+    - name: "transport cronjob for file copy"
       ansible.builtin.cron:
         user: transport
         name: "Copy files"
         minute: "*/10"
-        job: scp -q root@homeassistant.lan:"/root/config/www/*.jpg"  /var/www/html/snapshots
+        job: scp -q root@homeassistant.lan:"/root/config/www/*.jpg" /var/www/html/snapshots
 
-    - name: "transport cronjob for backups"
+    - name: "transport cronjob for gallery script"
       ansible.builtin.cron:
         user: transport
         name: "Create gallery"
