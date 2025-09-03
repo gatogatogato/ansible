@@ -4,6 +4,11 @@
   become: yes
   name: "Install stuff on web servers"
   tasks:
+    - name: Add repository into sources list
+      ansible.builtin.apt_repository:
+        repo: deb https://dl.bintray.com/henrylawson/deb all main
+        state: present
+
     - name: "Install apt key"
       ansible.builtin.apt_key:
         keyserver: keyserver.ubuntu.com
