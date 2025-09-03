@@ -13,6 +13,11 @@
         - imagemagick
         - libimage-exiftool-perl
 
+    - name: Install photish ruby gem
+      community.general.gem:
+        name: photish
+        state: latest
+
     - name: "Enable the apache2 module rewrite"
       community.general.apache2_module:
         state: present
