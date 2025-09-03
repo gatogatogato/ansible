@@ -4,6 +4,11 @@
   become: yes
   name: "Install stuff on web servers"
   tasks:
+    - name: "Install apt key"
+      ansible.builtin.apt_key:
+        keyserver: keyserver.ubuntu.com
+        id: F608A664B7DFFFEA
+
     - name: "Install a list of apt packages"
       ansible.builtin.apt:
         pkg:
