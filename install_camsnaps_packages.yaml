@@ -20,3 +20,18 @@
       community.general.apache2_module:
         state: present
         name: ssl
+    
+    - name: Create directory
+      ansible.builtin.file:
+        path: /var/www/html/snapshots
+        state: directory
+        owner: root
+        group: root
+        mode: 0775
+
+    - name: "transport cronjob for backups"
+      ansible.builtin.cron:
+        user: transport
+        name: "Copy files"
+        minute: "*/30"
+        job: scp -i /home/transport/.ssh/id_ed25519 root@homeassistant.lan:"/root/config/www/*.jpg"  /var/www/html/snapshots
