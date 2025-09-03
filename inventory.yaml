@@ -45,6 +45,8 @@ debianservers:
       ansible_host: debian-nginxproxymanager.lan
     immich:
       ansible_host: debian-immich.lan
+    camsnaps:
+      ansible_host: debian-camsnaps.lan
 
 alpineservers:
   hosts:
