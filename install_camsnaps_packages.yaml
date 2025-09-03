@@ -28,6 +28,12 @@
         owner: root
         group: root
         mode: 0775
+        
+    - name: Add transport to group root
+      ansible.builtin.user:
+        name: transport
+        groups: root
+        append: yes
 
     - name: "transport cronjob for backups"
       ansible.builtin.cron:
