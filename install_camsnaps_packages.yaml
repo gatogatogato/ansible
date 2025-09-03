@@ -28,7 +28,7 @@
         owner: root
         group: root
         mode: 0775
-        
+
     - name: Add transport to group root
       ansible.builtin.user:
         name: transport
@@ -40,4 +40,4 @@
         user: transport
         name: "Copy files"
         minute: "*/30"
-        job: scp -i /home/transport/.ssh/id_ed25519 root@homeassistant.lan:"/root/config/www/*.jpg"  /var/www/html/snapshots
+        job: scp -q root@homeassistant.lan:"/root/config/www/*.jpg"  /var/www/html/snapshots
