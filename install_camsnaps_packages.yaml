@@ -1,0 +1,35 @@
+---
+- hosts: camsnaps
+  gather_facts: yes
+  become: yes
+  name: "Install stuff on web servers"
+  tasks:
+    - name: "Install a list of apt packages"
+      ansible.builtin.apt:
+        pkg:
+        - apache2 
+        - snapd
+        - hugo
+
+    - name: "Install snap certbot"
+      community.general.snap:
+        name: certbot
+        classic: true
+
+    - name: "Create symlink for certbot"
+      ansible.builtin.file:
+        src: /snap/bin/certbot
+        dest: /usr/bin/certbot
+        owner: root
+        group: root
+        state: link
+
+    - name: "Enable the apache2 module rewrite"
+      community.general.apache2_module:
+        state: present
+        name: rewrite
+
+    - name: "Enable the apache2 module ssl"
+      community.general.apache2_module:
+        state: present
+        name: ssl
