@@ -39,5 +39,132 @@
       ansible.builtin.cron:
         user: transport
         name: "Copy files"
-        minute: "*/30"
+        minute: "*/10"
         job: scp -q root@homeassistant.lan:"/root/config/www/*.jpg"  /var/www/html/snapshots
+
+    - name: "transport cronjob for backups"
+      ansible.builtin.cron:
+        user: transport
+        name: "Create gallery"
+        minute: "*/10"
+        job: /var/www/html/snapshots/gallery.sh
+
+    - name: "Create gallery script"
+      become: yes
+      copy:
+        dest: "/var/www/html/snapshots/gallery.sh"
+        content: |
+          #!/bin/bash
+
+          OUTPUT="index.html"
+
+          # Start HTML
+          cat > "$OUTPUT" <<EOF
+          <!DOCTYPE html>
+          <html lang="de">
+          <head>
+            <meta charset="UTF-8">
+            <title>Foto Galerie</title>
+            <style>
+              body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+                background: #f9f9f9;
+                color: #222;
+                transition: background 0.3s, color 0.3s;
+              }
+              h1 {
+                text-align: center;
+                margin-bottom: 20px;
+              }
+              h2 {
+                margin-top: 30px;
+                margin-bottom: 10px;
+                border-bottom: 2px solid #ccc;
+                padding-bottom: 4px;
+              }
+              .gallery {
+                display: grid;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 6px;
+                justify-items: center;
+              }
+              .gallery img {
+                width: 300px;
+                height: auto;
+                border-radius: 6px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                cursor: pointer;
+                transition: transform 0.2s, box-shadow 0.2s;
+              }
+              .gallery img:hover {
+                transform: scale(1.03);
+                box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+              }
+              footer {
+                margin-top: 40px;
+                text-align: center;
+                font-size: 0.85em;
+                color: #666;
+              }
+
+              /* Dark mode */
+              @media (prefers-color-scheme: dark) {
+                body {
+                  background: #222;
+                  color: #eee;
+                }
+                h2 {
+                  border-bottom: 2px solid #555;
+                }
+                footer {
+                  color: #aaa;
+                }
+              }
+            </style>
+          </head>
+          <body>
+            <h1>Foto Galerie</h1>
+          EOF
+
+          # Function to capitalise the section title
+          capitalise() {
+            local word="$1"
+            echo "$(tr '[:lower:]' '[:upper:]' <<< ${word:0:1})${word:1}"
+          }
+
+          # Function to generate gallery section
+          generate_section() {
+            local group="$1"
+            local title
+            title=$(capitalise "$group")
+
+            echo "  <h2>$title</h2>" >> "$OUTPUT"
+            echo "  <div class=\"gallery\">" >> "$OUTPUT"
+
+            for img in $(ls *${group}*.jpg 2>/dev/null | sort); do
+              echo "    <a href=\"$img\" target=\"_blank\"><img src=\"$img\" alt=\"$img\"></a>" >> "$OUTPUT"
+            done
+
+            echo "  </div>" >> "$OUTPUT"
+          }
+
+          # Generate sections for eingang and terrasse
+          generate_section "eingang"
+          generate_section "terrasse"
+
+          # End HTML
+          cat >> "$OUTPUT" <<EOF
+            <footer>
+              Erstellt am $(date +"%d.%m.%Y %H:%M")
+            </footer>
+          </body>
+          </html>
+          EOF
+
+    - name: "Set permissions for gallery script"
+      file:
+        path: "/var/www/html/snapshots/gallery.sh"
+        state: touch
+        mode: u=rwx,g=rx,o=rx
+        
