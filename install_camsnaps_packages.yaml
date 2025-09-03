@@ -10,19 +10,8 @@
         - apache2 
         - snapd
         - hugo
-
-    - name: "Install snap certbot"
-      community.general.snap:
-        name: certbot
-        classic: true
-
-    - name: "Create symlink for certbot"
-      ansible.builtin.file:
-        src: /snap/bin/certbot
-        dest: /usr/bin/certbot
-        owner: root
-        group: root
-        state: link
+        - imagemagick
+        - libimage-exiftool-perl
 
     - name: "Enable the apache2 module rewrite"
       community.general.apache2_module:
