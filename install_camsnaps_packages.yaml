@@ -4,25 +4,12 @@
   become: yes
   name: "Install stuff on web servers"
   tasks:
-    - name: Add repository into sources list
-      ansible.builtin.apt_repository:
-        repo: deb https://dl.bintray.com/henrylawson/deb all main
-        state: present
-
-    - name: "Install apt key"
-      ansible.builtin.apt_key:
-        keyserver: keyserver.ubuntu.com
-        id: F608A664B7DFFFEA
-
     - name: "Install a list of apt packages"
       ansible.builtin.apt:
         pkg:
-        - apache2 
-        - snapd
-        - hugo
+        - apache2
         - imagemagick
         - libimage-exiftool-perl
-        - photish
 
     - name: "Enable the apache2 module rewrite"
       community.general.apache2_module:
