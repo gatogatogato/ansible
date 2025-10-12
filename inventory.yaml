@@ -42,7 +42,7 @@ debianservers:
     rclone:
       ansible_host: debian-rclone.lan
     nginxproxymanager:
-      ansible_host: debian-nginxproxymanager.lan
+      ansible_host: debian-npm.lan
     immich:
       ansible_host: debian-immich.lan
     camsnaps:
