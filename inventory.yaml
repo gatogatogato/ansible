@@ -12,8 +12,6 @@ proxmoxservers:
       ansible_host: proxmox-n02.lan
     proxmox-n03:
       ansible_host: proxmox-n03.lan
-    proxmox-backup-server:
-      ansible_host: proxmox-backup-server.lan
 
 debianservers:
   hosts:
