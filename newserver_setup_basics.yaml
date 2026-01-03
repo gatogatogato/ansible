@@ -21,7 +21,7 @@
     - name: "Set shell for user root"
       ansible.builtin.user:
         name: root
-        shell: /bin/zsh
+        shell: /bin/bash
 
     - name: "Set micro as the editor of choice"
       community.general.alternatives:
