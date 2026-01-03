@@ -41,7 +41,7 @@ debianservers:
       ansible_host: debian-glance.lan
     rclone:
       ansible_host: debian-rclone.lan
-    nginxproxymanager:
+    npm:
       ansible_host: debian-npm.lan
     immich:
       ansible_host: debian-immich.lan
