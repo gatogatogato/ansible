@@ -37,8 +37,6 @@ debianservers:
       ansible_host: debian-cloudflared.lan
     glance:
       ansible_host: debian-glance.lan
-    rclone:
-      ansible_host: debian-rclone.lan
     npm:
       ansible_host: debian-npm.lan
     immich:
