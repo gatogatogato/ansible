@@ -15,10 +15,6 @@ proxmoxservers:
 
 debianservers:
   hosts:
-    test1:
-      ansible_host: debian-test1.lan
-    test2:
-      ansible_host: debian-test2.lan
     uptimekuma:
       ansible_host: debian-uptimekuma.lan
     websrv:
