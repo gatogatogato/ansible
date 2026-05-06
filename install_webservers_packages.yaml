@@ -11,6 +11,8 @@
         - snapd
         - ddclient
         - hugo
+        - rsync
+        - micro
 
     - name: "Install snap certbot"
       community.general.snap:
