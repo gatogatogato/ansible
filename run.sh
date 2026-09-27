@@ -16,7 +16,7 @@ Usage: $(basename "$0") [-h] [-f] TASK [ansible-playbook options]
 Tasks:
     updates           apt (Debian), apk (Alpine), micro plugins, snap
     updates-proxmox   apt on the Proxmox nodes
-    install           install packages on all servers
+    install           install packages on the Debian servers
     cronjobs          create cronjobs
     shutdown          shut down hercules, flickr and the ansible server
     harden-ssh        allow the transport key only from the ansible server,
