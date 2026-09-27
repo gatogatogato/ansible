@@ -4,10 +4,9 @@
     target_group: proxmoxservers
 
 - hosts: reachable_proxmoxservers
-  serial: 1
   gather_facts: yes
   become: yes
-  name: "Run apt commands on all servers"
+  name: "Proxmox: apt upgrade, one host at a time"
   tasks:
     - name: "Update apt repo and cache on all servers"
       become: true
@@ -22,6 +21,7 @@
       apt:
         upgrade: dist
         force_apt_get: yes
+      throttle: 1
 
     - name: "Remove useless packages from the cache"
       ansible.builtin.apt:
