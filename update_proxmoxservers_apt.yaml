@@ -1,5 +1,9 @@
 ---
-- hosts: proxmoxservers
+- import_playbook: find_reachable.yaml
+  vars:
+    target_group: proxmoxservers
+
+- hosts: reachable_proxmoxservers
   serial: 1
   gather_facts: yes
   become: yes

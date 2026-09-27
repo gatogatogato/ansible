@@ -1,0 +1,16 @@
+---
+# Put every reachable host of target_group into the group reachable_<target_group>.
+# Powered-off hosts (e.g. hercules) are skipped instead of aborting serial plays.
+- hosts: "{{ target_group }}"
+  gather_facts: no
+  name: "Find reachable servers in {{ target_group }}"
+  tasks:
+    - name: "Check connection"
+      ansible.builtin.ping:
+      ignore_unreachable: true
+      register: ping_result
+
+    - name: "Group reachable servers"
+      ansible.builtin.group_by:
+        key: "reachable_{{ target_group }}"
+      when: ping_result is not unreachable
