@@ -81,3 +81,4 @@ pct exec 118 -- passwd gato
 | `container ... not running` bzw. `status` | Falscher Node oder Container gestoppt. `pct list` auf dem Node prüfen. |
 | `Host key verification failed` | Schritt 4 (`ssh -4 …`) vergessen. |
 | `Permission denied (publickey)` | Bootstrap nochmals laufen lassen. Im Container prüfen: `pct exec 118 -- cat /home/transport/.ssh/authorized_keys`. |
+| `Permission denied` nach einem abgebrochenen `newserver` | Login-Shell zsh fehlt. Auf dem Node: `pct exec 118 -- apt-get install -y zsh`, dann `newserver` erneut. |

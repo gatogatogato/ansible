@@ -4,6 +4,18 @@
   become: yes
   name: "Set basic stuff on a new server"
   tasks:
+    # A login shell that does not exist locks transport out of SSH
+    - name: "Check that zsh is installed"
+      ansible.builtin.stat:
+        path: /bin/zsh
+      register: zsh_binary
+
+    - name: "Stop if zsh is missing"
+      ansible.builtin.assert:
+        that: zsh_binary.stat.exists
+        fail_msg: "/bin/zsh is missing on {{ inventory_hostname }}, not changing any login shell. Run install_all_packages first."
+        quiet: true
+
     - name: "Set shell for user transport and add to sudo group"
       ansible.builtin.user:
         name: transport

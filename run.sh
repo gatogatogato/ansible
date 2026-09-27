@@ -90,6 +90,8 @@ for playbook in "${playbooks[@]}"; do
     if ! ansible-playbook "${REPO_DIR}/${playbook}.yaml" -i "${INVENTORY}" "$@"; then
         echo "Error: Playbook '${playbook}' exited with non-zero status" >&2
         exit_status=1
+        # newserver steps build on each other, so stop at the first failure
+        [[ "${task}" == "newserver" ]] && break
     fi
 done
 exit ${exit_status}
