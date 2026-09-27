@@ -1,6 +1,7 @@
 ---
-#- hosts: flickrservers,testservers,ansibleservers
-- hosts: test1,test2,hercules,flickr,rclone
+- hosts: hercules,flickr
+  # hercules is usually already off; don't report that as an error
+  ignore_unreachable: true
   gather_facts: true
   become: true
   name: "Shutdown nonproductive servers"
