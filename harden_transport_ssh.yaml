@@ -11,11 +11,16 @@
   become: yes
   name: "SSH: allow the transport key only from the ansible server"
   vars:
-    controller_ip: 192.168.1.133
+    # The ansible server, plus loopback because it also manages itself.
+    # To move the server to a new IP: add it here, run, move, then remove the old one.
+    controller_ips:
+      - 192.168.1.133
+      - 127.0.0.1
+      - ::1
     transport_pubkey: "{{ lookup('file', lookup('env', 'HOME') + '/.ssh/id_ed25519.pub') }}"
   tasks:
     # If a host sees us under another address (e.g. IPv6), from= would lock us out
-    - name: "Check that the host sees the ansible server as {{ controller_ip }}"
+    - name: "Check that the host sees the ansible server under an allowed address"
       ansible.builtin.shell: echo "${SSH_CONNECTION%% *}"
       become: no
       register: ssh_source
@@ -23,12 +28,12 @@
 
     - name: "Stop if the connection comes from another address"
       ansible.builtin.assert:
-        that: ssh_source.stdout == controller_ip
-        fail_msg: "{{ inventory_hostname }} sees the ansible server as {{ ssh_source.stdout }}, not {{ controller_ip }}. Not changing anything here."
+        that: ssh_source.stdout in controller_ips
+        fail_msg: "{{ inventory_hostname }} sees the ansible server as {{ ssh_source.stdout }}, not {{ controller_ips | join(' or ') }}. Not changing anything here."
         quiet: true
 
-    - name: "Restrict the transport key to {{ controller_ip }}"
+    - name: "Restrict the transport key to the ansible server"
       ansible.posix.authorized_key:
         user: transport
         key: "{{ transport_pubkey }}"
-        key_options: 'from="{{ controller_ip }}"'
+        key_options: "from=\"{{ controller_ips | join(',') }}\""
