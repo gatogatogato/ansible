@@ -1,5 +1,6 @@
 ---
 - hosts: proxmoxservers
+  serial: 1
   gather_facts: yes
   become: yes
   name: "Run apt commands on all servers"
