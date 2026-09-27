@@ -8,6 +8,8 @@
   become: yes
   name: "Proxmox: apt upgrade, one host at a time"
   tasks:
+    - ansible.builtin.import_tasks: tasks/health_snapshot.yaml
+
     - name: "Update apt repo and cache on all servers"
       become: true
       apt:
@@ -40,3 +42,5 @@
       apt:
         clean: yes
       changed_when: false
+
+    - ansible.builtin.import_tasks: tasks/health_check.yaml
