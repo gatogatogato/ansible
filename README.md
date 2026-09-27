@@ -17,6 +17,7 @@ Clones the repo on first use, afterwards only does a `git pull`. Bootstrap once 
 /home/transport/ansible/run.sh install
 /home/transport/ansible/run.sh cronjobs
 /home/transport/ansible/run.sh shutdown
+/home/transport/ansible/run.sh harden-ssh        # transport key only from the ansible server
 ```
 `-f` shows the full output. Everything after the task goes to `ansible-playbook`,
 e.g. `run.sh updates --limit pihole`.
