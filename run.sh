@@ -19,7 +19,10 @@ Tasks:
     install           install packages on all servers
     cronjobs          create cronjobs
     shutdown          shut down hercules, flickr and the ansible server
-    harden-ssh        allow the transport key only from the ansible server
+    harden-ssh        allow the transport key only from the ansible server,
+                      gato needs a password for sudo
+    bootstrap         make a new LXC reachable (--limit proxmox-n0X -e ctid=NNN)
+    newserver         basic setup of a new Debian host (--limit NAME)
 
 Options:
     -h    Show this help message
@@ -58,10 +61,20 @@ case "${task}" in
         playbooks=(shutdown_unproductive) ;;
     harden-ssh)
         playbooks=(harden_transport_ssh) ;;
+    bootstrap)
+        playbooks=(bootstrap_lxc) ;;
+    newserver)
+        playbooks=(install_all_packages newserver_setup_basics newserver_install_all_basicfiles) ;;
     *)
         echo "Error: unknown task '${task}'" >&2
         usage ;;
 esac
+
+# These rewrite basic setup, never run them on every host by accident
+if [[ "${task}" == "bootstrap" || "${task}" == "newserver" ]] && [[ " $* " != *" --limit "* && " $* " != *" --limit="* && " $* " != *" -l "* ]]; then
+    echo "Error: '${task}' needs --limit, see docs/neue-maschine.md" >&2
+    exit 1
+fi
 
 # cron does not always set USER, so ask id
 if [[ "$(id -un)" != "${REQUIRED_USER}" ]]; then

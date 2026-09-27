@@ -1,6 +1,7 @@
 ---
 # Allow the transport key only from the ansible server (from= in authorized_keys).
 # A stolen key is then useless from any other machine.
+# Also removes the rule that let gato become transport (and so root) without a password.
 # If a host locks us out: fix /home/transport/.ssh/authorized_keys via pct enter/exec.
 - import_playbook: find_reachable.yaml
   vars:
@@ -11,12 +12,7 @@
   become: yes
   name: "SSH: allow the transport key only from the ansible server"
   vars:
-    # The ansible server, plus loopback because it also manages itself.
-    # To move the server to a new IP: add it here, run, move, then remove the old one.
-    controller_ips:
-      - 192.168.1.133
-      - 127.0.0.1
-      - ::1
+    # controller_ips is set in inventory.yaml
     transport_pubkey: "{{ lookup('file', lookup('env', 'HOME') + '/.ssh/id_ed25519.pub') }}"
   tasks:
     # If a host sees us under another address (e.g. IPv6), from= would lock us out
@@ -37,3 +33,23 @@
         user: transport
         key: "{{ transport_pubkey }}"
         key_options: "from=\"{{ controller_ips | join(',') }}\""
+
+    # gato keeps sudo via the sudo group, but with gato's own password. Only remove the
+    # rule where gato has a password, otherwise gato could not become root at all.
+    - name: "Check whether gato has a password"
+      ansible.builtin.shell: "getent shadow gato | cut -d: -f2"
+      register: gato_password
+      changed_when: false
+
+    - name: "Remove password-free su to transport for gato"
+      ansible.builtin.file:
+        path: /etc/sudoers.d/gato
+        state: absent
+      when: gato_password.stdout.startswith('$')
+
+    - name: "Warn where gato has no password"
+      ansible.builtin.debug:
+        msg: "gato has no password on {{ inventory_hostname }}, kept /etc/sudoers.d/gato. Set one with passwd gato and run again."
+      # changed, so the compact output shows it
+      changed_when: true
+      when: gato_password.stdout | length > 0 and not gato_password.stdout.startswith('$')

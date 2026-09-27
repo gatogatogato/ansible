@@ -4,19 +4,14 @@
   become: yes
   name: "Create basic files on a new server"
   tasks:
-    - name: "Create sudoers for gato"
-      become: yes
-      copy:
-        dest: "/etc/sudoers.d/gato"
-        content: |
-          gato ALL=(ALL:ALL) NOPASSWD: /bin/su - transport
- 
     - name: "Create sudoers file for transport"
       become: yes
       copy:
         dest: "/etc/sudoers.d/transport"
         content: |
           transport ALL=(ALL:ALL) NOPASSWD:ALL
+        mode: "0440"
+        validate: /usr/sbin/visudo -cf %s
 
     - name: "Delete /etc/motd"
       ansible.builtin.file:
