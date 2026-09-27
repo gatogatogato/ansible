@@ -12,6 +12,9 @@ all:
       - 192.168.1.133
       - 127.0.0.1
       - ::1
+    # Public SSH keys that may log in as gato (newserver_setup_basics.yaml)
+    gato_ssh_keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJaUGEqwGh5OuDA7ohKWQrLQIM+c8ZOlBFgVrk2b+UXT gato ecdsa25519 2020-09-15
 
 proxmoxservers:
   hosts:

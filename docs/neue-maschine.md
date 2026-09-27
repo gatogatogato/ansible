@@ -58,11 +58,17 @@ Erwartet: `"ping": "pong"`.
 /home/transport/ansible/run.sh newserver --limit foo
 ```
 
-Installiert die Standardpakete, legt gato an, setzt zsh, micro und das motd.
+Das erledigt alles, was früher von Hand ging:
+- Standardpakete, Locale en_US.UTF-8, micro als Editor, motd
+- gato mit deinem Mac-Key (`gato_ssh_keys` in `inventory.yaml`)
+- zsh, Oh My Zsh und `dot-zshrc.txt` aus dem shell-Repo für gato und transport
+- SSH-Login per Passwort aus (nur noch mit Key)
+- volles apt-Upgrade mit Health-Check
+
 Bei Alpine diesen Schritt auslassen.
 
 Danach auf dem Proxmox-Node (als root) ein Passwort für gato setzen, sonst
-kann gato kein sudo:
+kann gato kein sudo (das Passwort gilt nur für sudo, der SSH-Login geht per Key):
 
 ```
 pct exec 118 -- passwd gato

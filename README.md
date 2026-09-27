@@ -18,6 +18,7 @@ Clones the repo on first use, afterwards only does a `git pull`. Bootstrap once 
 /home/transport/ansible/run.sh cronjobs
 /home/transport/ansible/run.sh shutdown
 /home/transport/ansible/run.sh harden-ssh        # transport key only from the ansible server, gato sudo with password
+/home/transport/ansible/run.sh audit-key         # read-only: where the private transport key lies
 ```
 `-f` shows the full output. Everything after the task goes to `ansible-playbook`,
 e.g. `run.sh updates --limit pihole`.
@@ -28,6 +29,7 @@ again and no service may newly fail. Otherwise the host is marked as failed.
 ## New machines
 See [docs/neue-maschine.md](docs/neue-maschine.md): `run.sh bootstrap` sets up a new LXC from its
 Proxmox node via `pct exec`, `run.sh newserver` does the basic setup.
+To remove a server completely, see [docs/server-abbauen.md](docs/server-abbauen.md).
 
 ## Weekly updates via cron
 `run.sh cronjobs` installs a cronjob (Sunday 03:30) that runs `cron-updates.sh`.

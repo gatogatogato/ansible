@@ -3,6 +3,9 @@
   gather_facts: yes
   become: yes
   name: "Set basic stuff on a new server"
+  vars:
+    shell_users: [gato, transport]
+    dot_zshrc_url: https://raw.githubusercontent.com/gatogatogato/shell/master/dot-zshrc.txt
   tasks:
     # A login shell that does not exist locks transport out of SSH
     - name: "Check that zsh is installed"
@@ -39,3 +42,64 @@
       community.general.alternatives:
         name: editor
         path: /usr/bin/micro
+
+    - name: "Generate locale en_US.UTF-8"
+      community.general.locale_gen:
+        name: en_US.UTF-8
+
+    - name: "Allow gato's keys from the Mac"
+      ansible.posix.authorized_key:
+        user: gato
+        key: "{{ item }}"
+      loop: "{{ gato_ssh_keys }}"
+
+    - name: "Install Oh My Zsh for gato and transport"
+      ansible.builtin.git:
+        repo: https://github.com/ohmyzsh/ohmyzsh.git
+        dest: "/home/{{ item }}/.oh-my-zsh"
+        depth: 1
+        update: no
+      loop: "{{ shell_users }}"
+
+    - name: "Give Oh My Zsh to its user"
+      ansible.builtin.file:
+        path: "/home/{{ item }}/.oh-my-zsh"
+        owner: "{{ item }}"
+        group: "{{ item }}"
+        recurse: yes
+      loop: "{{ shell_users }}"
+
+    - name: "Create .zshrc from the Oh My Zsh template"
+      ansible.builtin.copy:
+        src: "/home/{{ item }}/.oh-my-zsh/templates/zshrc.zsh-template"
+        dest: "/home/{{ item }}/.zshrc"
+        remote_src: yes
+        force: no
+        owner: "{{ item }}"
+        group: "{{ item }}"
+        mode: "0644"
+      loop: "{{ shell_users }}"
+
+    - name: "Add gato's settings from the shell repo to .zshrc"
+      ansible.builtin.blockinfile:
+        path: "/home/{{ item }}/.zshrc"
+        marker: "# {mark} dot-zshrc.txt from gatogatogato/shell (managed by Ansible)"
+        block: "{{ lookup('ansible.builtin.url', dot_zshrc_url, split_lines=False) }}"
+      loop: "{{ shell_users }}"
+
+    # Only after gato's key is in place, otherwise nobody gets in with a password anymore
+    - name: "Turn off SSH password login"
+      ansible.builtin.copy:
+        dest: /etc/ssh/sshd_config.d/10-no-passwords.conf
+        content: |
+          # Managed by Ansible: keys only
+          PasswordAuthentication no
+          KbdInteractiveAuthentication no
+        mode: "0644"
+      notify: "Restart sshd"
+
+  handlers:
+    - name: "Restart sshd"
+      ansible.builtin.service:
+        name: ssh
+        state: restarted
