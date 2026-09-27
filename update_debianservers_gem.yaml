@@ -1,5 +1,9 @@
 ---
-- hosts: debianservers
+- import_playbook: find_reachable.yaml
+  vars:
+    target_group: debianservers
+
+- hosts: reachable_debianservers
   gather_facts: yes
   become: yes
   name: "Update ruby gems"
