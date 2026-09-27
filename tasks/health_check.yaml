@@ -1,0 +1,38 @@
+---
+# Compare with tasks/health_snapshot.yaml: every port that was listening
+# must listen again (waits up to 2 minutes for slow services) and no
+# service may have newly failed.
+- name: "Health check: wait for all previously open ports"
+  ansible.builtin.shell: |
+    for i in $(seq 1 12); do
+      now=$(ss -Hltn | awk '{n = split($4, a, ":"); print a[n]}' | sort -u)
+      missing=$(comm -23 <(printf '%s\n' $PORTS_BEFORE | sort -u) <(printf '%s\n' "$now"))
+      [ -z "$missing" ] && exit 0
+      sleep 10
+    done
+    echo $missing
+  args:
+    executable: /bin/bash
+  environment:
+    PORTS_BEFORE: "{{ health_ports_before.stdout_lines | join(' ') }}"
+  register: health_missing_ports
+  changed_when: false
+  failed_when: false
+
+- name: "Health check: list failed services"
+  ansible.builtin.shell: >-
+    systemctl list-units --state=failed --plain --no-legend --no-pager | awk '{print $1}' | sort -u
+  register: health_failed_after
+  changed_when: false
+
+- name: "Health check: services still running"
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - health_missing_ports.stdout | length == 0
+      - health_failed_after.stdout_lines | difference(health_failed_before.stdout_lines) | length == 0
+    fail_msg: >-
+      Update broke something on {{ inventory_hostname }}.
+      Ports no longer listening: {{ health_missing_ports.stdout | default('none', true) }}.
+      Newly failed services:
+      {{ health_failed_after.stdout_lines | difference(health_failed_before.stdout_lines) | join(', ') | default('none', true) }}.

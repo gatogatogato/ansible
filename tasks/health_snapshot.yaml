@@ -1,0 +1,14 @@
+---
+# Remember what a healthy host looks like before touching it:
+# listening TCP ports (ephemeral ports excluded) and already failed units.
+- name: "Health check: remember listening ports"
+  ansible.builtin.shell: >-
+    ss -Hltn | awk '{n = split($4, a, ":"); if (a[n] < 32768) print a[n]}' | sort -u
+  register: health_ports_before
+  changed_when: false
+
+- name: "Health check: remember failed services"
+  ansible.builtin.shell: >-
+    systemctl list-units --state=failed --plain --no-legend --no-pager | awk '{print $1}' | sort -u
+  register: health_failed_before
+  changed_when: false

@@ -8,6 +8,8 @@
   become: yes
   name: "Debian: apt upgrade, one host at a time"
   tasks:
+    - ansible.builtin.import_tasks: tasks/health_snapshot.yaml
+
     - name: "Update apt repo and cache on all servers"
       become: true
       apt:
@@ -59,3 +61,5 @@
         test_command: uptime
       throttle: 1
       when: reboot_required_file.stat.exists
+
+    - ansible.builtin.import_tasks: tasks/health_check.yaml
