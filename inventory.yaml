@@ -1,7 +1,6 @@
 all:
   vars:
     ansible_user: transport
-    remote_user: transport
     ansible_ssh_private_key_file: ~transport/.ssh/id_ed25519
 
 proxmoxservers:
@@ -35,8 +34,6 @@ debianservers:
       ansible_host: debian-glance.lan
     npm:
       ansible_host: debian-npm.lan
-    immich:
-      ansible_host: debian-immich.lan
     camsnaps:
       ansible_host: debian-camsnaps.lan
     mbusmaster:
@@ -44,5 +41,6 @@ debianservers:
 
 alpineservers:
   hosts:
+    # Runs Alpine Linux, DNS name kept for historical reasons
     vaultwarden:
-      ansible_host: alpine-vaultwarden.lan
+      ansible_host: debian-vaultwarden.lan
