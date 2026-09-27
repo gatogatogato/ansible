@@ -21,6 +21,7 @@ Tasks:
     shutdown          shut down hercules, flickr and the ansible server
     harden-ssh        allow the transport key only from the ansible server,
                       gato needs a password for sudo
+    audit-key         show where the private transport key lies (read-only)
     bootstrap         make a new LXC reachable (--limit proxmox-n0X -e ctid=NNN)
     newserver         basic setup of a new Debian host (--limit NAME)
 
@@ -61,10 +62,13 @@ case "${task}" in
         playbooks=(shutdown_unproductive) ;;
     harden-ssh)
         playbooks=(harden_transport_ssh) ;;
+    audit-key)
+        playbooks=(audit_transport_key) ;;
     bootstrap)
         playbooks=(bootstrap_lxc) ;;
     newserver)
-        playbooks=(install_all_packages newserver_setup_basics newserver_install_all_basicfiles) ;;
+        playbooks=(install_all_packages newserver_setup_basics newserver_install_all_basicfiles
+                   update_debianservers_apt) ;;
     *)
         echo "Error: unknown task '${task}'" >&2
         usage ;;

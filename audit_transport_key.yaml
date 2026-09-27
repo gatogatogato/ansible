@@ -1,0 +1,37 @@
+---
+# Read-only: shows where the PRIVATE transport key lies outside the ansible server
+# and hints whether something uses it. Changes nothing.
+#   run.sh audit-key
+- import_playbook: find_reachable.yaml
+  vars:
+    target_group: all
+
+- hosts: "reachable_all:!ansible"
+  gather_facts: no
+  become: yes
+  name: "Audit: private transport key outside the ansible server"
+  tasks:
+    - name: "Look for the private key"
+      ansible.builtin.stat:
+        path: /home/transport/.ssh/id_ed25519
+        get_checksum: no
+      register: private_key
+
+    # known_hosts only grows when transport connects somewhere from this host
+    - name: "Collect usage hints"
+      ansible.builtin.shell: |
+        echo "known_hosts entries: $(grep -c . /home/transport/.ssh/known_hosts 2>/dev/null || echo 0)"
+        echo "cron jobs using ssh/scp/rsync: $(grep -lsE '(^|[^a-z])(ssh|scp|rsync|sftp)([^a-z]|$)' /var/spool/cron/crontabs/* /var/spool/cron/* /etc/crontab /etc/cron.d/* 2>/dev/null | tr '\n' ' ')"
+      register: usage_hints
+      changed_when: false
+      when: private_key.stat.exists
+
+    - name: "Report"
+      ansible.builtin.debug:
+        msg:
+          - "Private key found, last read {{ '%Y-%m-%d' | strftime(private_key.stat.atime) }}"
+          - "{{ usage_hints.stdout_lines[0] }}"
+          - "{{ usage_hints.stdout_lines[1] }}"
+      # changed, so the compact output shows it
+      changed_when: true
+      when: private_key.stat.exists
