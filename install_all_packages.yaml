@@ -3,31 +3,52 @@
   gather_facts: yes
   become: yes
   name: "Install stuff on all servers"
+  vars:
+    base_packages:
+      - avahi-daemon
+      - ca-certificates
+      - curl
+      - debsums
+      - git
+      - gpg-agent
+      - htop
+      - locales
+      - micro
+      - mosh
+      - mutt
+      - net-tools
+      - qemu-guest-agent
+      - reboot-notifier
+      - ruby
+      - sudo
+      - sysvbanner
+      - tmux
+      - unzip
+      - wget
+      - zsh
   tasks:
+    - name: "Update apt cache"
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      changed_when: false
+
+    # Newer Debian releases drop packages; install what exists instead of failing on all
+    - name: "Find packages this Debian release does not have"
+      ansible.builtin.shell: >-
+        for p in {{ base_packages | join(' ') }}; do
+        apt-cache show --no-all-versions "$p" >/dev/null 2>&1 || echo "$p";
+        done
+      register: missing_packages
+      changed_when: false
+
+    - name: "Warn about missing packages"
+      ansible.builtin.debug:
+        msg: "Not available on {{ inventory_hostname }}, skipped: {{ missing_packages.stdout_lines | join(', ') }}"
+      # changed, so the compact output shows it
+      changed_when: true
+      when: missing_packages.stdout_lines | length > 0
+
     - name: "Install a list of apt packages"
       ansible.builtin.apt:
-        pkg:
-        - apt-transport-https
-        - avahi-daemon
-        - ca-certificates
-        - curl
-        - debsums
-        - git
-        - gnupg-agent
-        - locales
-        - micro
-        - mosh
-        - mutt
-        - net-tools
-        - qemu-guest-agent
-        - reboot-notifier
-        - ruby
-        - rubygems        
-        - software-properties-common
-        - sudo
-        - sysvbanner
-        - tmux
-        - unzip
-        - wget
-        - zsh
-        - htop
+        pkg: "{{ base_packages | difference(missing_packages.stdout_lines) }}"
