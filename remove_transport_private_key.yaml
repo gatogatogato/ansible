@@ -18,7 +18,7 @@
     - name: "Check whether cron jobs need the key"
       ansible.builtin.shell: >-
         grep -lsE '(^|[^a-z])(ssh|scp|rsync|sftp)([^a-z]|$)'
-        /var/spool/cron/crontabs/* /var/spool/cron/* /etc/crontab /etc/cron.d/* 2>/dev/null || true
+        /var/spool/cron/crontabs/* /etc/crontabs/* /var/spool/cron/* /etc/crontab /etc/cron.d/* 2>/dev/null || true
       register: cron_ssh
       changed_when: false
 

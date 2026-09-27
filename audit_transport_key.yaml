@@ -21,7 +21,7 @@
     - name: "Collect usage hints"
       ansible.builtin.shell: |
         echo "known_hosts entries: $(cat /home/transport/.ssh/known_hosts 2>/dev/null | grep -c .)"
-        echo "cron jobs using ssh/scp/rsync: $(grep -lsE '(^|[^a-z])(ssh|scp|rsync|sftp)([^a-z]|$)' /var/spool/cron/crontabs/* /var/spool/cron/* /etc/crontab /etc/cron.d/* 2>/dev/null | tr '\n' ' ')"
+        echo "cron jobs using ssh/scp/rsync: $(grep -lsE '(^|[^a-z])(ssh|scp|rsync|sftp)([^a-z]|$)' /var/spool/cron/crontabs/* /etc/crontabs/* /var/spool/cron/* /etc/crontab /etc/cron.d/* 2>/dev/null | tr '\n' ' ')"
       register: usage_hints
       changed_when: false
       when: private_key.stat.exists

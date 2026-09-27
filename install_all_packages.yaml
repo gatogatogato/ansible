@@ -1,8 +1,13 @@
 ---
-- hosts: all
+# Debian LXCs and VMs only: Alpine has no apt, the Proxmox nodes stay lean
+- import_playbook: find_reachable.yaml
+  vars:
+    target_group: debianservers
+
+- hosts: reachable_debianservers
   gather_facts: yes
   become: yes
-  name: "Install stuff on all servers"
+  name: "Install stuff on all Debian servers"
   vars:
     base_packages:
       - avahi-daemon
