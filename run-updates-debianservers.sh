@@ -9,6 +9,7 @@ readonly RUNDIR="${HOME}/ansible"
 readonly INVENTORY="inventory.yaml"
 readonly ACTIONS=(
     "update_debianservers_apt"
+    "update_alpineservers_apk"
     "update_debianservers_gem"
     "update_debianservers_micro"
     "update_webservers_snap"
