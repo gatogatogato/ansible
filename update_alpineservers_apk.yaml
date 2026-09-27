@@ -1,9 +1,8 @@
 ---
 - hosts: alpineservers
-  serial: 1
   gather_facts: yes
   become: yes
-  name: "Run apk commands on all Alpine servers"
+  name: "Alpine: apk upgrade"
   tasks:
     - name: "Update apk index and upgrade all packages"
       community.general.apk:

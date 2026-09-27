@@ -6,7 +6,7 @@
 - hosts: reachable_debianservers
   gather_facts: yes
   become: yes
-  name: "Update micro plugins"
+  name: "Debian: update micro editor plugins"
   tasks:
     - name: "micro plugin update"
       become: true

@@ -2,7 +2,7 @@
 - hosts: websrv
   gather_facts: yes
   become: yes
-  name: "Run snap refresh on webservers"
+  name: "Webservers: snap refresh"
   tasks:
     - name: "Update snaps"
       become: true

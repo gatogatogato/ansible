@@ -1,10 +1,10 @@
 ---
 # Put every host of target_group whose SSH port answers into the group
 # reachable_<target_group>. Powered-off hosts (e.g. hercules) are skipped
-# quietly instead of aborting serial plays.
+# quietly instead of failing the update run.
 - hosts: "{{ target_group }}"
   gather_facts: no
-  name: "Find reachable servers in {{ target_group }}"
+  name: "Check which {{ target_group }} are online"
   tasks:
     - name: "Check SSH port"
       ansible.builtin.wait_for:
