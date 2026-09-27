@@ -4,6 +4,13 @@
   become: yes
   name: "Update ruby gems"
   tasks:
+    - name: "Check if ruby gems are installed"
+      ansible.builtin.command: which gem
+      register: gem_binary
+      changed_when: false
+      failed_when: false
+
     - name: "Update ruby gems"
       become: true
       ansible.builtin.shell: gem update
+      when: gem_binary.rc == 0
