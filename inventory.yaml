@@ -40,6 +40,8 @@ debianservers:
       ansible_host: debian-mbusmaster.lan
 
 alpineservers:
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
   hosts:
     # Runs Alpine Linux, DNS name kept for historical reasons
     vaultwarden:
