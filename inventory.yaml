@@ -45,3 +45,5 @@ alpineservers:
     # Runs Alpine Linux, DNS name kept for historical reasons
     vaultwarden:
       ansible_host: debian-vaultwarden.lan
+      restart_after_upgrade:
+        - vaultwarden
