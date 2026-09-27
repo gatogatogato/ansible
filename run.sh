@@ -19,6 +19,7 @@ Tasks:
     install           install packages on all servers
     cronjobs          create cronjobs
     shutdown          shut down hercules, flickr and the ansible server
+    harden-ssh        allow the transport key only from the ansible server
 
 Options:
     -h    Show this help message
@@ -55,6 +56,8 @@ case "${task}" in
     shutdown)
         echo "Shutting down non-productive servers!"
         playbooks=(shutdown_unproductive) ;;
+    harden-ssh)
+        playbooks=(harden_transport_ssh) ;;
     *)
         echo "Error: unknown task '${task}'" >&2
         usage ;;
