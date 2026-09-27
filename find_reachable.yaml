@@ -1,16 +1,22 @@
 ---
-# Put every reachable host of target_group into the group reachable_<target_group>.
-# Powered-off hosts (e.g. hercules) are skipped instead of aborting serial plays.
+# Put every host of target_group whose SSH port answers into the group
+# reachable_<target_group>. Powered-off hosts (e.g. hercules) are skipped
+# quietly instead of aborting serial plays.
 - hosts: "{{ target_group }}"
   gather_facts: no
   name: "Find reachable servers in {{ target_group }}"
   tasks:
-    - name: "Check connection"
-      ansible.builtin.ping:
-      ignore_unreachable: true
-      register: ping_result
+    - name: "Check SSH port"
+      ansible.builtin.wait_for:
+        host: "{{ ansible_host | default(inventory_hostname) }}"
+        port: 22
+        timeout: 5
+      delegate_to: localhost
+      register: ssh_port
+      failed_when: false
 
     - name: "Group reachable servers"
       ansible.builtin.group_by:
         key: "reachable_{{ target_group }}"
-      when: ping_result is not unreachable
+      when: ssh_port.msg is not defined
+      changed_when: false

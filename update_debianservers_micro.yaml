@@ -11,3 +11,4 @@
     - name: "micro plugin update"
       become: true
       ansible.builtin.shell: micro --plugin update
+      changed_when: false

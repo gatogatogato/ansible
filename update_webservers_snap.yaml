@@ -7,3 +7,5 @@
     - name: "Update snaps"
       become: true
       ansible.builtin.shell: snap refresh
+      register: snap_refresh
+      changed_when: "'All snaps up to date' not in (snap_refresh.stdout + snap_refresh.stderr)"
