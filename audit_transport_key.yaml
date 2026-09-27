@@ -20,7 +20,7 @@
     # known_hosts only grows when transport connects somewhere from this host
     - name: "Collect usage hints"
       ansible.builtin.shell: |
-        echo "known_hosts entries: $(grep -c . /home/transport/.ssh/known_hosts 2>/dev/null || echo 0)"
+        echo "known_hosts entries: $(cat /home/transport/.ssh/known_hosts 2>/dev/null | grep -c .)"
         echo "cron jobs using ssh/scp/rsync: $(grep -lsE '(^|[^a-z])(ssh|scp|rsync|sftp)([^a-z]|$)' /var/spool/cron/crontabs/* /var/spool/cron/* /etc/crontab /etc/cron.d/* 2>/dev/null | tr '\n' ' ')"
       register: usage_hints
       changed_when: false

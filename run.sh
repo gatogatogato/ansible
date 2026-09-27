@@ -22,6 +22,7 @@ Tasks:
     harden-ssh        allow the transport key only from the ansible server,
                       gato needs a password for sudo
     audit-key         show where the private transport key lies (read-only)
+    remove-key        delete it everywhere except the ansible server and hosts whose cron uses ssh
     bootstrap         make a new LXC reachable (--limit proxmox-n0X -e ctid=NNN)
     newserver         basic setup of a new Debian host (--limit NAME)
 
@@ -64,6 +65,8 @@ case "${task}" in
         playbooks=(harden_transport_ssh) ;;
     audit-key)
         playbooks=(audit_transport_key) ;;
+    remove-key)
+        playbooks=(remove_transport_private_key) ;;
     bootstrap)
         playbooks=(bootstrap_lxc) ;;
     newserver)
