@@ -15,6 +15,7 @@
         update_cache: yes
         force_apt_get: yes
         cache_valid_time: 3600
+      changed_when: false
 
     - name: "Upgrade all packages on all servers"
       become: true
@@ -38,6 +39,7 @@
     - name: "Run the equivalent of apt-get clean as a separate step"
       apt:
         clean: yes
+      changed_when: false
 
     - name: "Check if a reboot is needed"
       become: true

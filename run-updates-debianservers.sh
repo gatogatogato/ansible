@@ -17,11 +17,12 @@ readonly ACTIONS=(
 # Function to display usage information
 usage() {
     cat << EOF
-Usage: $(basename "$0") [-h] [-d directory] [-i inventory] [-p parameters]
+Usage: $(basename "$0") [-h] [-f] [-d directory] [-i inventory] [-p parameters]
 Run multiple Ansible playbooks sequentially.
 
 Options:
     -h          Show this help message
+    -f          Full output (also show unchanged and skipped tasks)
     -d DIR      Set ansible directory (default: ${RUNDIR})
     -i FILE     Set inventory file (default: ${INVENTORY})
     -p PARAMS   Additional ansible-playbook parameters
@@ -64,8 +65,11 @@ working_dir="${RUNDIR}"
 inv_file="${INVENTORY}"
 parameters=""
 
-while getopts "hd:i:p:" opt; do
+while getopts "hfd:i:p:" opt; do
     case ${opt} in
+        f)
+            export ANSIBLE_DISPLAY_OK_HOSTS=true ANSIBLE_DISPLAY_SKIPPED_HOSTS=true
+            ;;
         h)
             usage
             ;;
@@ -87,6 +91,9 @@ done
 # Verify directory and inventory exist
 [[ -d "${working_dir}" ]] || { echo "Error: Directory ${working_dir} not found" >&2; exit 1; }
 [[ -f "${working_dir}/${inv_file}" ]] || { echo "Error: Inventory file ${working_dir}/${inv_file} not found" >&2; exit 1; }
+
+# Use the repo's ansible.cfg (compact output) regardless of the current directory
+export ANSIBLE_CONFIG="${working_dir}/ansible.cfg"
 
 # Execute playbooks
 run_playbooks "${working_dir}" "${inv_file}" "${parameters}"
