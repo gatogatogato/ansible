@@ -1,6 +1,7 @@
 all:
   vars:
     ansible_user: transport
+    ansible_python_interpreter: auto_silent
     ansible_ssh_private_key_file: ~transport/.ssh/id_ed25519
 
 proxmoxservers:
@@ -40,8 +41,6 @@ debianservers:
       ansible_host: debian-mbusmaster.lan
 
 alpineservers:
-  vars:
-    ansible_python_interpreter: /usr/bin/python3
   hosts:
     # Runs Alpine Linux, DNS name kept for historical reasons
     vaultwarden:
