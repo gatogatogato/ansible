@@ -9,3 +9,11 @@
       community.general.apk:
         update_cache: yes
         upgrade: yes
+      register: apk_upgrade
+
+    - name: "Restart services after package upgrades"
+      ansible.builtin.service:
+        name: "{{ item }}"
+        state: restarted
+      loop: "{{ restart_after_upgrade | default([]) }}"
+      when: apk_upgrade is changed
