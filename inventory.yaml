@@ -5,6 +5,13 @@ all:
     ansible_ssh_private_key_file: ~transport/.ssh/id_ed25519
     # IPv4 only, so hosts always see the ansible server as 192.168.1.133 (see harden_transport_ssh.yaml)
     ansible_ssh_common_args: "-4"
+    # The only addresses the transport key is accepted from (from= in authorized_keys):
+    # the ansible server, plus loopback because it also manages itself.
+    # To move the server to a new IP: add it here, run.sh harden-ssh, move, then remove the old one.
+    controller_ips:
+      - 192.168.1.133
+      - 127.0.0.1
+      - ::1
 
 proxmoxservers:
   hosts:

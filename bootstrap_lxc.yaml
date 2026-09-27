@@ -1,0 +1,100 @@
+---
+# Make a fresh LXC reachable for Ansible, from the Proxmox node it runs on:
+# installs sudo, python3 and sshd, creates user transport with the ansible key
+# (only accepted from controller_ips) and password-free sudo for transport.
+# Works for Debian and Alpine containers. See docs/neue-maschine.md.
+#
+#   run.sh bootstrap --limit proxmox-n01 -e ctid=118
+- hosts: proxmoxservers
+  gather_facts: no
+  become: yes
+  name: "Bootstrap LXC {{ ctid | default('?') }} for Ansible"
+  vars:
+    transport_pubkey: "{{ lookup('file', lookup('env', 'HOME') + '/.ssh/id_ed25519.pub') }}"
+    pct_exec: "pct exec {{ ctid }} --"
+  tasks:
+    - name: "Check the call"
+      ansible.builtin.assert:
+        that:
+          - ctid is defined
+          - ansible_play_hosts_all | length == 1
+          - inventory_hostname != 'proxmox-n03'
+        fail_msg: "Use: run.sh bootstrap --limit proxmox-n0X -e ctid=NNN (exactly one node, never proxmox-n03)"
+        quiet: true
+      run_once: true
+
+    - name: "Check that the container is running on this node"
+      ansible.builtin.command: pct status {{ ctid }}
+      register: ct_status
+      changed_when: false
+      failed_when: "'status: running' not in ct_status.stdout"
+
+    - name: "Find out the distribution"
+      ansible.builtin.command: "{{ pct_exec }} sh -c '. /etc/os-release && echo $ID'"
+      register: ct_os
+      changed_when: false
+
+    - name: "Stop on unknown distributions"
+      ansible.builtin.assert:
+        that: ct_os.stdout in ['debian', 'ubuntu', 'alpine']
+        fail_msg: "Container {{ ctid }} runs '{{ ct_os.stdout }}', only Debian, Ubuntu and Alpine are supported."
+        quiet: true
+
+    - name: "Install sudo, python3 and sshd (Debian)"
+      ansible.builtin.command: >-
+        {{ pct_exec }} sh -c 'DEBIAN_FRONTEND=noninteractive apt-get update -qq &&
+        DEBIAN_FRONTEND=noninteractive apt-get install -y -qq sudo python3 openssh-server'
+      when: ct_os.stdout != 'alpine'
+
+    - name: "Install sudo, python3 and sshd (Alpine)"
+      ansible.builtin.command: >-
+        {{ pct_exec }} sh -c 'apk add -q sudo python3 openssh &&
+        rc-update add sshd default && (rc-service sshd status || rc-service sshd start)'
+      when: ct_os.stdout == 'alpine'
+
+    # '*' instead of the locked '!' so sshd accepts the key on Alpine (no PAM there)
+    - name: "Create user transport"
+      ansible.builtin.command: >-
+        {{ pct_exec }} sh -c 'id transport >/dev/null 2>&1 && echo exists ||
+        { {{ 'adduser -D -s /bin/sh transport' if ct_os.stdout == 'alpine' else 'useradd -m -s /bin/bash transport' }} &&
+        echo "transport:*" | chpasswd -e; }'
+      register: ct_user
+      changed_when: "'exists' not in ct_user.stdout"
+
+    - name: "Create ~transport/.ssh"
+      ansible.builtin.command: "{{ pct_exec }} install -d -m 700 -o transport -g transport /home/transport/.ssh"
+      changed_when: false
+
+    - name: "Prepare authorized_keys and sudoers on the node"
+      ansible.builtin.copy:
+        dest: "/tmp/bootstrap-{{ ctid }}-{{ item.name }}"
+        content: "{{ item.content }}\n"
+        mode: "0600"
+      loop:
+        - name: authorized_keys
+          content: "from=\"{{ controller_ips | join(',') }}\" {{ transport_pubkey }}"
+        - name: sudoers
+          content: "transport ALL=(ALL:ALL) NOPASSWD:ALL"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: "Copy authorized_keys into the container"
+      ansible.builtin.command: >-
+        pct push {{ ctid }} /tmp/bootstrap-{{ ctid }}-authorized_keys /home/transport/.ssh/authorized_keys
+        --user transport --group transport --perms 0600
+
+    - name: "Copy sudoers into the container"
+      ansible.builtin.command: >-
+        pct push {{ ctid }} /tmp/bootstrap-{{ ctid }}-sudoers /etc/sudoers.d/transport
+        --user root --group root --perms 0440
+
+    - name: "Check the sudoers file"
+      ansible.builtin.command: "{{ pct_exec }} visudo -cf /etc/sudoers.d/transport"
+      changed_when: false
+
+    - name: "Clean up on the node"
+      ansible.builtin.file:
+        path: "/tmp/bootstrap-{{ ctid }}-{{ item }}"
+        state: absent
+      loop: [authorized_keys, sudoers]
+
