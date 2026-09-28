@@ -59,6 +59,14 @@
           Then run website-setup again.
       when: ls_remote.rc != 0
 
+    - name: "Let gato write the document root, so deploy.sh needs no sudo"
+      ansible.builtin.file:
+        path: "{{ website_docroot }}"
+        state: directory
+        owner: gato
+        group: gato
+        recurse: yes
+
     - name: "Look for a git checkout in the website folder"
       ansible.builtin.stat:
         path: "{{ website_dir }}/.git"

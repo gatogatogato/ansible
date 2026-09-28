@@ -34,6 +34,8 @@ debianservers:
       # Hugo source of gatogatogato.ch (private repo, read via deploy key, see docs/webseite.md)
       website_repo: git@github.com:gatogatogato/gatogatogato.ch-hugo.git
       website_dir: /home/gato/gatogatogato.ch-hugo
+      # Apache serves the site from here, deploy.sh syncs Hugo's public/ into it
+      website_docroot: /var/www/html/gatogatogato.ch
     flickr:
       ansible_host: debian-flickr.lan
     ansible:

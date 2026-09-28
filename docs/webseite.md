@@ -23,9 +23,9 @@ rsync -a --exclude public --exclude resources gato@debian-websrv.lan:gatogatogat
 cd gatogatogato.ch-hugo
 ```
 
-Die vorbereiteten Dateien `README.md`, `DEPLOY.md` und `.gitignore` in diesen
-Ordner kopieren, dazu das Deploy-Skript als `deploy.sh` (ausführbar,
-`chmod +x deploy.sh`).
+Die vorbereiteten Dateien `README.md`, `DEPLOY.md`, `.gitignore` und `deploy.sh`
+in diesen Ordner kopieren. Ein altes Deploy-Skript im Ordner löschen, es ersetzt
+`deploy.sh`. Dann `chmod +x deploy.sh`.
 
 Vor dem ersten Commit prüfen, dass in der YAML-Datei keine Tokens oder
 Passwörter stehen (z. B. API-Keys für Analytics oder Kontaktformulare).
@@ -65,9 +65,9 @@ starten:
 ssh gato@debian-websrv.lan mv /home/gato/gatogatogato.ch-hugo /home/gato/gatogatogato.ch-hugo.alt
 ```
 
-Liefert Apache die Seite direkt aus diesem Ordner aus (DocumentRoot prüfen mit
-`grep -ri DocumentRoot /etc/apache2/sites-enabled`), ist die Seite zwischen
-`mv` und dem ersten Deploy kurz weg. Dann Schritt 4 direkt anschliessen.
+Die Seite läuft dabei ohne Unterbruch weiter, Apache liefert sie aus
+`/var/www/html/gatogatogato.ch` aus, nicht aus diesem Ordner. Ab jetzt gehört
+dieser DocumentRoot gato, damit `deploy.sh` ohne sudo auskommt.
 
 ## 4. Erster Deploy
 
@@ -88,5 +88,5 @@ ssh gato@debian-websrv.lan rm -rf /home/gato/gatogatogato.ch-hugo.alt
   GitHub entfernen.
 - Der tägliche Backup-Cron (`cronjobs_webservers.yaml`) sichert den Ordner
   weiterhin; die Quelle liegt jetzt zusätzlich in GitHub.
-- Hugo-Version: websrv nutzt Hugo aus Debian (`hugo version`), der Mac meist eine
-  neuere aus Homebrew. Baut die Seite nur lokal, liegt es oft daran.
+- Gebaut wird nur auf websrv mit Hugo aus Debian (`hugo version`). Auf dem Mac
+  braucht es kein Hugo.
