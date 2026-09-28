@@ -1,6 +1,8 @@
 ---
 # Publish the current state of the website repo: pull, then build and deploy
-# with the repo's own deploy.sh. See docs/webseite.md.
+# with the repo's own deploy.sh, which pulls too, so it also works on its own.
+# The pull here keeps the checkout's URL and deploy.sh itself current.
+# See docs/webseite.md.
 - hosts: websrv
   gather_facts: no
   become: yes
