@@ -8,8 +8,11 @@
   name: "Webservers: check out the website repo"
   vars:
     deploy_key: /home/gato/.ssh/website_deploy_key
-    # GitHub's published ed25519 host key (docs.github.com, "GitHub's SSH key fingerprints")
-    github_host_key: "github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl"
+    # GitHub's published ed25519 host key (docs.github.com, "GitHub's SSH key fingerprints"),
+    # the same for ssh.github.com on port 443
+    github_host_key: "[ssh.github.com]:443 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl"
+    # Fail after 15 s instead of hanging when GitHub is unreachable
+    ssh_command: "ssh -i {{ deploy_key }} -o IdentitiesOnly=yes -o ConnectTimeout=15"
   tasks:
     - name: "Create gato's .ssh directory"
       ansible.builtin.file:
@@ -28,14 +31,14 @@
     - name: "Trust GitHub's host key"
       ansible.builtin.known_hosts:
         path: /home/gato/.ssh/known_hosts
-        name: github.com
+        name: "[ssh.github.com]:443"
         key: "{{ github_host_key }}"
       become_user: gato
 
     - name: "Check that the deploy key can read the repo"
       ansible.builtin.command: git ls-remote {{ website_repo }} HEAD
       environment:
-        GIT_SSH_COMMAND: "ssh -i {{ deploy_key }} -o IdentitiesOnly=yes"
+        GIT_SSH_COMMAND: "{{ ssh_command }}"
       become_user: gato
       register: ls_remote
       changed_when: false
@@ -67,29 +70,35 @@
         group: gato
         recurse: yes
 
-    - name: "Look for a git checkout in the website folder"
-      ansible.builtin.stat:
-        path: "{{ website_dir }}/.git"
-      register: website_git
-
     - name: "Look for the website folder"
       ansible.builtin.stat:
         path: "{{ website_dir }}"
       register: website_folder
 
-    - name: "Stop if the website folder exists but is not a git checkout"
+    - name: "Read the remote of the website folder"
+      ansible.builtin.command: git -C {{ website_dir }} remote get-url origin
+      become_user: gato
+      register: website_remote
+      changed_when: false
+      failed_when: false
+      when: website_folder.stat.exists
+
+    # Also catches an old copy that is a git repo without the GitHub remote.
+    # Only the repo path counts, website-deploy updates an older URL of the same repo.
+    - name: "Stop if the website folder is not a checkout of the website repo"
       ansible.builtin.fail:
         msg: |
-          {{ website_dir }} exists but is no git checkout (the old copy of the site).
-          Move it aside as gato, then run website-setup again:
+          {{ website_dir }} exists but is no checkout of {{ website_repo }}
+          (the old copy of the site). Move it aside as gato, then run website-setup again:
           mv {{ website_dir }} {{ website_dir }}.alt
-      when: website_folder.stat.exists and not website_git.stat.exists
+      when: website_folder.stat.exists and website_remote.stdout is not search('gatogatogato/gatogatogato.ch-hugo')
 
     - name: "Clone the website repo"
       ansible.builtin.git:
         repo: "{{ website_repo }}"
         dest: "{{ website_dir }}"
         key_file: "{{ deploy_key }}"
+        ssh_opts: "-o ConnectTimeout=15"
         update: no
       become_user: gato
 
@@ -98,5 +107,5 @@
         scope: local
         repo: "{{ website_dir }}"
         name: core.sshCommand
-        value: "ssh -i {{ deploy_key }} -o IdentitiesOnly=yes"
+        value: "{{ ssh_command }}"
       become_user: gato

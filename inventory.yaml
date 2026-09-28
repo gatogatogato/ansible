@@ -31,8 +31,9 @@ debianservers:
       ansible_host: debian-uptimekuma.lan
     websrv:
       ansible_host: debian-websrv.lan
-      # Hugo source of gatogatogato.ch (private repo, read via deploy key, see docs/webseite.md)
-      website_repo: git@github.com:gatogatogato/gatogatogato.ch-hugo.git
+      # Hugo source of gatogatogato.ch (private repo, read via deploy key, see docs/webseite.md).
+      # SSH over port 443, because not every github.com address answers on port 22 from here.
+      website_repo: ssh://git@ssh.github.com:443/gatogatogato/gatogatogato.ch-hugo.git
       website_dir: /home/gato/gatogatogato.ch-hugo
       # Apache serves the site from here, deploy.sh syncs Hugo's public/ into it
       website_docroot: /var/www/html/gatogatogato.ch
