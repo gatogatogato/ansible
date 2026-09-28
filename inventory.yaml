@@ -30,7 +30,7 @@ debianservers:
     uptimekuma:
       ansible_host: debian-uptimekuma.lan
     websrv:
-      # fixed IP 192.168.1.81 (UniFi + Pi-hole), Cloudflare Tunnel points there
+      # static IP 192.168.1.81 (set in the container, DNS in Pi-hole), Cloudflare Tunnel points there
       ansible_host: debian-websrv.lan
       # Hugo source of gatogatogato.ch (private repo, read via deploy key, see docs/webseite.md).
       # SSH over port 443, because not every github.com address answers on port 22 from here.

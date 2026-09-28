@@ -12,8 +12,11 @@ Notieren:
 - **Node**, z. B. `proxmox-n01`
 - **Hostname**, nach dem Schema `debian-<name>`, z. B. `debian-foo`
 
-Im UniFi-Controller eine feste IP (Fixed IP) für den Container setzen, damit der
-DNS-Name `debian-foo.lan` stabil bleibt. Der Container muss laufen.
+Soll der Container eine feste IP haben, sie statisch im Container setzen
+(Proxmox, **Network**: IPv4 **Static**) und eine Adresse unter 192.168.1.100
+nehmen: UniFi verteilt per DHCP nur 192.168.1.100 bis .200. Dazu im Pi-hole
+unter **Local DNS > DNS Records** `debian-foo.lan` auf diese IP eintragen, damit
+der DNS-Name stabil bleibt. Die IP legt Tobi fest. Der Container muss laufen.
 
 ## 2. Ansible-Zugang einrichten (auf debian-ansible, als transport)
 
