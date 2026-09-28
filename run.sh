@@ -25,6 +25,8 @@ Tasks:
     remove-key        delete it everywhere except the ansible server and hosts whose cron uses ssh
     bootstrap         make a new LXC reachable (--limit proxmox-n0X -e ctid=NNN)
     newserver         basic setup of a new Debian host (--limit NAME)
+    website-setup     prepare websrv to check out the website repo (docs/webseite.md)
+    website-deploy    pull the website repo on websrv and run its deploy script
 
 Options:
     -h    Show this help message
@@ -69,6 +71,10 @@ case "${task}" in
         playbooks=(remove_transport_private_key) ;;
     bootstrap)
         playbooks=(bootstrap_lxc) ;;
+    website-setup)
+        playbooks=(install_webservers_packages website_setup) ;;
+    website-deploy)
+        playbooks=(website_deploy) ;;
     newserver)
         playbooks=(install_all_packages newserver_setup_basics newserver_install_all_basicfiles
                    update_debianservers_apt) ;;

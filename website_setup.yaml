@@ -1,0 +1,102 @@
+---
+# One-time setup so websrv can check out the private website repo.
+# Run twice: the first run creates the deploy key and stops with the public key
+# to add in GitHub, the second run clones. See docs/webseite.md.
+- hosts: websrv
+  gather_facts: no
+  become: yes
+  name: "Webservers: check out the website repo"
+  vars:
+    deploy_key: /home/gato/.ssh/website_deploy_key
+    # GitHub's published ed25519 host key (docs.github.com, "GitHub's SSH key fingerprints")
+    github_host_key: "github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl"
+  tasks:
+    - name: "Create gato's .ssh directory"
+      ansible.builtin.file:
+        path: /home/gato/.ssh
+        state: directory
+        owner: gato
+        group: gato
+        mode: "0700"
+
+    - name: "Create a deploy key for the website repo"
+      ansible.builtin.command: ssh-keygen -q -t ed25519 -N "" -C "websrv deploy key gatogatogato.ch-hugo" -f {{ deploy_key }}
+      args:
+        creates: "{{ deploy_key }}"
+      become_user: gato
+
+    - name: "Trust GitHub's host key"
+      ansible.builtin.known_hosts:
+        path: /home/gato/.ssh/known_hosts
+        name: github.com
+        key: "{{ github_host_key }}"
+      become_user: gato
+
+    - name: "Check that the deploy key can read the repo"
+      ansible.builtin.command: git ls-remote {{ website_repo }} HEAD
+      environment:
+        GIT_SSH_COMMAND: "ssh -i {{ deploy_key }} -o IdentitiesOnly=yes"
+      become_user: gato
+      register: ls_remote
+      changed_when: false
+      failed_when: false
+
+    - name: "Read the public deploy key"
+      ansible.builtin.command: cat {{ deploy_key }}.pub
+      register: deploy_pubkey
+      changed_when: false
+      when: ls_remote.rc != 0
+
+    - name: "Stop until the deploy key is added in GitHub"
+      ansible.builtin.fail:
+        msg: |
+          websrv cannot read {{ website_repo }} yet.
+          Add this key in GitHub: repo Settings > Deploy keys > Add deploy key,
+          title "websrv", leave "Allow write access" unchecked:
+
+          {{ deploy_pubkey.stdout }}
+
+          Then run website-setup again.
+      when: ls_remote.rc != 0
+
+    - name: "Let gato write the document root, so deploy.sh needs no sudo"
+      ansible.builtin.file:
+        path: "{{ website_docroot }}"
+        state: directory
+        owner: gato
+        group: gato
+        recurse: yes
+
+    - name: "Look for a git checkout in the website folder"
+      ansible.builtin.stat:
+        path: "{{ website_dir }}/.git"
+      register: website_git
+
+    - name: "Look for the website folder"
+      ansible.builtin.stat:
+        path: "{{ website_dir }}"
+      register: website_folder
+
+    - name: "Stop if the website folder exists but is not a git checkout"
+      ansible.builtin.fail:
+        msg: |
+          {{ website_dir }} exists but is no git checkout (the old copy of the site).
+          Move it aside as gato, then run website-setup again:
+          mv {{ website_dir }} {{ website_dir }}.alt
+      when: website_folder.stat.exists and not website_git.stat.exists
+
+    - name: "Clone the website repo"
+      ansible.builtin.git:
+        repo: "{{ website_repo }}"
+        dest: "{{ website_dir }}"
+        key_file: "{{ deploy_key }}"
+        update: no
+      become_user: gato
+
+    - name: "Use the deploy key for manual git pulls in the checkout"
+      community.general.git_config:
+        scope: local
+        repo: "{{ website_dir }}"
+        name: core.sshCommand
+        value: "ssh -i {{ deploy_key }} -o IdentitiesOnly=yes"
+      become_user: gato
