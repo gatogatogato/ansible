@@ -56,9 +56,9 @@
         name: "cleanup of backups"
         state: absent
 
-    - name: "root cronjob for certbot renew"
+    # HTTPS is done by the Cloudflare Tunnel, no certificate on websrv
+    - name: "Remove the old root cronjob for certbot renew"
       ansible.builtin.cron:
         user: root
         name: "certbot renew"
-        special_time: weekly
-        job: certbot renew --quiet
+        state: absent
