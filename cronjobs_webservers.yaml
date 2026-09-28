@@ -21,6 +21,28 @@
         minute: "*/5"
         job: test -x {{ website_dir }}/deploy.sh && {{ website_dir }}/deploy.sh --if-changed >> /home/gato/logs/website-deploy.log 2>&1
 
+    - name: "logrotate for gato's logs"
+      ansible.builtin.apt:
+        name: logrotate
+
+    # Monthly rotation, 3 old months kept, so nothing is older than about 90 days
+    - name: "Rotate gato's logs monthly, delete after 3 months"
+      ansible.builtin.copy:
+        dest: /etc/logrotate.d/gato-logs
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          /home/gato/logs/*.log {
+              su gato gato
+              monthly
+              rotate 3
+              compress
+              delaycompress
+              missingok
+              notifempty
+          }
+
     # The source is in GitHub now, the daily tarballs are no longer needed
     - name: "Remove the old gato cronjob for backups"
       ansible.builtin.cron:
