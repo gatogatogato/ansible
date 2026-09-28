@@ -37,6 +37,11 @@ debianservers:
       website_dir: /home/gato/gatogatogato.ch-hugo
       # Apache serves the site from here, deploy.sh syncs Hugo's public/ into it
       website_docroot: /var/www/html/gatogatogato.ch
+      # Apache virtual host (website_apache.yaml)
+      website_domain: gatogatogato.ch
+      website_vhost_file: gatogatogato.ch.conf
+      # HTTPS on websrv itself (certbot); false when Cloudflare Tunnel does HTTPS
+      website_https_wanted: true
     flickr:
       ansible_host: debian-flickr.lan
     ansible:

@@ -90,3 +90,19 @@ ssh gato@debian-websrv.lan rm -rf /home/gato/gatogatogato.ch-hugo.alt
   weiterhin; die Quelle liegt jetzt zusätzlich in GitHub.
 - Gebaut wird nur auf websrv mit Hugo aus Debian (`hugo version`). Auf dem Mac
   braucht es kein Hugo.
+
+## Apache
+
+`website-setup` schreibt auch den VirtualHost nach
+`/etc/apache2/sites-available/gatogatogato.ch.conf` (Vorlage
+`templates/website-vhost.conf.j2`) und aktiviert ihn. Gesteuert über das
+Inventory beim Host `websrv`:
+
+- `website_https_wanted: true`: Port 80 leitet auf HTTPS um, Port 443 nutzt das
+  Let's-Encrypt-Zertifikat. Fehlt das Zertifikat noch, gibt es vorerst nur HTTP
+  und eine Warnung mit dem certbot-Befehl.
+- `website_https_wanted: false`: nur HTTP auf Port 80, z. B. wenn der Cloudflare
+  Tunnel HTTPS übernimmt und per HTTP auf websrv zugreift. Mit `true` gäbe es
+  dann eine Umleitungsschleife.
+
+Änderungen am VirtualHost nur in der Vorlage machen, nicht auf dem Server.

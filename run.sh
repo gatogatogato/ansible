@@ -25,7 +25,8 @@ Tasks:
     remove-key        delete it everywhere except the ansible server and hosts whose cron uses ssh
     bootstrap         make a new LXC reachable (--limit proxmox-n0X -e ctid=NNN)
     newserver         basic setup of a new Debian host (--limit NAME)
-    website-setup     prepare websrv to check out the website repo (docs/webseite.md)
+    website-setup     prepare websrv for the website: packages, Apache virtual host,
+                      website repo checkout (docs/webseite.md)
     website-deploy    pull the website repo on websrv and run its deploy script
 
 Options:
@@ -72,7 +73,7 @@ case "${task}" in
     bootstrap)
         playbooks=(bootstrap_lxc) ;;
     website-setup)
-        playbooks=(install_webservers_packages website_setup) ;;
+        playbooks=(install_webservers_packages website_apache website_setup) ;;
     website-deploy)
         # Show the pulled commit and the output of deploy.sh
         export ANSIBLE_DISPLAY_OK_HOSTS=true

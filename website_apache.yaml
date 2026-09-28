@@ -1,0 +1,43 @@
+---
+# Apache virtual host for the website. With website_https (inventory) it
+# redirects port 80 to HTTPS and serves the Let's Encrypt certificate on 443,
+# as long as that certificate exists; without it, plain HTTP on port 80.
+# See docs/webseite.md.
+- hosts: websrv
+  gather_facts: no
+  become: yes
+  name: "Webservers: Apache virtual host for the website"
+  tasks:
+    - name: "Look for the Let's Encrypt certificate"
+      ansible.builtin.stat:
+        path: "/etc/letsencrypt/live/{{ website_domain }}/fullchain.pem"
+      register: website_cert
+
+    - name: "Warn when HTTPS is wanted but the certificate is missing"
+      ansible.builtin.debug:
+        msg: >-
+          No certificate for {{ website_domain }} yet, serving HTTP only.
+          Restore /etc/letsencrypt from a backup or run
+          "sudo certbot certonly --apache -d {{ website_domain }}", then website-setup again.
+      when: website_https_wanted and not website_cert.stat.exists
+
+    - name: "Write the virtual host"
+      ansible.builtin.template:
+        src: templates/website-vhost.conf.j2
+        dest: "/etc/apache2/sites-available/{{ website_vhost_file }}"
+        owner: root
+        group: root
+        mode: "0644"
+      vars:
+        website_https: "{{ website_https_wanted and website_cert.stat.exists }}"
+      notify: "Reload Apache"
+
+    - name: "Enable the virtual host"
+      ansible.builtin.command: a2ensite {{ website_vhost_file }}
+      args:
+        creates: "/etc/apache2/sites-enabled/{{ website_vhost_file }}"
+      notify: "Reload Apache"
+
+  handlers:
+    - name: "Reload Apache"
+      ansible.builtin.shell: apache2ctl configtest && systemctl reload apache2
