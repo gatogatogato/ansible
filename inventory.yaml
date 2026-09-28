@@ -30,6 +30,7 @@ debianservers:
     uptimekuma:
       ansible_host: debian-uptimekuma.lan
     websrv:
+      # static IP 192.168.1.81 (set in the container, DNS in Pi-hole), Cloudflare Tunnel points there
       ansible_host: debian-websrv.lan
       # Hugo source of gatogatogato.ch (private repo, read via deploy key, see docs/webseite.md).
       # SSH over port 443, because not every github.com address answers on port 22 from here.
@@ -37,6 +38,11 @@ debianservers:
       website_dir: /home/gato/gatogatogato.ch-hugo
       # Apache serves the site from here, deploy.sh syncs Hugo's public/ into it
       website_docroot: /var/www/html/gatogatogato.ch
+      # Apache virtual host (website_apache.yaml)
+      website_domain: gatogatogato.ch
+      website_vhost_file: 001-gatogatogato.conf
+      # HTTPS on websrv itself (certbot); false when Cloudflare Tunnel does HTTPS
+      website_https_wanted: true
     flickr:
       ansible_host: debian-flickr.lan
     ansible:

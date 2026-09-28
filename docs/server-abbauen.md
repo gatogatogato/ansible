@@ -67,7 +67,8 @@ Erst löschen, wenn du sicher bist, dass du nichts mehr daraus brauchst.
 
 ## 6. Netzwerk aufräumen
 
-- **UniFi:** Feste IP-Reservierung (Fixed IP) und allfällige Port-Weiterleitungen oder Firewall-Regeln für foo löschen.
+- **UniFi:** Allfällige Port-Weiterleitungen oder Firewall-Regeln für foo löschen.
+- **Pi-hole:** DNS-Eintrag `debian-foo.lan` unter Local DNS löschen, wenn die IP nicht weiterverwendet wird.
 - **Pi-hole:** Unter *Local DNS* die Einträge `debian-foo.lan` (A und CNAME) löschen. Auf dem primären Pi-hole (192.168.1.99), nebula-sync überträgt es auf den zweiten.
 
 ## 7. Auf dem Mac
