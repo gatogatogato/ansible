@@ -74,6 +74,8 @@ case "${task}" in
     website-setup)
         playbooks=(install_webservers_packages website_setup) ;;
     website-deploy)
+        # Show the pulled commit and the output of deploy.sh
+        export ANSIBLE_DISPLAY_OK_HOSTS=true
         playbooks=(website_deploy) ;;
     newserver)
         playbooks=(install_all_packages newserver_setup_basics newserver_install_all_basicfiles
