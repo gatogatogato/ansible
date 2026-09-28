@@ -31,6 +31,9 @@ debianservers:
       ansible_host: debian-uptimekuma.lan
     websrv:
       ansible_host: debian-websrv.lan
+      # Hugo source of gatogatogato.ch (private repo, read via deploy key, see docs/webseite.md)
+      website_repo: git@github.com:gatogatogato/gatogatogato.ch-hugo.git
+      website_dir: /home/gato/gatogatogato.ch-hugo
     flickr:
       ansible_host: debian-flickr.lan
     ansible:

@@ -13,6 +13,9 @@
         - hugo
         - rsync
         - micro
+        - git
+        # lets Ansible run tasks as gato (become_user) on websrv
+        - acl
 
     - name: "Install snap certbot"
       community.general.snap:

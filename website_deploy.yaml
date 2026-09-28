@@ -1,0 +1,31 @@
+---
+# Publish the current state of the website repo: pull, then build and deploy
+# with the repo's own deploy.sh. See docs/webseite.md.
+- hosts: websrv
+  gather_facts: no
+  become: yes
+  become_user: gato
+  name: "Webservers: deploy the website"
+  tasks:
+    - name: "Pull the website repo"
+      ansible.builtin.git:
+        repo: "{{ website_repo }}"
+        dest: "{{ website_dir }}"
+        key_file: /home/gato/.ssh/website_deploy_key
+        version: main
+      register: website_pull
+
+    - name: "Show the deployed commit"
+      ansible.builtin.debug:
+        msg: "{{ (website_pull.before or 'none')[:7] }} -> {{ website_pull.after[:7] }}"
+
+    - name: "Build and deploy with deploy.sh from the repo"
+      ansible.builtin.command: ./deploy.sh
+      args:
+        chdir: "{{ website_dir }}"
+      register: deploy
+      changed_when: true
+
+    - name: "Show the deploy output"
+      ansible.builtin.debug:
+        var: deploy.stdout_lines
