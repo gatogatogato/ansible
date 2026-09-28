@@ -8,6 +8,12 @@
   become: yes
   name: "Webservers: Apache virtual host for the website"
   tasks:
+    - name: "Enable the Apache module headers (security headers in the virtual host)"
+      community.general.apache2_module:
+        name: headers
+        state: present
+      notify: "Reload Apache"
+
     - name: "Look for the Let's Encrypt certificate"
       ansible.builtin.stat:
         path: "/etc/letsencrypt/live/{{ website_domain }}/fullchain.pem"

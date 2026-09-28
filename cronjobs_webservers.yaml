@@ -4,19 +4,35 @@
   become: yes
   name: "Create cronjobs on webservers"
   tasks:
-    - name: "gato cronjob for backups"
+    - name: "Log folder for gato's cronjobs"
+      ansible.builtin.file:
+        path: /home/gato/logs
+        state: directory
+        owner: gato
+        group: gato
+        mode: "0755"
+
+    # deploy.sh --if-changed does nothing unless GitHub has new commits,
+    # so the log only grows when something was deployed or failed
+    - name: "gato cronjob to deploy the website after a push"
+      ansible.builtin.cron:
+        user: gato
+        name: "website deploy"
+        minute: "*/5"
+        job: test -x {{ website_dir }}/deploy.sh && {{ website_dir }}/deploy.sh --if-changed >> /home/gato/logs/website-deploy.log 2>&1
+
+    # The source is in GitHub now, the daily tarballs are no longer needed
+    - name: "Remove the old gato cronjob for backups"
       ansible.builtin.cron:
         user: gato
         name: "backups"
-        special_time: daily
-        job: tar czf "/home/gato/backups/website-backup-$(date +\%Y-\%m-\%d).tgz" /home/gato/gatogatogato.ch-hugo > /dev/null 2> /dev/null
+        state: absent
 
-    - name: "gato cronjob for cleanup of backups"
+    - name: "Remove the old gato cronjob for cleanup of backups"
       ansible.builtin.cron:
         user: gato
         name: "cleanup of backups"
-        special_time: daily
-        job: find /home/gato/backups/website-backup* -mtime +7 -type f -delete 2> /dev/null
+        state: absent
 
     - name: "root cronjob for certbot renew"
       ansible.builtin.cron:
