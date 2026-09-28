@@ -8,6 +8,9 @@
       ansible.builtin.apt:
         pkg:
         - apache2
+        # keeps vpn.mythenstrasse56.net at Cloudflare up to date (DynDNS for the VPN),
+        # /etc/ddclient.conf holds the API token and is not in this repo
+        - ddclient
         - hugo
         - rsync
         - micro
@@ -16,17 +19,16 @@
         - acl
 
     # The Cloudflare Tunnel does HTTPS and reaches websrv via plain HTTP, so
-    # certbot (snap), snapd and ddclient are no longer needed
+    # certbot (snap) and snapd are no longer needed
     - name: "Remove the certbot symlink"
       ansible.builtin.file:
         path: /usr/bin/certbot
         state: absent
 
-    - name: "Remove certbot, snapd and ddclient"
+    - name: "Remove snapd together with the certbot snap"
       ansible.builtin.apt:
         pkg:
         - snapd
-        - ddclient
         state: absent
         purge: true
         autoremove: true
