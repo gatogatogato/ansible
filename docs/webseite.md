@@ -94,7 +94,7 @@ ssh gato@debian-websrv.lan rm -rf /home/gato/gatogatogato.ch-hugo.alt
 ## Apache
 
 `website-setup` schreibt auch den VirtualHost nach
-`/etc/apache2/sites-available/gatogatogato.ch.conf` (Vorlage
+`/etc/apache2/sites-available/001-gatogatogato.conf` (Vorlage
 `templates/website-vhost.conf.j2`) und aktiviert ihn. Gesteuert über das
 Inventory beim Host `websrv`:
 

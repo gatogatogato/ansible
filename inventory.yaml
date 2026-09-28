@@ -40,7 +40,7 @@ debianservers:
       website_docroot: /var/www/html/gatogatogato.ch
       # Apache virtual host (website_apache.yaml)
       website_domain: gatogatogato.ch
-      website_vhost_file: gatogatogato.ch.conf
+      website_vhost_file: 001-gatogatogato.conf
       # HTTPS on websrv itself (certbot); false when Cloudflare Tunnel does HTTPS
       website_https_wanted: true
     flickr:
