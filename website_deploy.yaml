@@ -12,6 +12,8 @@
         repo: "{{ website_repo }}"
         dest: "{{ website_dir }}"
         key_file: /home/gato/.ssh/website_deploy_key
+        # fail after 15 s instead of hanging when GitHub is unreachable
+        ssh_opts: "-o ConnectTimeout=15"
         version: main
       register: website_pull
 
