@@ -40,5 +40,9 @@ stays out of the repo, in `/home/transport/.config/ansible-updates.env`:
 UPTIME_KUMA_PUSH_URL="https://<kuma>/api/push/<token>"
 ```
 
+On the Alpine servers `run.sh cronjobs` also sets the timezone (Europe/Zurich, Alpine defaults to UTC)
+and runs `/etc/periodic/daily` at 00:30. On vaultwarden that is the backup, which has to be done
+before the Proxmox backup and the Sunday updates.
+
 ## License
 See [LICENSE](LICENSE).

@@ -60,7 +60,8 @@ case "${task}" in
         playbooks=(install_all_packages install_webservers_packages
                    install_flickrservers_packages install_ansibleservers_packages) ;;
     cronjobs)
-        playbooks=(cronjobs_webservers cronjobs_flickrservers cronjobs_ansibleservers) ;;
+        playbooks=(cronjobs_webservers cronjobs_flickrservers cronjobs_ansibleservers
+                   cronjobs_alpineservers) ;;
     shutdown)
         echo "Shutting down non-productive servers!"
         playbooks=(shutdown_unproductive) ;;
