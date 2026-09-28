@@ -44,6 +44,14 @@
         creates: "/etc/apache2/sites-enabled/{{ website_vhost_file }}"
       notify: "Reload Apache"
 
+    # Debian's default site answers first on port 80; certbot once put the
+    # HTTPS redirect there, which loops behind the Cloudflare Tunnel
+    - name: "Disable the default site"
+      ansible.builtin.command: a2dissite 000-default
+      args:
+        removes: /etc/apache2/sites-enabled/000-default.conf
+      notify: "Reload Apache"
+
   handlers:
     - name: "Reload Apache"
       ansible.builtin.shell: apache2ctl configtest && systemctl reload apache2

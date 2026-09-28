@@ -95,7 +95,9 @@ ssh gato@debian-websrv.lan rm -rf /home/gato/gatogatogato.ch-hugo.alt
 
 `website-setup` schreibt auch den VirtualHost nach
 `/etc/apache2/sites-available/001-gatogatogato.conf` (Vorlage
-`templates/website-vhost.conf.j2`) und aktiviert ihn. Gesteuert über das
+`templates/website-vhost.conf.j2`) und aktiviert ihn. Die Debian-Default-Seite
+`000-default` schaltet es ab, dort hatte certbot früher eine HTTPS-Umleitung
+eingetragen. Gesteuert über das
 Inventory beim Host `websrv`:
 
 - `website_https_wanted: true`: Port 80 leitet auf HTTPS um, Port 443 nutzt das
