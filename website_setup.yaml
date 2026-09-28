@@ -67,23 +67,27 @@
         group: gato
         recurse: yes
 
-    - name: "Look for a git checkout in the website folder"
-      ansible.builtin.stat:
-        path: "{{ website_dir }}/.git"
-      register: website_git
-
     - name: "Look for the website folder"
       ansible.builtin.stat:
         path: "{{ website_dir }}"
       register: website_folder
 
-    - name: "Stop if the website folder exists but is not a git checkout"
+    - name: "Read the remote of the website folder"
+      ansible.builtin.command: git -C {{ website_dir }} remote get-url origin
+      become_user: gato
+      register: website_remote
+      changed_when: false
+      failed_when: false
+      when: website_folder.stat.exists
+
+    # Also catches an old copy that is a git repo without the GitHub remote
+    - name: "Stop if the website folder is not a checkout of the website repo"
       ansible.builtin.fail:
         msg: |
-          {{ website_dir }} exists but is no git checkout (the old copy of the site).
-          Move it aside as gato, then run website-setup again:
+          {{ website_dir }} exists but is no checkout of {{ website_repo }}
+          (the old copy of the site). Move it aside as gato, then run website-setup again:
           mv {{ website_dir }} {{ website_dir }}.alt
-      when: website_folder.stat.exists and not website_git.stat.exists
+      when: website_folder.stat.exists and website_remote.stdout != website_repo
 
     - name: "Clone the website repo"
       ansible.builtin.git:
