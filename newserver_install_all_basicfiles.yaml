@@ -71,6 +71,8 @@
         content: |
           #!/bin/sh
           echo "edit glance config with edit.sh"
+          echo "afterwards on the Mac, in the glance repo: ./pull.sh, then commit and push"
+          echo "(https://github.com/gatogatogato/glance, see README)"
 
     - name: "Set permissions for glance"
       file:
