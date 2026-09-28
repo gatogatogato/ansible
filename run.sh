@@ -14,7 +14,7 @@ usage() {
 Usage: $(basename "$0") [-h] [-f] TASK [ansible-playbook options]
 
 Tasks:
-    updates           apt (Debian), apk (Alpine), micro plugins, snap
+    updates           apt (Debian), apk (Alpine), micro plugins
     updates-proxmox   apt on the Proxmox nodes
     install           install packages on the Debian servers
     cronjobs          create cronjobs
@@ -53,7 +53,7 @@ shift
 case "${task}" in
     updates)
         playbooks=(update_debianservers_apt update_alpineservers_apk
-                   update_debianservers_micro update_webservers_snap) ;;
+                   update_debianservers_micro) ;;
     updates-proxmox)
         playbooks=(update_proxmoxservers_apt) ;;
     install)
