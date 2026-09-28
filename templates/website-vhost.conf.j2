@@ -6,6 +6,12 @@
 
     ErrorLog ${APACHE_LOG_DIR}/error.log
     CustomLog ${APACHE_LOG_DIR}/access.log combined
+{% if not website_https %}
+
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+{% endif %}
 {% if website_https %}
 
     # Everything to HTTPS
@@ -27,5 +33,12 @@
     Include /etc/letsencrypt/options-ssl-apache.conf
     SSLCertificateFile /etc/letsencrypt/live/{{ website_domain }}/fullchain.pem
     SSLCertificateKeyFile /etc/letsencrypt/live/{{ website_domain }}/privkey.pem
+
+    # Browsers use only HTTPS for a year; no includeSubDomains, other hosts
+    # under the domain may still be plain HTTP
+    Header always set Strict-Transport-Security "max-age=31536000"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
 </VirtualHost>
 {% endif %}
