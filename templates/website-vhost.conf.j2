@@ -8,6 +8,9 @@
     CustomLog ${APACHE_LOG_DIR}/access.log combined
 {% if not website_https %}
 
+    # Visitors only reach this through the Cloudflare Tunnel, which serves HTTPS,
+    # so browsers accept HSTS here too (same policy as the 443 host below)
+    Header always set Strict-Transport-Security "max-age=31536000"
     Header always set X-Content-Type-Options "nosniff"
     Header always set X-Frame-Options "SAMEORIGIN"
     Header always set Referrer-Policy "strict-origin-when-cross-origin"

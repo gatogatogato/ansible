@@ -41,8 +41,9 @@ debianservers:
       # Apache virtual host (website_apache.yaml)
       website_domain: gatogatogato.ch
       website_vhost_file: 001-gatogatogato.conf
-      # HTTPS on websrv itself (certbot); false when Cloudflare Tunnel does HTTPS
-      website_https_wanted: true
+      # HTTPS on websrv itself (certbot); false when Cloudflare Tunnel does HTTPS.
+      # false since 2026-09: the tunnel serves HTTPS and reaches websrv via http://192.168.1.81
+      website_https_wanted: false
     flickr:
       ansible_host: debian-flickr.lan
     ansible:
