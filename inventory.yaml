@@ -66,6 +66,10 @@ debianservers:
       ansible_host: debian-mbusmaster.lan
 
 alpineservers:
+  vars:
+    timezone: Europe/Zurich
+    # Includes the vaultwarden backup (cronjobs_alpineservers.yaml)
+    periodic_daily_time: "00:30"
   hosts:
     # Runs Alpine Linux, DNS name kept for historical reasons
     vaultwarden:
