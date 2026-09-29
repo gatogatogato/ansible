@@ -32,6 +32,11 @@ See [docs/neue-maschine.md](docs/neue-maschine.md): `run.sh bootstrap` sets up a
 Proxmox node via `pct exec`, `run.sh newserver` does the basic setup.
 To remove a server completely, see [docs/server-abbauen.md](docs/server-abbauen.md).
 
+## Glance config
+The Glance dashboard config lives in the private repo `gatogatogato/glance`. `run.sh glance-setup`
+prepares debian-glance once, afterwards a cronjob deploys every push within 5 minutes,
+`run.sh glance-deploy` does it right away. See [docs/glance.md](docs/glance.md).
+
 ## Weekly updates via cron
 `run.sh cronjobs` installs a cronjob (Sunday 03:30) that runs `cron-updates.sh`.
 It logs to `/home/transport/logs/` and reports to an Uptime Kuma push monitor. The push URL

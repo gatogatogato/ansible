@@ -1,0 +1,93 @@
+---
+# One-time setup so debian-glance can check out the private glance repo and
+# deploy it with glance-deploy. Run twice: the first run creates the deploy key
+# and stops with the public key to add in GitHub, the second run clones.
+# See docs/glance.md.
+- hosts: glance
+  gather_facts: no
+  become: yes
+  name: "Glance: check out the config repo"
+  vars:
+    deploy_key: /home/gato/.ssh/glance_deploy_key
+    # GitHub's published ed25519 host key (docs.github.com, "GitHub's SSH key fingerprints"),
+    # the same for ssh.github.com on port 443
+    github_host_key: "[ssh.github.com]:443 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl"
+    # Fail after 15 s instead of hanging when GitHub is unreachable
+    ssh_command: "ssh -i {{ deploy_key }} -o IdentitiesOnly=yes -o ConnectTimeout=15"
+  tasks:
+    - name: "Install git"
+      ansible.builtin.apt:
+        name: git
+
+    - name: "Create gato's .ssh directory"
+      ansible.builtin.file:
+        path: /home/gato/.ssh
+        state: directory
+        owner: gato
+        group: gato
+        mode: "0700"
+
+    - name: "Create a deploy key for the glance repo"
+      ansible.builtin.command: ssh-keygen -q -t ed25519 -N "" -C "debian-glance deploy key glance" -f {{ deploy_key }}
+      args:
+        creates: "{{ deploy_key }}"
+      become_user: gato
+
+    - name: "Trust GitHub's host key"
+      ansible.builtin.known_hosts:
+        path: /home/gato/.ssh/known_hosts
+        name: "[ssh.github.com]:443"
+        key: "{{ github_host_key }}"
+      become_user: gato
+
+    - name: "Check that the deploy key can read the repo"
+      ansible.builtin.command: git ls-remote {{ glance_repo }} HEAD
+      environment:
+        GIT_SSH_COMMAND: "{{ ssh_command }}"
+      become_user: gato
+      register: ls_remote
+      changed_when: false
+      failed_when: false
+
+    - name: "Read the public deploy key"
+      ansible.builtin.command: cat {{ deploy_key }}.pub
+      register: deploy_pubkey
+      changed_when: false
+      when: ls_remote.rc != 0
+
+    - name: "Stop until the deploy key is added in GitHub"
+      ansible.builtin.fail:
+        msg: |
+          debian-glance cannot read {{ glance_repo }} yet.
+          Add this key in GitHub: repo gatogatogato/glance, Settings > Deploy keys >
+          Add deploy key, title "debian-glance", leave "Allow write access" unchecked:
+
+          {{ deploy_pubkey.stdout }}
+
+          Then run glance-setup again.
+      when: ls_remote.rc != 0
+
+    - name: "Clone the glance repo"
+      ansible.builtin.git:
+        repo: "{{ glance_repo }}"
+        dest: "{{ glance_dir }}"
+        key_file: "{{ deploy_key }}"
+        ssh_opts: "-o ConnectTimeout=15"
+        update: no
+      become_user: gato
+
+    - name: "Use the deploy key for manual git pulls in the checkout"
+      community.general.git_config:
+        scope: local
+        repo: "{{ glance_dir }}"
+        name: core.sshCommand
+        value: "{{ ssh_command }}"
+      become_user: gato
+
+    - name: "Install glance-deploy"
+      ansible.builtin.template:
+        src: templates/glance-deploy.sh.j2
+        dest: /usr/local/sbin/glance-deploy
+        owner: root
+        group: root
+        mode: "0755"

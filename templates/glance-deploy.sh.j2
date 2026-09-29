@@ -1,0 +1,118 @@
+#!/bin/bash
+# Managed by Ansible (templates/glance-deploy.sh.j2), change it there.
+#
+# Deploy glance.yml and assets/ from the glance repo checkout to {{ glance_data }}
+# and restart Glance. Runs as root: from cron (--if-changed), via
+# "run.sh glance-deploy" on debian-ansible, or by hand with sudo glance-deploy.
+# See docs/glance.md in the ansible repo.
+#
+#   --if-changed   do nothing (and print nothing) unless GitHub has commits that
+#                  are not deployed yet; used by the cronjob
+set -euo pipefail
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+readonly REPO="{{ glance_dir }}"
+readonly DATA="{{ glance_data }}"
+readonly STATE="/var/lib/glance-deploy"
+
+if_changed=false
+[[ "${1:-}" == "--if-changed" ]] && if_changed=true
+
+if [[ "$(id -u)" -ne 0 ]]; then
+    echo "Error: run as root (sudo glance-deploy)" >&2
+    exit 1
+fi
+
+# One deploy at a time (cron and a manual run could overlap)
+exec 9> /run/glance-deploy.lock
+if ! flock -n 9; then
+    $if_changed && exit 0
+    echo "Error: another deploy is running" >&2
+    exit 1
+fi
+
+# The checkout belongs to gato, git runs as gato (deploy key, no dubious ownership)
+git_gato() { runuser -u gato -- env HOME=/home/gato git -C "${REPO}" "$@"; }
+
+mkdir -p "${STATE}"
+deployed="$(cat "${STATE}/deployed" 2>/dev/null || true)"
+blocked="$(cat "${STATE}/blocked" 2>/dev/null || true)"
+
+git_gato fetch --quiet
+upstream="$(git_gato rev-parse '@{upstream}')"
+
+if $if_changed; then
+    # Nothing new, or this commit already failed and was reported once
+    [[ "${upstream}" == "${deployed}" || "${upstream}" == "${blocked}" ]] && exit 0
+    echo "==> $(date '+%Y-%m-%d %H:%M:%S') new commits on GitHub"
+fi
+
+block() {
+    echo "${upstream}" > "${STATE}/blocked"
+    echo "Error: $*" >&2
+    echo "Nothing deployed, Glance keeps running with the old config." >&2
+    exit 1
+}
+
+if [[ -n "$(git_gato status --porcelain --untracked-files=no)" ]]; then
+    git_gato status --short --untracked-files=no >&2
+    block "local changes in ${REPO}, changes belong in the repo"
+fi
+
+echo "==> Pull from GitHub"
+before="$(git_gato rev-parse --short HEAD)"
+git_gato merge --ff-only --quiet '@{upstream}'
+echo "    ${before} -> $(git_gato rev-parse --short HEAD) $(git_gato log -1 --format=%s)"
+
+# Never overwrite changes made with ~/edit.sh that are not in the repo yet:
+# the live file has to match a committed version of glance.yml.
+live_blob="$(git_gato hash-object --stdin < "${DATA}/glance.yml")"
+if ! git_gato log --no-abbrev --format= --raw -- glance.yml | awk '{print $4}' | grep -qx "${live_blob}"; then
+    block "${DATA}/glance.yml was changed on the server (edit.sh?) and is not in the repo.
+On the Mac in the glance repo: ./pull.sh, commit, push. The next run deploys then."
+fi
+
+changed=false
+backup=""
+if ! cmp -s "${REPO}/glance.yml" "${DATA}/glance.yml"; then
+    backup="${DATA}/glance.yml.$(date +%Y-%m-%d_%H.%M.%S)"
+    cp -p "${DATA}/glance.yml" "${backup}"
+    echo "==> Backup ${backup}"
+    install -m 644 -o root -g root "${REPO}/glance.yml" "${DATA}/glance.yml"
+    echo "==> glance.yml updated"
+    changed=true
+fi
+
+if [[ -d "${REPO}/assets" ]]; then
+    install -d -m 755 -o root -g root "${DATA}/assets"
+    for f in "${REPO}"/assets/*; do
+        [[ -f "${f}" ]] || continue
+        target="${DATA}/assets/$(basename "${f}")"
+        if ! cmp -s "${f}" "${target}"; then
+            install -m 644 -o root -g root "${f}" "${target}"
+            echo "==> assets/$(basename "${f}") updated"
+            changed=true
+        fi
+    done
+fi
+
+if $changed; then
+    echo "==> Restart Glance"
+    systemctl restart glance
+    sleep 3
+    if ! systemctl is-active --quiet glance; then
+        journalctl -u glance -n 20 --no-pager >&2 || true
+        if [[ -n "${backup}" ]]; then
+            cp -p "${backup}" "${DATA}/glance.yml"
+            systemctl restart glance
+            echo "==> Glance did not start, restored ${backup}" >&2
+        fi
+        block "Glance did not start with the new config. Fix it in the repo or git revert, then push."
+    fi
+else
+    echo "==> Server already up to date"
+fi
+
+echo "${upstream}" > "${STATE}/deployed"
+rm -f "${STATE}/blocked"
+echo "==> Deployment abgeschlossen."

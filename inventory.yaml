@@ -58,6 +58,12 @@ debianservers:
       ansible_host: debian-cloudflared.lan
     glance:
       ansible_host: debian-glance.lan
+      # Glance config (private repo, read via deploy key, see docs/glance.md).
+      # SSH over port 443 like the website repo.
+      glance_repo: ssh://git@ssh.github.com:443/gatogatogato/glance.git
+      glance_dir: /home/gato/glance
+      # Read by the glance service (--config /opt/glance_data/glance.yml), owned by root
+      glance_data: /opt/glance_data
     npm:
       ansible_host: debian-npm.lan
     camsnaps:
