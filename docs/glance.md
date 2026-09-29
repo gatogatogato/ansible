@@ -16,7 +16,7 @@ Repo und Pfade stehen in `inventory.yaml` beim Host `glance`
 /home/transport/ansible/run.sh glance-setup
 ```
 
-Der erste Lauf installiert git, legt auf debian-glance den Deploy-Key
+Der erste Lauf installiert git und acl, legt auf debian-glance den Deploy-Key
 `/home/gato/.ssh/glance_deploy_key` an und bricht dann mit dem öffentlichen
 Schlüssel ab. Diesen in GitHub eintragen: Repo `gatogatogato/glance`,
 **Settings > Deploy keys > Add deploy key**, Titel `debian-glance`,
