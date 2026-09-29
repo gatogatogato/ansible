@@ -99,7 +99,8 @@ Danach auf dem Proxmox-Node ein Passwort für gato setzen
 Das macht der Reihe nach:
 
 1. Pakete und Gems (`install_flickrservers_packages`)
-2. Ordner, Web-Root für gato, lighttpd (`flickr_server_setup`)
+2. Ordner, Web-Root für gato, lighttpd, Login-Meldung zum Befehl `uploader`
+   (`/etc/update-motd.d/30-flickr`) (`flickr_server_setup`)
 3. Secrets aus der Sicherung, nur fehlende Dateien (`flickr_secrets_restore`)
 4. Uploader-Repo, `flickr-uploader-deploy`, `uploader` (`flickr_uploader_setup`)
 5. flickr-scripts-Repo für den Commenter (`flickr_commenter_setup`)
