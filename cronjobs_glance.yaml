@@ -1,0 +1,36 @@
+---
+- hosts: glance
+  gather_facts: no
+  become: yes
+  name: "Create cronjobs on the glance server"
+  tasks:
+    # glance-deploy --if-changed does nothing unless GitHub has new commits,
+    # so the log only grows when something was deployed or failed.
+    # Runs as root, it writes /opt/glance_data and restarts Glance.
+    - name: "root cronjob to deploy the glance config after a push"
+      ansible.builtin.cron:
+        user: root
+        name: "glance deploy"
+        minute: "*/5"
+        job: test -x /usr/local/sbin/glance-deploy && /usr/local/sbin/glance-deploy --if-changed >> /var/log/glance-deploy.log 2>&1
+
+    - name: "logrotate for the deploy log"
+      ansible.builtin.apt:
+        name: logrotate
+
+    # Monthly rotation, 3 old months kept, like gato's logs on websrv
+    - name: "Rotate the deploy log monthly, delete after 3 months"
+      ansible.builtin.copy:
+        dest: /etc/logrotate.d/glance-deploy
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          /var/log/glance-deploy.log {
+              monthly
+              rotate 3
+              compress
+              delaycompress
+              missingok
+              notifempty
+          }

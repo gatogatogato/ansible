@@ -28,6 +28,9 @@ Tasks:
     website-setup     prepare websrv for the website: packages, Apache virtual host,
                       website repo checkout (docs/webseite.md)
     website-deploy    pull the website repo on websrv and run its deploy script
+    glance-setup      prepare debian-glance for the glance config repo: deploy key,
+                      checkout, glance-deploy script (docs/glance.md)
+    glance-deploy     deploy glance.yml and assets from the glance repo, restart Glance
 
 Options:
     -h    Show this help message
@@ -61,7 +64,7 @@ case "${task}" in
                    install_flickrservers_packages install_ansibleservers_packages) ;;
     cronjobs)
         playbooks=(cronjobs_webservers cronjobs_flickrservers cronjobs_ansibleservers
-                   cronjobs_alpineservers) ;;
+                   cronjobs_alpineservers cronjobs_glance) ;;
     shutdown)
         echo "Shutting down non-productive servers!"
         playbooks=(shutdown_unproductive) ;;
@@ -79,6 +82,12 @@ case "${task}" in
         # Show the pulled commit and the output of deploy.sh
         export ANSIBLE_DISPLAY_OK_HOSTS=true
         playbooks=(website_deploy) ;;
+    glance-setup)
+        playbooks=(glance_setup) ;;
+    glance-deploy)
+        # Show the pulled commit and the output of glance-deploy
+        export ANSIBLE_DISPLAY_OK_HOSTS=true
+        playbooks=(glance_deploy) ;;
     newserver)
         playbooks=(install_all_packages newserver_setup_basics newserver_install_all_basicfiles
                    update_debianservers_apt) ;;
