@@ -49,5 +49,17 @@ On the Alpine servers `run.sh cronjobs` also sets the timezone (Europe/Zurich, A
 and runs `/etc/periodic/daily` at 00:30. On vaultwarden that is the backup, which has to be done
 before the Proxmox backup and the Sunday updates.
 
+## Nightly mirror of the GitHub repos
+`run.sh cronjobs` also installs a cronjob (daily 02:00) that runs `git-mirror.sh`. It mirrors
+every repo of gatogatogato, private ones and new ones included, as a bare repo, so the code
+survives a lost GitHub account. Log in `/home/transport/logs/`, result to its own Uptime Kuma
+push monitor. Settings stay out of the repo, in `/home/transport/.config/git-mirror.env` (chmod 600):
+```
+GITHUB_TOKEN="github_pat_..."              # fine-grained, all repos, Contents and Metadata read-only
+MIRROR_DIR="/home/transport/git-mirror"    # optional, e.g. a TrueNAS share later
+UPTIME_KUMA_PUSH_URL="https://<kuma>/api/push/<token>"   # optional
+```
+Restore: `git clone /home/transport/git-mirror/<repo>.git`.
+
 ## License
 See [LICENSE](LICENSE).

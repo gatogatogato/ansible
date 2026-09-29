@@ -12,3 +12,11 @@
         hour: "3"
         minute: "30"
         job: /home/transport/ansible/cron-updates.sh > /dev/null 2>&1
+
+    - name: "transport cronjob for the nightly mirror of all GitHub repos"
+      ansible.builtin.cron:
+        user: transport
+        name: "git mirror"
+        hour: "2"
+        minute: "0"
+        job: /home/transport/ansible/git-mirror.sh > /dev/null 2>&1
