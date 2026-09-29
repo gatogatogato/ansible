@@ -138,8 +138,6 @@ Dateien wie oben beschrieben von Hand anlegen und nochmals laufen lassen.
 - Dropbox ist abgelöst; `cronjobs_flickrservers` entfernt den alten
   Neustart-Cronjob für `dropbox.service`. Der Dienst selbst liegt noch auf dem
   alten Server, auf einem neuen gibt es ihn nicht mehr.
-- `gato-tmux.sh` im shell-Repo startet den Uploader noch aus
-  `~/Dropbox/UPLOADS`; stattdessen einfach `uploader` in tmux starten.
 - Die Setup-Playbooks verschieben alte Kopien mit Keys im Code
   (`uploader-headless.rb`, `uploader-config.yml`, `flickr-commenter.rb`) nach
   `/home/gato/Apps/alt`, statt sie zu löschen. Läuft alles, den Ordner löschen.
