@@ -49,7 +49,11 @@
         mode: "0755"
         content: |
           #!/bin/sh
-          echo "flickr upload: uploader (test: uploader --dry-run)"
+          echo
+          echo "--------------------------------------------------"
+          echo "  flickr upload: uploader (test: uploader --dry-run)"
+          echo "--------------------------------------------------"
+          echo
 
     # Holds the Nextcloud password
     - name: "Check gato's .netrc"
