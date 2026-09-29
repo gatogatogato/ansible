@@ -1,0 +1,80 @@
+#!/bin/bash
+# Managed by Ansible (templates/flickr-uploader-deploy.sh.j2), change it there.
+#
+# Pull the flickr-uploader repo into {{ uploader_dir }}. Runs as gato (or root,
+# git then runs as gato): from cron (--if-changed), via "run.sh uploader-deploy"
+# on debian-ansible, by hand with flickr-uploader-deploy, or from the Mac with
+# ./deploy.sh in the repo. See docs/flickr-uploader.md in the ansible repo.
+#
+#   --if-changed   do nothing (and print nothing) unless GitHub has commits that
+#                  are not deployed yet; used by the cronjob
+set -euo pipefail
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+readonly REPO="{{ uploader_dir }}"
+readonly CREDENTIALS="/home/gato/.config/flickr-uploader/credentials.yml"
+# A commit that failed the checks, reported once and not retried until the next push
+readonly BLOCKED="${REPO}/.git/deploy-blocked"
+
+if_changed=false
+[[ "${1:-}" == "--if-changed" ]] && if_changed=true
+
+if [[ "$(id -un)" == "gato" ]]; then
+    git_gato() { git -C "${REPO}" "$@"; }
+elif [[ "$(id -u)" -eq 0 ]]; then
+    git_gato() { runuser -u gato -- env HOME=/home/gato git -C "${REPO}" "$@"; }
+else
+    echo "Error: run as gato or root" >&2
+    exit 1
+fi
+
+# One deploy at a time (cron and a manual run could overlap)
+exec 9> /tmp/flickr-uploader-deploy.lock
+if ! flock -n 9; then
+    $if_changed && exit 0
+    echo "Error: another deploy is running" >&2
+    exit 1
+fi
+
+git_gato fetch --quiet
+upstream="$(git_gato rev-parse '@{upstream}')"
+current="$(git_gato rev-parse HEAD)"
+blocked="$(cat "${BLOCKED}" 2>/dev/null || true)"
+
+if $if_changed; then
+    [[ "${upstream}" == "${current}" || "${upstream}" == "${blocked}" ]] && exit 0
+    echo "==> $(date '+%Y-%m-%d %H:%M:%S') new commits on GitHub"
+fi
+
+block() {
+    echo "${upstream}" > "${BLOCKED}"
+    echo "Error: $*" >&2
+    echo "Nothing deployed, the uploader stays at $(git_gato rev-parse --short HEAD)." >&2
+    exit 1
+}
+
+if [[ "${upstream}" == "${current}" ]]; then
+    echo "==> Server already up to date ($(git_gato rev-parse --short HEAD) $(git_gato log -1 --format=%s))"
+else
+    if [[ -n "$(git_gato status --porcelain --untracked-files=no)" ]]; then
+        git_gato status --short --untracked-files=no >&2
+        block "local changes in ${REPO}, changes belong in the repo"
+    fi
+
+    # Check the new version before it replaces the running one
+    git_gato show "${upstream}:uploader-headless.rb" | ruby -c > /dev/null \
+        || block "uploader-headless.rb on GitHub has a syntax error"
+    git_gato show "${upstream}:uploader-scale-images.sh" | bash -n \
+        || block "uploader-scale-images.sh on GitHub has a syntax error"
+    git_gato show "${upstream}:uploader-config.yml" | ruby -ryaml -e 'YAML.safe_load($stdin.read)' \
+        || block "uploader-config.yml on GitHub is not valid YAML"
+
+    echo "==> Pull from GitHub"
+    before="$(git_gato rev-parse --short HEAD)"
+    git_gato merge --ff-only --quiet '@{upstream}'
+    echo "    ${before} -> $(git_gato rev-parse --short HEAD) $(git_gato log -1 --format=%s)"
+    rm -f "${BLOCKED}"
+fi
+
+[[ -f "${CREDENTIALS}" ]] || echo "Warning: ${CREDENTIALS} is missing, see credentials.example.yml in the repo" >&2
+echo "==> Deployment abgeschlossen."

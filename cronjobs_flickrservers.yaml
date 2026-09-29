@@ -18,7 +18,16 @@
         minute: "01,10,20,30,40,50"
         hour: "06-22"
         name: "Create new preview pictures"
-        job: /home/gato/UPLOADS/uploader-scale-images.sh
+        job: test -x {{ uploader_dir }}/uploader-scale-images.sh && {{ uploader_dir }}/uploader-scale-images.sh
+
+    # flickr-uploader-deploy --if-changed does nothing unless GitHub has new commits,
+    # so the log only grows when something was deployed (see docs/flickr-uploader.md)
+    - name: "gato cronjob to deploy the flickr uploader after a push"
+      ansible.builtin.cron:
+        user: gato
+        minute: "*/15"
+        name: "flickr uploader deploy"
+        job: test -x /usr/local/bin/flickr-uploader-deploy && /usr/local/bin/flickr-uploader-deploy --if-changed >> /home/gato/Apps/flickr-uploader-deploy.log 2>&1
 
     - name: "gato cronjob for nextcloud sync"
       ansible.builtin.cron:

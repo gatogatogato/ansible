@@ -1,0 +1,132 @@
+---
+# One-time setup so debian-flickr runs the uploader from a checkout of the private
+# flickr-uploader repo instead of ~/UPLOADS. Run twice if the deploy key is new:
+# the first run creates it and stops with the public key to add in GitHub, the
+# second run clones. run.sh uploader-setup also runs cronjobs_flickrservers, so the
+# thumbnail cronjob points to the checkout right away. See docs/flickr-uploader.md.
+- hosts: flickr
+  gather_facts: no
+  become: yes
+  name: "flickr uploader: check out the repo"
+  vars:
+    deploy_key: /home/gato/.ssh/flickr_uploader_deploy_key
+    # GitHub's published ed25519 host key (docs.github.com, "GitHub's SSH key fingerprints"),
+    # the same for ssh.github.com on port 443
+    github_host_key: "[ssh.github.com]:443 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl"
+    # Fail after 15 s instead of hanging when GitHub is unreachable
+    ssh_command: "ssh -i {{ deploy_key }} -o IdentitiesOnly=yes -o ConnectTimeout=15"
+    # The old copies in the Nextcloud folder, moved to uploader_old_dir once
+    old_files: [uploader-headless.rb, uploader-config.yml, uploader-scale-images.sh, .uploader.lock]
+  tasks:
+    # acl: Ansible needs setfacl for the tasks that run as gato (become_user)
+    - name: "Install git and acl"
+      ansible.builtin.apt:
+        name:
+          - git
+          - acl
+
+    - name: "Create gato's .ssh directory"
+      ansible.builtin.file:
+        path: /home/gato/.ssh
+        state: directory
+        owner: gato
+        group: gato
+        mode: "0700"
+
+    - name: "Create a deploy key for the flickr-uploader repo"
+      ansible.builtin.command: ssh-keygen -q -t ed25519 -N "" -C "debian-flickr deploy key flickr-uploader" -f {{ deploy_key }}
+      args:
+        creates: "{{ deploy_key }}"
+      become_user: gato
+
+    - name: "Trust GitHub's host key"
+      ansible.builtin.known_hosts:
+        path: /home/gato/.ssh/known_hosts
+        name: "[ssh.github.com]:443"
+        key: "{{ github_host_key }}"
+      become_user: gato
+
+    - name: "Check that the deploy key can read the repo"
+      ansible.builtin.command: git ls-remote {{ uploader_repo }} HEAD
+      environment:
+        GIT_SSH_COMMAND: "{{ ssh_command }}"
+      become_user: gato
+      register: ls_remote
+      changed_when: false
+      failed_when: false
+
+    - name: "Read the public deploy key"
+      ansible.builtin.command: cat {{ deploy_key }}.pub
+      register: deploy_pubkey
+      changed_when: false
+      when: ls_remote.rc != 0
+
+    - name: "Stop until the deploy key is added in GitHub"
+      ansible.builtin.fail:
+        msg: |
+          debian-flickr cannot read {{ uploader_repo }} yet.
+          Add this key in GitHub: repo gatogatogato/flickr-uploader, Settings > Deploy keys >
+          Add deploy key, title "debian-flickr", leave "Allow write access" unchecked:
+
+          {{ deploy_pubkey.stdout }}
+
+          Then run uploader-setup again.
+      when: ls_remote.rc != 0
+
+    - name: "Clone the flickr-uploader repo"
+      ansible.builtin.git:
+        repo: "{{ uploader_repo }}"
+        dest: "{{ uploader_dir }}"
+        key_file: "{{ deploy_key }}"
+        ssh_opts: "-o ConnectTimeout=15"
+        update: no
+      become_user: gato
+
+    - name: "Use the deploy key for manual git pulls in the checkout"
+      community.general.git_config:
+        scope: local
+        repo: "{{ uploader_dir }}"
+        name: core.sshCommand
+        value: "{{ ssh_command }}"
+      become_user: gato
+
+    - name: "Install flickr-uploader-deploy"
+      ansible.builtin.template:
+        src: templates/flickr-uploader-deploy.sh.j2
+        dest: /usr/local/bin/flickr-uploader-deploy
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: "Start the uploader with 'uploader'"
+      ansible.builtin.file:
+        src: "{{ uploader_dir }}/uploader-headless.rb"
+        dest: /usr/local/bin/uploader
+        state: link
+
+    - name: "Check the credentials file"
+      ansible.builtin.stat:
+        path: /home/gato/.config/flickr-uploader/credentials.yml
+      register: credentials
+
+    - name: "Warn when the credentials file is missing"
+      ansible.builtin.debug:
+        msg: >-
+          /home/gato/.config/flickr-uploader/credentials.yml is missing. Create it from
+          credentials.example.yml in the repo (chmod 600), see docs/flickr-uploader.md.
+      when: not credentials.stat.exists
+
+    # The credentials used to sit in these files and Nextcloud synced them. Moved,
+    # not deleted, so nothing is lost; remove {{ uploader_old_dir }} once all is fine.
+    - name: "Move the old uploader out of the Nextcloud folder"
+      ansible.builtin.shell: |
+        set -e
+        mkdir -p {{ uploader_old_dir }}
+        for f in {{ old_files | join(' ') }}; do
+            if [ -e "/home/gato/UPLOADS/$f" ]; then mv "/home/gato/UPLOADS/$f" {{ uploader_old_dir }}/; echo "moved $f"; fi
+        done
+      args:
+        executable: /bin/bash
+      become_user: gato
+      register: moved
+      changed_when: moved.stdout != ""

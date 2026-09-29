@@ -46,6 +46,12 @@ debianservers:
       website_https_wanted: false
     flickr:
       ansible_host: debian-flickr.lan
+      # flickr uploader (private repo, read via deploy key, see docs/flickr-uploader.md).
+      # SSH over port 443 like the website repo.
+      uploader_repo: ssh://git@ssh.github.com:443/gatogatogato/flickr-uploader.git
+      uploader_dir: /home/gato/Apps/flickr-uploader
+      # Where uploader-setup moves the old copies from ~/UPLOADS
+      uploader_old_dir: /home/gato/Apps/flickr-uploader-alt
     ansible:
       ansible_host: debian-ansible.lan
     changedetection:
