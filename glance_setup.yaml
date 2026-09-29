@@ -15,9 +15,12 @@
     # Fail after 15 s instead of hanging when GitHub is unreachable
     ssh_command: "ssh -i {{ deploy_key }} -o IdentitiesOnly=yes -o ConnectTimeout=15"
   tasks:
-    - name: "Install git"
+    # acl: Ansible needs setfacl for the tasks that run as gato (become_user)
+    - name: "Install git and acl"
       ansible.builtin.apt:
-        name: git
+        name:
+          - git
+          - acl
 
     - name: "Create gato's .ssh directory"
       ansible.builtin.file:
