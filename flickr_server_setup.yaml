@@ -49,9 +49,7 @@
         mode: "0755"
         content: |
           #!/bin/sh
-          echo "start the flickr upload with: uploader   (test without uploading: uploader --dry-run)"
-          echo "code changes on the Mac in the flickr-uploader repo, then push; the server pulls them"
-          echo "(https://github.com/gatogatogato/flickr-uploader, see README)"
+          echo "flickr upload: uploader (test: uploader --dry-run)"
 
     # Holds the Nextcloud password
     - name: "Check gato's .netrc"
