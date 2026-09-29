@@ -37,6 +37,14 @@ The Glance dashboard config lives in the private repo `gatogatogato/glance`. `ru
 prepares debian-glance once, afterwards a cronjob deploys every push within 5 minutes,
 `run.sh glance-deploy` does it right away. See [docs/glance.md](docs/glance.md).
 
+## flickr uploader
+The flickr uploader on debian-flickr lives in the private repo `gatogatogato/flickr-uploader`.
+`run.sh uploader-setup` prepares debian-flickr once, afterwards a cronjob pulls every push within
+15 minutes (when the server is on), `run.sh uploader-deploy` does it right away.
+See [docs/flickr-uploader.md](docs/flickr-uploader.md).
+To rebuild debian-flickr from scratch (`run.sh flickr-server`, secrets backup with
+`run.sh flickr-secrets-backup`), see [docs/flickr-server.md](docs/flickr-server.md).
+
 ## Weekly updates via cron
 `run.sh cronjobs` installs a cronjob (Sunday 03:30) that runs `cron-updates.sh`.
 It logs to `/home/transport/logs/` and reports to an Uptime Kuma push monitor. The push URL

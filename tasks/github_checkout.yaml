@@ -1,0 +1,77 @@
+---
+# Check out a private GitHub repo as gato with its own read-only deploy key.
+# Stops with the public key when GitHub does not know the key yet; add it under
+# the repo's Settings > Deploy keys and run again. Used by the flickr playbooks.
+#
+#   checkout_repo    ssh://git@ssh.github.com:443/gatogatogato/<name>.git
+#   checkout_name    gatogatogato/<name>, for the message
+#   checkout_dir     where the checkout goes
+#   checkout_key     deploy key, e.g. /home/gato/.ssh/<name>_deploy_key
+#   checkout_update  true: pull on every run (fast-forward only), false: clone once
+- name: "Create gato's .ssh directory"
+  ansible.builtin.file:
+    path: /home/gato/.ssh
+    state: directory
+    owner: gato
+    group: gato
+    mode: "0700"
+
+- name: "Create a deploy key for {{ checkout_name }}"
+  ansible.builtin.command: ssh-keygen -q -t ed25519 -N "" -C "{{ inventory_hostname }} deploy key {{ checkout_name }}" -f {{ checkout_key }}
+  args:
+    creates: "{{ checkout_key }}"
+  become_user: gato
+
+# GitHub's published ed25519 host key (docs.github.com, "GitHub's SSH key fingerprints"),
+# the same for ssh.github.com on port 443
+- name: "Trust GitHub's host key"
+  ansible.builtin.known_hosts:
+    path: /home/gato/.ssh/known_hosts
+    name: "[ssh.github.com]:443"
+    key: "[ssh.github.com]:443 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl"
+  become_user: gato
+
+- name: "Check that the deploy key can read {{ checkout_name }}"
+  ansible.builtin.command: git ls-remote {{ checkout_repo }} HEAD
+  environment:
+    # Fail after 15 s instead of hanging when GitHub is unreachable
+    GIT_SSH_COMMAND: "ssh -i {{ checkout_key }} -o IdentitiesOnly=yes -o ConnectTimeout=15"
+  become_user: gato
+  register: ls_remote
+  changed_when: false
+  failed_when: false
+
+- name: "Read the public deploy key"
+  ansible.builtin.command: cat {{ checkout_key }}.pub
+  register: deploy_pubkey
+  changed_when: false
+  when: ls_remote.rc != 0
+
+- name: "Stop until the deploy key is added in GitHub"
+  ansible.builtin.fail:
+    msg: |
+      {{ inventory_hostname }} cannot read {{ checkout_repo }} yet.
+      Add this key in GitHub: repo {{ checkout_name }}, Settings > Deploy keys >
+      Add deploy key, title "{{ ansible_host }}", leave "Allow write access" unchecked:
+
+      {{ deploy_pubkey.stdout }}
+
+      Then run the same run.sh task again.
+  when: ls_remote.rc != 0
+
+- name: "Check out {{ checkout_name }}"
+  ansible.builtin.git:
+    repo: "{{ checkout_repo }}"
+    dest: "{{ checkout_dir }}"
+    key_file: "{{ checkout_key }}"
+    ssh_opts: "-o ConnectTimeout=15"
+    update: "{{ checkout_update }}"
+  become_user: gato
+
+- name: "Use the deploy key for manual git pulls in the checkout"
+  community.general.git_config:
+    scope: local
+    repo: "{{ checkout_dir }}"
+    name: core.sshCommand
+    value: "ssh -i {{ checkout_key }} -o IdentitiesOnly=yes -o ConnectTimeout=15"
+  become_user: gato

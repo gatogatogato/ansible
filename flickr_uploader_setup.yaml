@@ -1,0 +1,73 @@
+---
+# Set up debian-flickr to run the uploader from a checkout of the private
+# flickr-uploader repo (the first time also moves the old copies out of ~/UPLOADS).
+# run.sh uploader-setup also runs cronjobs_flickrservers, so the thumbnail cronjob
+# points to the checkout right away. See docs/flickr-uploader.md.
+- hosts: flickr
+  gather_facts: no
+  become: yes
+  name: "flickr uploader: check out the repo"
+  vars:
+    # The old copies in the Nextcloud folder, moved to flickr_old_dir once
+    old_files: [uploader-headless.rb, uploader-config.yml, uploader-scale-images.sh, .uploader.lock]
+  tasks:
+    # acl: Ansible needs setfacl for the tasks that run as gato (become_user)
+    - name: "Install git and acl"
+      ansible.builtin.apt:
+        name:
+          - git
+          - acl
+
+    - name: "Check out the flickr-uploader repo"
+      ansible.builtin.include_tasks: tasks/github_checkout.yaml
+      vars:
+        checkout_repo: "{{ uploader_repo }}"
+        checkout_name: gatogatogato/flickr-uploader
+        checkout_dir: "{{ uploader_dir }}"
+        checkout_key: /home/gato/.ssh/flickr_uploader_deploy_key
+        # flickr-uploader-deploy pulls, with checks first
+        checkout_update: false
+
+    - name: "Install flickr-uploader-deploy"
+      ansible.builtin.template:
+        src: templates/flickr-uploader-deploy.sh.j2
+        dest: /usr/local/bin/flickr-uploader-deploy
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: "Start the uploader with 'uploader'"
+      ansible.builtin.file:
+        src: "{{ uploader_dir }}/uploader-headless.rb"
+        dest: /usr/local/bin/uploader
+        state: link
+
+    - name: "Check the credentials file"
+      ansible.builtin.stat:
+        path: /home/gato/.config/flickr-uploader/credentials.yml
+      register: credentials
+
+    - name: "Warn when the credentials file is missing"
+      ansible.builtin.debug:
+        msg: >-
+          /home/gato/.config/flickr-uploader/credentials.yml is missing, see "Keys und Tokens"
+          in docs/flickr-server.md.
+      when: not credentials.stat.exists
+
+    # The credentials used to sit in these files and Nextcloud synced them. Moved,
+    # not deleted, so nothing is lost; remove {{ flickr_old_dir }} once all is fine.
+    - name: "Move the old uploader out of the Nextcloud folder"
+      ansible.builtin.shell: |
+        set -e
+        for f in {{ old_files | join(' ') }}; do
+            if [ -e "/home/gato/UPLOADS/$f" ]; then
+                mkdir -p {{ flickr_old_dir }}
+                mv "/home/gato/UPLOADS/$f" {{ flickr_old_dir }}/
+                echo "moved $f"
+            fi
+        done
+      args:
+        executable: /bin/bash
+      become_user: gato
+      register: moved
+      changed_when: moved.stdout != ""

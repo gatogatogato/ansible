@@ -10,7 +10,7 @@
         minute: "00"
         hour: "08,12,13,15,17,19,20"
         name: "Start commenter every X hours"
-        job: /home/gato/Apps/flickr-commenter/flickr-commenter.rb
+        job: test -x {{ commenter_dir }}/{{ commenter_script }} && {{ commenter_dir }}/{{ commenter_script }}
 
     - name: "gato cronjob for preview pictures "
       ansible.builtin.cron:
@@ -18,7 +18,16 @@
         minute: "01,10,20,30,40,50"
         hour: "06-22"
         name: "Create new preview pictures"
-        job: /home/gato/UPLOADS/uploader-scale-images.sh
+        job: test -x {{ uploader_dir }}/uploader-scale-images.sh && {{ uploader_dir }}/uploader-scale-images.sh
+
+    # flickr-uploader-deploy --if-changed does nothing unless GitHub has new commits,
+    # so the log only grows when something was deployed (see docs/flickr-uploader.md)
+    - name: "gato cronjob to deploy the flickr uploader after a push"
+      ansible.builtin.cron:
+        user: gato
+        minute: "*/15"
+        name: "flickr uploader deploy"
+        job: test -x /usr/local/bin/flickr-uploader-deploy && /usr/local/bin/flickr-uploader-deploy --if-changed >> /home/gato/Apps/flickr-uploader-deploy.log 2>&1
 
     - name: "gato cronjob for nextcloud sync"
       ansible.builtin.cron:
@@ -39,18 +48,18 @@
         user: gato
         name: "cleanup of old lock files 1"
         special_time: daily
-        job: rm -f /home/gato/Apps/flickr-commenter/indexer.lock
+        job: rm -f {{ commenter_dir }}/indexer.lock
 
     - name: "gato cronjob for cleanup of old lock files 2"
       ansible.builtin.cron:
         user: gato
         name: "cleanup of old lock files 2"
         special_time: reboot
-        job: rm -f /home/gato/Apps/flickr-commenter/indexer.lock
+        job: rm -f {{ commenter_dir }}/indexer.lock
 
-    - name: "root cronjob for restart of dropbox service"
+    # Dropbox was replaced by Nextcloud, the service no longer runs
+    - name: "remove the root cronjob for the dropbox restart"
       ansible.builtin.cron:
         user: root
         name: "restart of dropbox service"
-        special_time: daily
-        job: systemctl restart dropbox.service
+        state: absent

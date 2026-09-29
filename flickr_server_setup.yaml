@@ -1,0 +1,51 @@
+---
+# Everything debian-flickr needs besides packages, repos and cronjobs: folders,
+# the web root for the picker page, lighttpd. Safe to run again at any time.
+# See docs/flickr-server.md.
+- hosts: flickr
+  gather_facts: no
+  become: yes
+  name: "flickr server: folders and web server"
+  tasks:
+    - name: "Create gato's folders"
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: directory
+        owner: gato
+        group: gato
+        mode: "{{ item.mode }}"
+      loop:
+        # Synced with Nextcloud (cronjob), the photos to upload
+        - { path: /home/gato/UPLOADS, mode: "0755" }
+        - { path: /home/gato/Apps, mode: "0755" }
+        - { path: /home/gato/.config, mode: "0755" }
+        # Secrets, see "Keys und Tokens" in docs/flickr-server.md
+        - { path: /home/gato/.config/flickr-uploader, mode: "0700" }
+        - { path: /home/gato/.config/flickr-scripts, mode: "0700" }
+
+    # uploader-scale-images.sh writes the thumbnails and the uploader picker.html here
+    - name: "Let gato write the web root"
+      ansible.builtin.file:
+        path: /var/www/html
+        state: directory
+        owner: gato
+        group: gato
+        mode: "0775"
+
+    - name: "Start lighttpd now and at boot"
+      ansible.builtin.systemd_service:
+        name: lighttpd
+        state: started
+        enabled: yes
+
+    # Holds the Nextcloud password
+    - name: "Check gato's .netrc"
+      ansible.builtin.stat:
+        path: /home/gato/.netrc
+      register: netrc
+
+    - name: "Make .netrc readable only by gato"
+      ansible.builtin.file:
+        path: /home/gato/.netrc
+        mode: "0600"
+      when: netrc.stat.exists

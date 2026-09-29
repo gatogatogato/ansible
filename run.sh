@@ -31,6 +31,14 @@ Tasks:
     glance-setup      prepare debian-glance for the glance config repo: deploy key,
                       checkout, glance-deploy script (docs/glance.md)
     glance-deploy     deploy glance.yml and assets from the glance repo, restart Glance
+    flickr-server     set up a (new) debian-flickr completely: packages, folders, web server,
+                      secrets, uploader, commenter, cronjobs (docs/flickr-server.md)
+    flickr-secrets-backup
+                      copy debian-flickr's keys and tokens to debian-ansible
+    uploader-setup    prepare debian-flickr for the flickr-uploader repo: deploy key,
+                      checkout, flickr-uploader-deploy, cronjobs (docs/flickr-uploader.md)
+    uploader-deploy   pull the flickr-uploader repo on debian-flickr
+    commenter-setup   check out / update flickr-scripts on debian-flickr for the commenter
 
 Options:
     -h    Show this help message
@@ -88,6 +96,19 @@ case "${task}" in
         # Show the pulled commit and the output of glance-deploy
         export ANSIBLE_DISPLAY_OK_HOSTS=true
         playbooks=(glance_deploy) ;;
+    flickr-server)
+        playbooks=(install_flickrservers_packages flickr_server_setup flickr_secrets_restore
+                   flickr_uploader_setup flickr_commenter_setup cronjobs_flickrservers) ;;
+    flickr-secrets-backup)
+        playbooks=(flickr_secrets_backup) ;;
+    commenter-setup)
+        playbooks=(flickr_commenter_setup cronjobs_flickrservers) ;;
+    uploader-setup)
+        playbooks=(flickr_uploader_setup cronjobs_flickrservers) ;;
+    uploader-deploy)
+        # Show the pulled commit
+        export ANSIBLE_DISPLAY_OK_HOSTS=true
+        playbooks=(flickr_uploader_deploy) ;;
     newserver)
         playbooks=(install_all_packages newserver_setup_basics newserver_install_all_basicfiles
                    update_debianservers_apt) ;;
