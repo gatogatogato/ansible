@@ -1,0 +1,59 @@
+---
+# Set up debian-flickr to run the commenter from a checkout of the private
+# flickr-scripts repo. Running it again pulls the latest state (fast-forward
+# only), so this is also how commenter changes reach the server. run.sh
+# commenter-setup also runs cronjobs_flickrservers. See docs/flickr-server.md.
+- hosts: flickr
+  gather_facts: no
+  become: yes
+  name: "flickr commenter: check out flickr-scripts"
+  tasks:
+    # acl: Ansible needs setfacl for the tasks that run as gato (become_user)
+    - name: "Install git and acl"
+      ansible.builtin.apt:
+        name:
+          - git
+          - acl
+
+    - name: "Check out the flickr-scripts repo"
+      ansible.builtin.include_tasks: tasks/github_checkout.yaml
+      vars:
+        checkout_repo: "{{ commenter_repo }}"
+        checkout_name: gatogatogato/flickr-scripts
+        checkout_dir: "{{ commenter_dir }}"
+        checkout_key: /home/gato/.ssh/flickr_scripts_deploy_key
+        checkout_update: true
+
+    # The scripts read flickr-credentials.yml next to themselves (gitignored);
+    # the real file lives with the other secrets in ~/.config
+    - name: "Link the credentials into the checkout"
+      ansible.builtin.file:
+        src: /home/gato/.config/flickr-scripts/flickr-credentials.yml
+        dest: "{{ commenter_dir }}/flickr-credentials.yml"
+        state: link
+        force: yes
+      become_user: gato
+
+    - name: "Create the commenter's log directory"
+      ansible.builtin.file:
+        path: /home/gato/Apps/flickr-commenter/logs
+        state: directory
+        owner: gato
+        group: gato
+        mode: "0700"
+
+    # The hand-edited copy had the keys in the code. Moved, not deleted.
+    - name: "Move the old commenter out of the way"
+      ansible.builtin.shell: |
+        set -e
+        if [ -e /home/gato/Apps/flickr-commenter/flickr-commenter.rb ]; then
+            mkdir -p {{ flickr_old_dir }}
+            mv /home/gato/Apps/flickr-commenter/flickr-commenter.rb {{ flickr_old_dir }}/
+            rm -f /home/gato/Apps/flickr-commenter/indexer.lock
+            echo "moved flickr-commenter.rb"
+        fi
+      args:
+        executable: /bin/bash
+      become_user: gato
+      register: moved
+      changed_when: moved.stdout != ""

@@ -8,8 +8,9 @@ GitHub nach `/home/gato/Apps/flickr-uploader`, mit
 auf Knopfdruck. Aufgebaut wie Glance (`docs/glance.md`).
 
 Repo und Pfade stehen in `inventory.yaml` beim Host `flickr`
-(`uploader_repo`, `uploader_dir`, `uploader_old_dir`). Wie man den Uploader
-benutzt, steht im README des Repos.
+(`uploader_repo`, `uploader_dir`, `flickr_old_dir`). Wie man den Uploader
+benutzt, steht im README des Repos. Den ganzen Server neu aufbauen:
+`docs/flickr-server.md`.
 
 debian-flickr ist oft ausgeschaltet (`run.sh shutdown`). Alles hier braucht den
 Server eingeschaltet; was während er aus war gepusht wurde, holt der Cronjob
@@ -23,6 +24,8 @@ flickr API-Key und Secret, flickr Access-Token und -Secret, Mastodon-Token,
 Pushover-Token und -User. Vorlage: `credentials.example.yml` im Repo. Sind die
 flickr Access-Tokens leer oder ungültig, zeigt der Uploader beim Start die
 Autorisierungs-URL und schreibt die neuen Tokens selbst in die Datei.
+Sicherung auf debian-ansible mit `run.sh flickr-secrets-backup`, siehe
+`docs/flickr-server.md`.
 
 ## Einmalige Einrichtung (auf debian-ansible, als transport)
 
@@ -44,7 +47,7 @@ Danach:
 - `flickr-uploader-deploy` in `/usr/local/bin`
 - `uploader` in `/usr/local/bin` startet den Uploader
 - die alten Dateien aus `/home/gato/UPLOADS` (Skripte, `uploader-config.yml`
-  mit den Tokens) sind nach `/home/gato/Apps/flickr-uploader-alt` verschoben,
+  mit den Tokens) sind nach `/home/gato/Apps/alt` verschoben,
   damit Nextcloud sie nicht mehr synchronisiert. Läuft alles, den Ordner
   löschen. Alte Versionen in Nextcloud (Papierkorb, Versionen) von Hand leeren.
 - die Cronjobs sind neu gesetzt (`uploader-setup` führt
