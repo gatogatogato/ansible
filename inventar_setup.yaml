@@ -119,6 +119,7 @@
       loop:
         - inventar-collect.service
         - inventar-collect.timer
+        - inventar-collect-refresh.path
         - inventar-web.service
       notify:
         - "Reload systemd"
@@ -131,6 +132,12 @@
     - name: "Start the collector timer now and at boot"
       ansible.builtin.systemd_service:
         name: inventar-collect.timer
+        state: started
+        enabled: yes
+
+    - name: "Watch for refresh requests from the web page, now and at boot"
+      ansible.builtin.systemd_service:
+        name: inventar-collect-refresh.path
         state: started
         enabled: yes
 
