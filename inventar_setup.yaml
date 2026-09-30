@@ -120,6 +120,8 @@
         - inventar-collect.service
         - inventar-collect.timer
         - inventar-collect-refresh.path
+        - inventar-dns.path
+        - inventar-dns.service
         - inventar-web.service
       notify:
         - "Reload systemd"
@@ -135,11 +137,14 @@
         state: started
         enabled: yes
 
-    - name: "Watch for refresh requests from the web page, now and at boot"
+    - name: "Watch for refresh and DNS requests from the web page, now and at boot"
       ansible.builtin.systemd_service:
-        name: inventar-collect-refresh.path
+        name: "{{ item }}"
         state: started
         enabled: yes
+      loop:
+        - inventar-collect-refresh.path
+        - inventar-dns.path
 
     # restarted, not started: the checkout above may have brought new code
     - name: "(Re)start the web page now and at boot"

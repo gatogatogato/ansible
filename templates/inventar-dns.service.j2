@@ -1,0 +1,23 @@
+# Managed by Ansible (templates/inventar-dns.service.j2), change it there.
+# Adds the one local DNS record asked for on the web page in Pi-hole (add only),
+# started by inventar-dns.path. Reads the Pi-hole password from {{ inventar_secrets }}.
+[Unit]
+Description=inventar: add a DNS record in Pi-hole
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=gato
+Group=gato
+Environment=INVENTAR_SECRETS={{ inventar_secrets }}
+Environment=INVENTAR_DB={{ inventar_data }}/inventar.db
+ExecStart=/usr/local/bin/inventar dns-apply
+TimeoutStartSec=2min
+
+CapabilityBoundingSet=
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths={{ inventar_data }}
+ProtectHome=read-only
+PrivateTmp=yes

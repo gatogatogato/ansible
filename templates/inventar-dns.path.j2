@@ -1,0 +1,13 @@
+# Managed by Ansible (templates/inventar-dns.path.j2), change it there.
+# "DNS anlegen" on the web page only writes this file; systemd then starts
+# inventar-dns.service, which adds the record in Pi-hole and deletes the file first.
+# The web service never sees the Pi-hole password. See docs/inventar.md.
+[Unit]
+Description=inventar: DNS record requested from the web page
+
+[Path]
+PathExists={{ inventar_data }}/dns.request
+Unit=inventar-dns.service
+
+[Install]
+WantedBy=multi-user.target
