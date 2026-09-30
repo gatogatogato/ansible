@@ -37,8 +37,8 @@
         checkout_name: gatogatogato/inventar
         checkout_dir: "{{ inventar_dir }}"
         checkout_key: /home/gato/.ssh/inventar_deploy_key
-        # run.sh inventar-deploy pulls
-        checkout_update: false
+        # pull on every setup run too, so the installed code matches the units below
+        checkout_update: true
 
     - name: "Install the collector into its venv"
       ansible.builtin.pip:
@@ -128,14 +128,25 @@
     - name: "Reload systemd now if the units changed"
       ansible.builtin.meta: flush_handlers
 
-    - name: "Start the collector timer and the web page now and at boot"
+    - name: "Start the collector timer now and at boot"
       ansible.builtin.systemd_service:
-        name: "{{ item }}"
+        name: inventar-collect.timer
         state: started
         enabled: yes
-      loop:
-        - inventar-collect.timer
-        - inventar-web.service
+
+    # restarted, not started: the checkout above may have brought new code
+    - name: "(Re)start the web page now and at boot"
+      ansible.builtin.systemd_service:
+        name: inventar-web.service
+        state: restarted
+        enabled: yes
+
+    # the timer waits 15 minutes after setup, so fill the database right away
+    - name: "Start a first collector run in the background"
+      ansible.builtin.systemd_service:
+        name: inventar-collect.service
+        state: started
+        no_block: yes
 
   handlers:
     - name: "Reload systemd"

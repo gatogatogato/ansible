@@ -151,7 +151,10 @@ debian-ansible:
 
 Das holt den neuesten Stand (nur Fast-Forward), installiert ihn neu in die
 venv und startet die Webseite neu. Der Timer nimmt beim nächsten Lauf den
-neuen Code. Geänderte systemd-Units kommen mit `run.sh inventar-setup`.
+neuen Code. Geänderte systemd-Units kommen mit `run.sh inventar-setup`; das holt
+ebenfalls den neuesten Code, startet die Webseite neu und stößt gleich einen ersten Sammel-Lauf an.
+
+Vorher auf debian-ansible immer `/home/transport/clone.sh`, damit das Ansible-Repo selbst aktuell ist.
 
 ## Noch nicht eingerichtet
 
