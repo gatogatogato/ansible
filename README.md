@@ -45,6 +45,12 @@ See [docs/flickr-uploader.md](docs/flickr-uploader.md).
 To rebuild debian-flickr from scratch (`run.sh flickr-server`, secrets backup with
 `run.sh flickr-secrets-backup`), see [docs/flickr-server.md](docs/flickr-server.md).
 
+## Inventar
+debian-inventar collects a list of all devices on the network (UniFi, Pi-hole, NPM, Proxmox,
+ping scan), code in the private repo `gatogatogato/inventar`. `run.sh inventar-setup` sets it up
+(also from scratch), `run.sh inventar-deploy` pulls a new version, `run.sh inventar-secrets-backup`
+copies the credentials to debian-ansible. See [docs/inventar.md](docs/inventar.md).
+
 ## Weekly updates via cron
 `run.sh cronjobs` installs a cronjob (Sunday 03:30) that runs `cron-updates.sh`.
 It logs to `/home/transport/logs/` and reports to an Uptime Kuma push monitor. The push URL

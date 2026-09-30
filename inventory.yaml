@@ -86,7 +86,16 @@ debianservers:
     mbusmaster:
       ansible_host: debian-mbusmaster.lan
     inventar:
+      # static IP 192.168.1.66 on proxmox-n01 (CT 107), see docs/inventar.md
       ansible_host: debian-inventar.lan
+      # Collector for the homelab inventory (private repo, read via deploy key).
+      # SSH over port 443 like the website repo.
+      inventar_repo: ssh://git@ssh.github.com:443/gatogatogato/inventar.git
+      inventar_dir: /home/gato/Apps/inventar
+      # Read-only credentials for UniFi, Pi-hole, NPM, Proxmox; only here, never in git
+      inventar_secrets: /etc/inventar/secrets.env
+      # Copy on debian-ansible (run.sh inventar-secrets-backup), only transport can read it
+      inventar_secrets_backup: /home/transport/.config/inventar-secrets/secrets.env
 
 alpineservers:
   vars:
