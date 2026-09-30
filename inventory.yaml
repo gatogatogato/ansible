@@ -96,6 +96,10 @@ debianservers:
       inventar_secrets: /etc/inventar/secrets.env
       # Copy on debian-ansible (run.sh inventar-secrets-backup), only transport can read it
       inventar_secrets_backup: /home/transport/.config/inventar-secrets/secrets.env
+      # Database and notes.yaml export, written by the collector and the web page (gato only)
+      inventar_data: /var/lib/inventar
+      # Web page, later behind NPM as https://inventar.mythenstrasse56.net
+      inventar_web_port: 8080
 
 alpineservers:
   vars:

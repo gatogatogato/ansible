@@ -1,0 +1,28 @@
+# Managed by Ansible (templates/inventar-collect.service.j2), change it there.
+# One collector run: all sources into the database; started by inventar-collect.timer.
+# The app reads its credentials from {{ inventar_secrets }} itself. See docs/inventar.md.
+[Unit]
+Description=inventar: collect the homelab inventory
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=gato
+Group=gato
+Environment=INVENTAR_SECRETS={{ inventar_secrets }}
+Environment=INVENTAR_DB={{ inventar_data }}/inventar.db
+ExecStart=/usr/local/bin/inventar collect
+TimeoutStartSec=10min
+
+# The ping scan needs raw sockets. fping has the file capability cap_net_raw, which
+# NoNewPrivileges alone would ignore. The service therefore holds CAP_NET_RAW itself
+# (ambient): under NoNewPrivileges a program keeps the capabilities it already has,
+# so fping (and the ping fallback) still get CAP_NET_RAW, and nothing can gain more.
+AmbientCapabilities=CAP_NET_RAW
+CapabilityBoundingSet=CAP_NET_RAW
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths={{ inventar_data }}
+ProtectHome=read-only
+PrivateTmp=yes
