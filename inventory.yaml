@@ -69,6 +69,8 @@ debianservers:
       ansible_host: debian-hercules.lan
     pihole:
       ansible_host: debian-pihole.lan
+    pihole-backup:
+      ansible_host: debian-pihole-backup.lan
     cloudflared:
       ansible_host: debian-cloudflared.lan
     glance:
