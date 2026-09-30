@@ -14,7 +14,7 @@ liest nur, er ändert in keiner Quelle etwas.
 | Zugangsdaten | `/etc/inventar/secrets.env`, nur gato darf lesen |
 | Daten | `/var/lib/inventar/inventar.db` und `notes.yaml`, gehören gato |
 | Webseite | http://debian-inventar.lan:8080 (Dienst `inventar-web`) |
-| Sammler | alle 15 Minuten (Timer `inventar-collect.timer`) |
+| Sammler | alle 15 Minuten (Timer `inventar-collect.timer`) und auf Knopfdruck „Jetzt aktualisieren“ (`inventar-collect-refresh.path`) |
 | Kopie der Zugangsdaten | `/home/transport/.config/inventar-secrets/` auf debian-ansible |
 
 Repo und Pfade stehen in `inventory.yaml` beim Host `inventar`.
@@ -95,6 +95,12 @@ systemctl list-timers 'inventar*'             # wann lief er, wann läuft er wie
 journalctl -u inventar-collect -n 50          # Ausgabe der letzten Läufe mit Warnungen
 sudo systemctl start inventar-collect         # sofort einen Lauf starten
 ```
+
+„Jetzt aktualisieren“ auf der Webseite macht dasselbe ohne Anmeldung: Die Seite legt
+`/var/lib/inventar/refresh.request` an, `inventar-collect-refresh.path` sieht die Datei und
+startet `inventar-collect.service`, der Lauf löscht sie als Erstes. Der Webdienst braucht
+dafür keine Rechte an systemd. Hängt ein Knopfdruck, zeigt
+`systemctl status inventar-collect-refresh.path` den Zustand.
 
 Der Dienst läuft als gato mit den Zugangsdaten aus `/etc/inventar/secrets.env`
 und darf nur nach `/var/lib/inventar` schreiben. Für den Ping-Scan bekommt er
