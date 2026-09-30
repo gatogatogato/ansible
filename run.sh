@@ -69,7 +69,7 @@ shift
 case "${task}" in
     updates)
         playbooks=(update_debianservers_apt update_alpineservers_apk
-                   update_debianservers_micro) ;;
+                   update_debianservers_micro inventar_ansible_hosts) ;;
     updates-proxmox)
         playbooks=(update_proxmoxservers_apt) ;;
     install)
@@ -115,11 +115,11 @@ case "${task}" in
         export ANSIBLE_DISPLAY_OK_HOSTS=true
         playbooks=(flickr_uploader_deploy) ;;
     inventar-setup)
-        playbooks=(inventar_setup) ;;
+        playbooks=(inventar_setup inventar_ansible_hosts) ;;
     inventar-deploy)
         # Show the pulled commit
         export ANSIBLE_DISPLAY_OK_HOSTS=true
-        playbooks=(inventar_deploy) ;;
+        playbooks=(inventar_deploy inventar_ansible_hosts) ;;
     inventar-secrets-backup)
         playbooks=(inventar_secrets_backup) ;;
     newserver)

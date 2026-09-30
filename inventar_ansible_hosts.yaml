@@ -1,0 +1,17 @@
+---
+# Hand the list of Ansible hosts (name, address, groups from inventory.yaml) to the
+# inventar collector on debian-inventar. It warns about Proxmox guests missing from the
+# inventory (no updates) and inventory hosts it cannot find. Runs with inventar-setup,
+# inventar-deploy and the weekly updates, so a changed inventory arrives within a week.
+- hosts: inventar
+  gather_facts: no
+  become: yes
+  name: "inventar: list of Ansible hosts"
+  tasks:
+    - name: "Write ansible-hosts.json next to the database"
+      ansible.builtin.template:
+        src: templates/inventar-ansible-hosts.json.j2
+        dest: "{{ inventar_data }}/ansible-hosts.json"
+        owner: gato
+        group: gato
+        mode: "0644"
