@@ -168,6 +168,15 @@ ebenfalls den neuesten Code, startet die Webseite neu und stößt gleich einen e
 
 Vorher auf debian-ansible immer `/home/transport/clone.sh`, damit das Ansible-Repo selbst aktuell ist.
 
+## Abgleich mit dem Ansible-Inventory
+
+`inventar_ansible_hosts.yaml` schreibt die Liste aller Hosts aus `inventory.yaml` (Name, Adresse,
+Gruppen) nach `/var/lib/inventar/ansible-hosts.json`. Der Sammler warnt dann bei Proxmox-Gästen,
+die in keinem Ansible-Host vorkommen (bekommen keine Updates), und bei Ansible-Hosts, die er im
+Netz nicht findet. Die Liste wird mit `inventar-setup`, `inventar-deploy` und den wöchentlichen
+`updates` neu geschrieben; nach einer Änderung am Inventory also `run.sh inventar-deploy`, wenn es
+nicht bis Sonntag warten soll.
+
 ## Überwachung
 
 - **Uptime Kuma, Push-Monitor „Inventar Sammler“** (Gruppe Jobs): Jeder Lauf meldet sich

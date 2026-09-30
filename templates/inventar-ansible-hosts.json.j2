@@ -1,0 +1,5 @@
+[
+{% for host in groups['all'] | sort %}
+  {"name": {{ host | to_json }}, "host": {{ (hostvars[host].ansible_host | default(host)) | to_json }}, "groups": {{ hostvars[host].group_names | sort | to_json }}}{{ "," if not loop.last else "" }}
+{% endfor %}
+]
