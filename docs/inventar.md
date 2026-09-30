@@ -12,6 +12,9 @@ liest nur, er ändert in keiner Quelle etwas.
 | Checkout | `/home/gato/Apps/inventar`, gehört gato, venv in `.venv` |
 | Befehl | `inventar` (Link auf die venv) |
 | Zugangsdaten | `/etc/inventar/secrets.env`, nur gato darf lesen |
+| Daten | `/var/lib/inventar/inventar.db` und `notes.yaml`, gehören gato |
+| Webseite | http://debian-inventar.lan:8080 (Dienst `inventar-web`) |
+| Sammler | alle 15 Minuten (Timer `inventar-collect.timer`) |
 | Kopie der Zugangsdaten | `/home/transport/.config/inventar-secrets/` auf debian-ansible |
 
 Repo und Pfade stehen in `inventory.yaml` beim Host `inventar`.
@@ -46,6 +49,8 @@ Repo und Pfade stehen in `inventory.yaml` beim Host `inventar`.
    baut die venv und legt `/etc/inventar/secrets.env` an. Liegt auf
    debian-ansible eine Kopie der Zugangsdaten, kommt sie zurück; sonst entsteht
    eine leere Datei zum Ausfüllen. Eine vorhandene Datei wird nie überschrieben.
+   Dazu kommen der Ordner `/var/lib/inventar` und die systemd-Units für den
+   Timer und die Webseite; beide laufen danach sofort.
 
 ## Zugangsdaten
 
@@ -72,7 +77,68 @@ Auf debian-inventar als gato:
 inventar --demo                         # nur eingebaute Beispieldaten, kein Netz
 inventar --sources pihole               # nur eine Quelle abfragen
 inventar --json /tmp/inventar.json      # alle Quellen, Tabelle + Rohliste
+inventar collect                        # ein Lauf in die Datenbank, wie der Timer
 ```
+
+## Timer: Sammler alle 15 Minuten
+
+`inventar-collect.timer` startet `inventar-collect.service` 2 Minuten nach dem
+Booten und danach alle 15 Minuten. Ein Lauf fragt alle Quellen ab, schreibt den
+Stand in die Datenbank, merkt sich jede MAC und IP mit „zuerst/zuletzt gesehen“
+und berechnet die Warnungen. Antwortet keine einzige Quelle, gilt der Lauf als
+fehlgeschlagen und der letzte Stand bleibt stehen.
+
+Nachsehen auf debian-inventar:
+
+```
+systemctl list-timers 'inventar*'             # wann lief er, wann läuft er wieder
+journalctl -u inventar-collect -n 50          # Ausgabe der letzten Läufe mit Warnungen
+sudo systemctl start inventar-collect         # sofort einen Lauf starten
+```
+
+Der Dienst läuft als gato mit den Zugangsdaten aus `/etc/inventar/secrets.env`
+und darf nur nach `/var/lib/inventar` schreiben. Für den Ping-Scan bekommt er
+das Recht CAP_NET_RAW, sonst nichts.
+
+## Webseite
+
+http://debian-inventar.lan:8080 zeigt oben die Warnungen und die nächste freie
+IP im statischen Bereich (.10–.99), darunter alle Geräte. Name, Raum, Web-UI und
+Notiz lassen sich anklicken und bearbeiten (Enter speichert, Esc bricht ab),
+„Warnungen ausblenden“ ist für Geräte, die absichtlich aus sind. Die Seite
+fragt keine Quelle ab, sie liest nur die Datenbank; schreiben kann sie nur
+Notizen und geplante IPs in diese Datenbank.
+
+Eine Anmeldung hat die Seite nicht. Später kommt sie über NPM als
+`https://inventar.mythenstrasse56.net` mit einer Access-Liste, die nur das LAN
+zulässt; Ziel ist `http://debian-inventar.lan:8080`. Für Glance liefert
+`/api/summary` die Zahl der Warnungen und Geräte, den letzten Lauf und die
+nächste freie IP.
+
+```
+systemctl status inventar-web
+journalctl -u inventar-web -n 50              # Änderungen an Notizen und Fehler
+```
+
+## Datenbank und Notizen
+
+Alles liegt in `/var/lib/inventar/`:
+
+| Datei | |
+| --- | --- |
+| `inventar.db` | SQLite: Läufe, letzter Stand, Verlauf jeder MAC/IP, Notizen |
+| `notes.yaml` | alle Notizen als Text, bei jedem Lauf neu geschrieben (Sicherung, nicht von Hand ändern) |
+
+Die alte Numbers-Liste oder eine `notes.yaml` einmalig übernehmen, auf
+debian-inventar als gato:
+
+```
+inventar import-notes ips-numbers-2026-09-29.csv    # direkt die CSV aus Numbers
+inventar import-notes notes.yaml                    # oder die Datei aus inventar.numbers_import
+```
+
+Es werden nur leere Felder gefüllt, was schon auf der Webseite eingetragen ist,
+bleibt. Die Ausgabe zeigt pro IP, was übernommen und was übersprungen wurde.
 
 ## Neue Version ausrollen
 
@@ -83,11 +149,12 @@ debian-ansible:
 /home/transport/ansible/run.sh inventar-deploy
 ```
 
-Das holt den neuesten Stand (nur Fast-Forward) und installiert ihn neu in die
-venv.
+Das holt den neuesten Stand (nur Fast-Forward), installiert ihn neu in die
+venv und startet die Webseite neu. Der Timer nimmt beim nächsten Lauf den
+neuen Code. Geänderte systemd-Units kommen mit `run.sh inventar-setup`.
 
 ## Noch nicht eingerichtet
 
-Kommt mit den nächsten Schritten des Bauplans: Datenbank, Web-Oberfläche,
-systemd-Timer alle 15 Minuten, NPM-Host `inventar.mythenstrasse56.net`,
-Glance-Link und Uptime-Kuma-Monitore.
+Kommt mit den nächsten Schritten des Bauplans: NPM-Host
+`inventar.mythenstrasse56.net` mit Access-Liste, Glance-Widget und
+Uptime-Kuma-Monitore.

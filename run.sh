@@ -40,8 +40,8 @@ Tasks:
     uploader-deploy   pull the flickr-uploader repo on debian-flickr
     commenter-setup   check out / update flickr-scripts on debian-flickr for the commenter
     inventar-setup    set up debian-inventar: packages, inventar repo checkout, venv,
-                      secrets file (docs/inventar.md)
-    inventar-deploy   pull the inventar repo on debian-inventar
+                      secrets file, collector timer, web page (docs/inventar.md)
+    inventar-deploy   pull the inventar repo on debian-inventar, restart the web page
     inventar-secrets-backup
                       copy debian-inventar's secrets file to debian-ansible
 

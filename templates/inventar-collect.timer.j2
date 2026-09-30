@@ -1,0 +1,12 @@
+# Managed by Ansible (templates/inventar-collect.timer.j2), change it there.
+# Runs the collector 2 minutes after boot and then every 15 minutes.
+# Persistent= only applies to OnCalendar= timers; after a boot OnBootSec catches up.
+[Unit]
+Description=inventar: collect every 15 minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=15min
+
+[Install]
+WantedBy=timers.target

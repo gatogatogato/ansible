@@ -48,8 +48,9 @@ To rebuild debian-flickr from scratch (`run.sh flickr-server`, secrets backup wi
 ## Inventar
 debian-inventar collects a list of all devices on the network (UniFi, Pi-hole, NPM, Proxmox,
 ping scan), code in the private repo `gatogatogato/inventar`. `run.sh inventar-setup` sets it up
-(also from scratch), `run.sh inventar-deploy` pulls a new version, `run.sh inventar-secrets-backup`
-copies the credentials to debian-ansible. See [docs/inventar.md](docs/inventar.md).
+(also from scratch) including a systemd timer that collects every 15 minutes and the web page on
+port 8080, `run.sh inventar-deploy` pulls a new version and restarts the web page,
+`run.sh inventar-secrets-backup` copies the credentials to debian-ansible. See [docs/inventar.md](docs/inventar.md).
 
 ## Weekly updates via cron
 `run.sh cronjobs` installs a cronjob (Sunday 03:30) that runs `cron-updates.sh`.

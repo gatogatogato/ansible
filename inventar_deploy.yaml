@@ -1,6 +1,7 @@
 ---
-# Pull the current state of the inventar repo on debian-inventar and
-# reinstall it into its venv (new dependencies). See docs/inventar.md.
+# Pull the current state of the inventar repo on debian-inventar, reinstall it
+# into its venv (new dependencies) and restart the web page. The collector timer
+# picks up the new code on its next run. See docs/inventar.md.
 - hosts: inventar
   gather_facts: no
   become: yes
@@ -27,4 +28,10 @@
         virtualenv: "{{ inventar_dir }}/.venv"
         virtualenv_command: python3 -m venv
       become_user: gato
+      when: pulled.changed
+
+    - name: "Restart the web page"
+      ansible.builtin.systemd_service:
+        name: inventar-web
+        state: restarted
       when: pulled.changed

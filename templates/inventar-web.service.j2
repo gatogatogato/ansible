@@ -1,0 +1,24 @@
+# Managed by Ansible (templates/inventar-web.service.j2), change it there.
+# Web page and JSON API on port {{ inventar_web_port }}. It only reads the database
+# and writes notes into it; no login, access via the NPM access list. See docs/inventar.md.
+[Unit]
+Description=inventar: web page
+After=network.target
+
+[Service]
+User=gato
+Group=gato
+Environment=INVENTAR_DB={{ inventar_data }}/inventar.db
+ExecStart=/usr/local/bin/inventar web --host 0.0.0.0 --port {{ inventar_web_port }}
+Restart=on-failure
+RestartSec=5
+
+CapabilityBoundingSet=
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths={{ inventar_data }}
+ProtectHome=read-only
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target
