@@ -10,12 +10,14 @@
   tasks:
     # acl: Ansible needs setfacl for the tasks that run as gato (become_user)
     # fping: fast ping scan, iproute2: ARP table for the MAC addresses
+    # python3-packaging: needed by Ansible's pip module on the host
     - name: "Install packages"
       ansible.builtin.apt:
         name:
           - git
           - acl
           - python3-venv
+          - python3-packaging
           - fping
           - iproute2
 
