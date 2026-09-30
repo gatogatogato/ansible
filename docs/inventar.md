@@ -102,6 +102,12 @@ startet `inventar-collect.service`, der Lauf löscht sie als Erstes. Der Webdien
 dafür keine Rechte an systemd. Hängt ein Knopfdruck, zeigt
 `systemctl status inventar-collect-refresh.path` den Zustand.
 
+„DNS anlegen“ geht genauso: Die Seite legt `/var/lib/inventar/dns.request` an,
+`inventar-dns.path` startet `inventar-dns.service` (`inventar dns-apply`), das den Eintrag
+in Pi-hole anlegt und danach einen Sammler-Lauf anstösst. Pi-hole braucht dafür
+`webserver.api.app_sudo` an (docs/zugaenge.md im inventar-Repo). Fehler stehen auf der
+Seite und in `journalctl -u inventar-dns`.
+
 Der Dienst läuft als gato mit den Zugangsdaten aus `/etc/inventar/secrets.env`
 und darf nur nach `/var/lib/inventar` schreiben. Für den Ping-Scan bekommt er
 das Recht CAP_NET_RAW, sonst nichts.
