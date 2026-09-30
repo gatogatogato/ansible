@@ -85,6 +85,8 @@ debianservers:
       ansible_host: debian-camsnaps.lan
     mbusmaster:
       ansible_host: debian-mbusmaster.lan
+    inventar:
+      ansible_host: debian-inventar.lan
 
 alpineservers:
   vars:
