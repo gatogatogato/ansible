@@ -79,3 +79,24 @@
         path: "/etc/update-motd.d/30-glance"
         state: touch
         mode: u=rwx,g=rx,o=rx
+
+# This is only for the ansible server
+- hosts: ansible
+  gather_facts: no
+  become: yes
+  name: "Create ansible server specific motd script"
+  tasks:
+    - name: "Login message: run Ansible as transport"
+      ansible.builtin.copy:
+        dest: /etc/update-motd.d/30-ansible
+        owner: root
+        group: root
+        mode: "0755"
+        content: |
+          #!/bin/sh
+          echo
+          echo "------------------------------------------------------"
+          echo "  All ansible actions must run as user transport!"
+          echo "  (sudo -iu transport, then ~/ansible/run.sh TASK)"
+          echo "------------------------------------------------------"
+          echo
