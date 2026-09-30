@@ -39,6 +39,11 @@ Tasks:
                       checkout, flickr-uploader-deploy, cronjobs (docs/flickr-uploader.md)
     uploader-deploy   pull the flickr-uploader repo on debian-flickr
     commenter-setup   check out / update flickr-scripts on debian-flickr for the commenter
+    inventar-setup    set up debian-inventar: packages, inventar repo checkout, venv,
+                      secrets file (docs/inventar.md)
+    inventar-deploy   pull the inventar repo on debian-inventar
+    inventar-secrets-backup
+                      copy debian-inventar's secrets file to debian-ansible
 
 Options:
     -h    Show this help message
@@ -109,6 +114,14 @@ case "${task}" in
         # Show the pulled commit
         export ANSIBLE_DISPLAY_OK_HOSTS=true
         playbooks=(flickr_uploader_deploy) ;;
+    inventar-setup)
+        playbooks=(inventar_setup) ;;
+    inventar-deploy)
+        # Show the pulled commit
+        export ANSIBLE_DISPLAY_OK_HOSTS=true
+        playbooks=(inventar_deploy) ;;
+    inventar-secrets-backup)
+        playbooks=(inventar_secrets_backup) ;;
     newserver)
         playbooks=(install_all_packages newserver_setup_basics newserver_install_all_basicfiles
                    update_debianservers_apt) ;;

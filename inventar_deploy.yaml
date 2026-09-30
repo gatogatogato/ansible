@@ -1,0 +1,30 @@
+---
+# Pull the current state of the inventar repo on debian-inventar and
+# reinstall it into its venv (new dependencies). See docs/inventar.md.
+- hosts: inventar
+  gather_facts: no
+  become: yes
+  name: "inventar: deploy"
+  tasks:
+    - name: "Pull from GitHub (fast-forward only)"
+      ansible.builtin.git:
+        repo: "{{ inventar_repo }}"
+        dest: "{{ inventar_dir }}"
+        key_file: /home/gato/.ssh/inventar_deploy_key
+        ssh_opts: "-o ConnectTimeout=15"
+        update: true
+      become_user: gato
+      register: pulled
+
+    - name: "Show the commit"
+      ansible.builtin.debug:
+        msg: "{{ pulled.before[:7] if pulled.before else '-' }} -> {{ pulled.after[:7] }}"
+
+    - name: "Install the collector into its venv"
+      ansible.builtin.pip:
+        name: "{{ inventar_dir }}"
+        editable: true
+        virtualenv: "{{ inventar_dir }}/.venv"
+        virtualenv_command: python3 -m venv
+      become_user: gato
+      when: pulled.changed

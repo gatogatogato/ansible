@@ -1,0 +1,99 @@
+---
+# Set up debian-inventar for the homelab inventory: packages, checkout of the
+# private inventar repo, Python venv, the "inventar" command and the secrets file.
+# Run twice the first time: the first run creates the deploy key and stops with
+# the public key to add in GitHub. See docs/inventar.md.
+- hosts: inventar
+  gather_facts: no
+  become: yes
+  name: "inventar: set up the collector"
+  tasks:
+    # acl: Ansible needs setfacl for the tasks that run as gato (become_user)
+    # fping: fast ping scan, iproute2: ARP table for the MAC addresses
+    - name: "Install packages"
+      ansible.builtin.apt:
+        name:
+          - git
+          - acl
+          - python3-venv
+          - fping
+          - iproute2
+
+    - name: "Create gato's Apps folder"
+      ansible.builtin.file:
+        path: "{{ inventar_dir | dirname }}"
+        state: directory
+        owner: gato
+        group: gato
+        mode: "0755"
+
+    - name: "Check out the inventar repo"
+      ansible.builtin.include_tasks: tasks/github_checkout.yaml
+      vars:
+        checkout_repo: "{{ inventar_repo }}"
+        checkout_name: gatogatogato/inventar
+        checkout_dir: "{{ inventar_dir }}"
+        checkout_key: /home/gato/.ssh/inventar_deploy_key
+        # run.sh inventar-deploy pulls
+        checkout_update: false
+
+    - name: "Install the collector into its venv"
+      ansible.builtin.pip:
+        name: "{{ inventar_dir }}"
+        editable: true
+        virtualenv: "{{ inventar_dir }}/.venv"
+        virtualenv_command: python3 -m venv
+      become_user: gato
+
+    - name: "Start the collector with 'inventar'"
+      ansible.builtin.file:
+        src: "{{ inventar_dir }}/.venv/bin/inventar"
+        dest: /usr/local/bin/inventar
+        state: link
+
+    # Only gato (who runs the collector) can read the credentials
+    - name: "Create the secrets folder"
+      ansible.builtin.file:
+        path: "{{ inventar_secrets | dirname }}"
+        state: directory
+        owner: root
+        group: gato
+        mode: "0750"
+
+    - name: "Check the secrets file"
+      ansible.builtin.stat:
+        path: "{{ inventar_secrets }}"
+      register: secrets_file
+
+    - name: "Check the backup on debian-ansible"
+      ansible.builtin.stat:
+        path: "{{ inventar_secrets_backup }}"
+      register: secrets_backup
+      delegate_to: localhost
+      become: no
+
+    - name: "Restore the secrets from the backup"
+      ansible.builtin.copy:
+        src: "{{ inventar_secrets_backup }}"
+        dest: "{{ inventar_secrets }}"
+        owner: gato
+        group: gato
+        mode: "0600"
+      when: not secrets_file.stat.exists and secrets_backup.stat.exists
+
+    - name: "Create an empty secrets file to fill in"
+      ansible.builtin.template:
+        src: templates/inventar-secrets.env.j2
+        dest: "{{ inventar_secrets }}"
+        owner: gato
+        group: gato
+        mode: "0600"
+        force: false
+      when: not secrets_file.stat.exists and not secrets_backup.stat.exists
+
+    - name: "Remind to fill in the secrets"
+      ansible.builtin.debug:
+        msg: >-
+          {{ inventar_secrets }} was created empty. Fill in the read-only credentials
+          (docs/zugaenge.md in the inventar repo), then run.sh inventar-secrets-backup.
+      when: not secrets_file.stat.exists and not secrets_backup.stat.exists
