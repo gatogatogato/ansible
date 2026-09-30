@@ -69,8 +69,8 @@ Die Zugangsdaten gehören zusätzlich in Vaultwarden.
 Auf debian-inventar als gato:
 
 ```
-inventar --beispiel                     # nur eingebaute Beispieldaten, kein Netz
-inventar --quellen pihole               # nur eine Quelle abfragen
+inventar --demo                         # nur eingebaute Beispieldaten, kein Netz
+inventar --sources pihole               # nur eine Quelle abfragen
 inventar --json /tmp/inventar.json      # alle Quellen, Tabelle + Rohliste
 ```
 
