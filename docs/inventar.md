@@ -162,8 +162,13 @@ ebenfalls den neuesten Code, startet die Webseite neu und stößt gleich einen e
 
 Vorher auf debian-ansible immer `/home/transport/clone.sh`, damit das Ansible-Repo selbst aktuell ist.
 
-## Noch nicht eingerichtet
+## Überwachung
 
-Kommt mit den nächsten Schritten des Bauplans: NPM-Host
-`inventar.mythenstrasse56.net` mit Access-Liste, Glance-Widget und
-Uptime-Kuma-Monitore.
+- **Uptime Kuma, Push-Monitor „Inventar Sammler“** (Gruppe Jobs): Jeder Lauf meldet sich
+  mit Geräte- und Warnungszahl. Fällt auch nur eine Quelle aus, meldet er „down“ mit den
+  Namen der Quellen. Die Push-URL steht als `UPTIME_KUMA_PUSH_URL` in
+  `/etc/inventar/secrets.env`, nie im Repo. Heartbeat-Intervall im Monitor: 20 Minuten
+  (Timer alle 15 Minuten plus Laufzeit), Retries 1, damit ein einzelner Aussetzer nicht alarmiert.
+- **Uptime Kuma, HTTP-Monitor für die Webseite** (Gruppe Dienste): `http://debian-inventar.lan:8080/api/summary`.
+- **Glance**: Eintrag unter Monitoring (glance-Repo).
+- **NPM**: `inventar.mythenstrasse56.net` mit Access-Liste.
