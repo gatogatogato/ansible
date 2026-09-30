@@ -97,6 +97,20 @@
           echo
           echo "------------------------------------------------------"
           echo "  All ansible actions must run as user transport!"
-          echo "  (sudo -iu transport, then ~/ansible/run.sh TASK)"
+          echo "  (sudo -iu transport, then clone.sh and run.sh TASK)"
           echo "------------------------------------------------------"
           echo
+
+    # Wrappers, not symlinks: run.sh finds the repo via its own path
+    - name: "clone.sh and run.sh without a path"
+      ansible.builtin.copy:
+        dest: "/usr/local/bin/{{ item.name }}"
+        owner: root
+        group: root
+        mode: "0755"
+        content: |
+          #!/bin/sh
+          exec {{ item.target }} "$@"
+      loop:
+        - { name: clone.sh, target: /home/transport/clone.sh }
+        - { name: run.sh, target: /home/transport/ansible/run.sh }
