@@ -2,6 +2,7 @@
 Just my ansible stuff to set up and update my LXCs and VMs in a structured manner.
 
 Everything runs on the ansible server as user `transport`, repo in `/home/transport/ansible`.
+`clone.sh` and `run.sh` also work without a path (wrappers in `/usr/local/bin`, set up by `run.sh newserver --limit ansible`).
 
 ## Setup and update
 ```
