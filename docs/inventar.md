@@ -186,4 +186,9 @@ nicht bis Sonntag warten soll.
   (Timer alle 15 Minuten plus Laufzeit), Retries 1, damit ein einzelner Aussetzer nicht alarmiert.
 - **Uptime Kuma, HTTP-Monitor für die Webseite** (Gruppe Dienste): `http://debian-inventar.lan:8080/api/summary`.
 - **Glance**: Eintrag unter Monitoring (glance-Repo).
+- **Uptime Kuma, Monitore für die Hosts selbst**: Ping für jeden statischen oder reservierten
+  Host mit DNS-Namen und HTTPS für jede aktive NPM-Domain, in der Gruppe „Automatisch (Inventar)“.
+  Angelegt werden sie vom Skript `uptimekuma-sync.py` im shell-Repo (Doku `uptimekuma-sync.md`).
+  Das Skript läuft nicht automatisch: nach einem neuen Host oder einer neuen NPM-Domain auf dem Mac
+  von Hand starten, erst ohne, dann mit `--apply`.
 - **NPM**: `inventar.mythenstrasse56.net` mit Access-Liste.
