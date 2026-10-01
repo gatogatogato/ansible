@@ -1,0 +1,10 @@
+#!/bin/sh
+# Managed by Ansible (templates/motd-box.sh.j2): same login box on every server
+{% set rule = '-' * ([56, (motd_lines | map('length') | max) + 4] | max) %}
+echo
+echo "{{ rule }}"
+{% for line in motd_lines %}
+echo "  {{ line }}"
+{% endfor %}
+echo "{{ rule }}"
+echo

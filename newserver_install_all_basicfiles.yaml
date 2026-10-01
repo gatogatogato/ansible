@@ -64,21 +64,18 @@
   become: yes
   name: "Create glance specific motd script"
   tasks:
-    - name: "Create motd glance"
-      become: yes
-      copy:
-        dest: "/etc/update-motd.d/30-glance"
-        content: |
-          #!/bin/sh
-          echo "edit glance config with edit.sh"
-          echo "afterwards on the Mac, in the glance repo: ./pull.sh, then commit and push"
-          echo "(https://github.com/gatogatogato/glance, see README)"
-
-    - name: "Set permissions for glance"
-      file:
-        path: "/etc/update-motd.d/30-glance"
-        state: touch
-        mode: u=rwx,g=rx,o=rx
+    - name: "Login message: how to edit the glance config"
+      ansible.builtin.template:
+        src: templates/motd-box.sh.j2
+        dest: /etc/update-motd.d/30-glance
+        owner: root
+        group: root
+        mode: "0755"
+      vars:
+        motd_lines:
+          - "glance config: edit.sh"
+          - "then on the Mac in the glance repo: ./pull.sh,"
+          - "commit and push (see README)"
 
 # This is only for the ansible server
 - hosts: ansible
@@ -87,19 +84,16 @@
   name: "Create ansible server specific motd script"
   tasks:
     - name: "Login message: run Ansible as transport"
-      ansible.builtin.copy:
+      ansible.builtin.template:
+        src: templates/motd-box.sh.j2
         dest: /etc/update-motd.d/30-ansible
         owner: root
         group: root
         mode: "0755"
-        content: |
-          #!/bin/sh
-          echo
-          echo "------------------------------------------------------"
-          echo "  All ansible actions must run as user transport!"
-          echo "  (sudo -iu transport, then clone.sh and run.sh TASK)"
-          echo "------------------------------------------------------"
-          echo
+      vars:
+        motd_lines:
+          - "All ansible actions must run as user transport!"
+          - "(sudo -iu transport, then clone.sh and run.sh TASK)"
 
     # Wrappers, not symlinks: run.sh finds the repo via its own path
     - name: "clone.sh and run.sh without a path"

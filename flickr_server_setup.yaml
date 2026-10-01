@@ -38,22 +38,19 @@
         state: started
         enabled: yes
 
-    # Shown at every SSH login, like 30-glance on the glance server. Lives here and not
+    # Shown at every SSH login, same box as 30-glance and 30-ansible. Lives here and not
     # in newserver_install_all_basicfiles.yaml, so run.sh flickr-server brings it back
     # after newserver has rewritten /etc/update-motd.d.
     - name: "Login message: how to start the uploader"
-      ansible.builtin.copy:
+      ansible.builtin.template:
+        src: templates/motd-box.sh.j2
         dest: /etc/update-motd.d/30-flickr
         owner: root
         group: root
         mode: "0755"
-        content: |
-          #!/bin/sh
-          echo
-          echo "------------------------------------------------------"
-          echo "  flickr upload: uploader (test: uploader --dry-run)"
-          echo "------------------------------------------------------"
-          echo
+      vars:
+        motd_lines:
+          - "flickr upload: uploader (test: uploader --dry-run)"
 
     # Holds the Nextcloud password
     - name: "Check gato's .netrc"
