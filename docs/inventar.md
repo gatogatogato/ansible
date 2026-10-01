@@ -186,6 +186,9 @@ nicht bis Sonntag warten soll.
   (Timer alle 15 Minuten plus Laufzeit), Retries 1, damit ein einzelner Aussetzer nicht alarmiert.
 - **Uptime Kuma, HTTP-Monitor für die Webseite** (Gruppe Dienste): `http://debian-inventar.lan:8080/api/summary`.
 - **Glance**: Eintrag unter Monitoring (glance-Repo).
+- **Pi-holes synchron**: Mit `PIHOLE2_URL`/`PIHOLE2_PASSWORD` in `secrets.env` vergleicht jeder
+  Lauf den zweiten Pi-hole (.59) mit dem ersten (.99). Unterschiede stehen als Warnung im Inventar;
+  dauern sie länger als eine Stunde, meldet der Push-Monitor „Inventar Sammler“ „down“.
 - **Uptime Kuma, Monitore für die Hosts selbst**: Ping für jeden statischen oder reservierten
   Host mit DNS-Namen und HTTPS für jede aktive NPM-Domain, in der Gruppe „Automatisch (Inventar)“.
   Angelegt werden sie vom Skript `uptimekuma-sync.py` im shell-Repo (Doku `uptimekuma-sync.md`).
