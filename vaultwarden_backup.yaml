@@ -1,0 +1,92 @@
+---
+# Install the nightly Vaultwarden backup from the public shell repo
+# (vaultwarden-backup.sh) on the vaultwarden container. The push URL for
+# Uptime Kuma stays out of both repos, in /etc/vaultwarden-backup.conf.
+# Run again after the script changed in the shell repo. See docs/vaultwarden-backup.md.
+- hosts: vaultwarden
+  gather_facts: no
+  become: yes
+  name: "vaultwarden: install the backup script"
+  vars:
+    shell_repo: https://github.com/gatogatogato/shell.git
+    shell_checkout: /home/transport/repos/shell
+    backup_script: /etc/periodic/daily/create-vaultwarden-backup
+    backup_config: /etc/vaultwarden-backup.conf
+  tasks:
+    - name: "Install what the backup needs"
+      community.general.apk:
+        name:
+          - openssh-client
+          - tar
+          - gzip
+
+    - name: "Check out the shell repo on debian-ansible"
+      ansible.builtin.git:
+        repo: "{{ shell_repo }}"
+        dest: "{{ shell_checkout }}"
+        update: yes
+      delegate_to: localhost
+      become: no
+      run_once: yes
+      # also in --check, so the copy below can compare against the script
+      check_mode: no
+
+    - name: "Check the config"
+      ansible.builtin.stat:
+        path: "{{ backup_config }}"
+      register: config_file
+
+    # Older versions of the script had the push URL inline. Take it over once,
+    # so the Uptime Kuma monitor keeps getting its push after the switch.
+    - name: "Read the push URL from the old script"
+      ansible.builtin.command: sed -n 's/^HC_URL="\(http[^"]*\)".*/\1/p' {{ backup_script }}
+      register: old_push_url
+      changed_when: false
+      failed_when: false
+      check_mode: no
+      no_log: true
+      when: not config_file.stat.exists
+
+    - name: "Create the config once, never overwritten"
+      ansible.builtin.copy:
+        dest: "{{ backup_config }}"
+        content: |
+          # Created by Ansible (vaultwarden_backup.yaml) once, never overwritten.
+          # Template: vaultwarden-backup.conf.example in the shell repo.
+          HC_URL="{{ old_push_url.stdout | default('') }}"
+        owner: root
+        group: root
+        mode: "0600"
+        force: no
+      no_log: true
+      when: not config_file.stat.exists
+
+    - name: "Keep the config readable only by root"
+      ansible.builtin.file:
+        path: "{{ backup_config }}"
+        owner: root
+        group: root
+        mode: "0600"
+
+    - name: "Install the backup script"
+      ansible.builtin.copy:
+        src: "{{ shell_checkout }}/vaultwarden-backup.sh"
+        dest: "{{ backup_script }}"
+        owner: root
+        group: root
+        mode: "0700"
+
+    - name: "Check that the config has a push URL"
+      ansible.builtin.command: grep -q '^HC_URL="http' {{ backup_config }}
+      register: has_push_url
+      changed_when: false
+      failed_when: false
+      check_mode: no
+
+    # The script is installed and works without it, this only makes the gap visible
+    - name: "Stop when the push URL is missing"
+      ansible.builtin.fail:
+        msg: >-
+          {{ backup_config }} has no push URL, Uptime Kuma will report the backup
+          as down. Add HC_URL="https://.../api/push/<token>" there (as root).
+      when: has_push_url.rc != 0

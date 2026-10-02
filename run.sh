@@ -44,6 +44,9 @@ Tasks:
     inventar-deploy   pull the inventar repo on debian-inventar, restart the web page
     inventar-secrets-backup
                       copy debian-inventar's secrets file to debian-ansible
+    vaultwarden-backup
+                      install the nightly backup script from the shell repo on vaultwarden
+                      (docs/vaultwarden-backup.md)
 
 Options:
     -h    Show this help message
@@ -122,6 +125,8 @@ case "${task}" in
         playbooks=(inventar_deploy inventar_ansible_hosts) ;;
     inventar-secrets-backup)
         playbooks=(inventar_secrets_backup) ;;
+    vaultwarden-backup)
+        playbooks=(vaultwarden_backup) ;;
     newserver)
         playbooks=(install_all_packages newserver_setup_basics newserver_install_all_basicfiles
                    update_debianservers_apt) ;;
