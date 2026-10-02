@@ -8,9 +8,6 @@
       ansible.builtin.apt:
         pkg:
         - apache2
-        # keeps vpn.mythenstrasse56.net at Cloudflare up to date (DynDNS for the VPN),
-        # /etc/ddclient.conf holds the API token and is not in this repo
-        - ddclient
         - hugo
         - rsync
         - micro
@@ -29,6 +26,16 @@
       ansible.builtin.apt:
         pkg:
         - snapd
+        state: absent
+        purge: true
+        autoremove: true
+
+    # VPN now runs via UniFi Teleport, so the DynDNS name vpn.mythenstrasse56.net
+    # is no longer needed. Purging also deletes /etc/ddclient.conf with its API token
+    - name: "Remove ddclient"
+      ansible.builtin.apt:
+        pkg:
+        - ddclient
         state: absent
         purge: true
         autoremove: true
