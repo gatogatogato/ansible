@@ -63,8 +63,6 @@ debianservers:
         - { name: netrc, dest: /home/gato/.netrc, what: "Nextcloud login for the UPLOADS sync" }
     ansible:
       ansible_host: debian-ansible.lan
-    changedetection:
-      ansible_host: debian-changedetection.lan
     hercules:
       ansible_host: debian-hercules.lan
     pihole:
