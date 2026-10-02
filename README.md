@@ -53,6 +53,12 @@ ping scan), code in the private repo `gatogatogato/inventar`. `run.sh inventar-s
 port 8080, `run.sh inventar-deploy` pulls a new version and restarts the web page,
 `run.sh inventar-secrets-backup` copies the credentials to debian-ansible. See [docs/inventar.md](docs/inventar.md).
 
+## Vaultwarden backup
+The nightly backup script lives in the public repo `gatogatogato/shell` (`vaultwarden-backup.sh`).
+`run.sh vaultwarden-backup` installs it on vaultwarden as `/etc/periodic/daily/create-vaultwarden-backup`,
+the Uptime Kuma push URL stays in `/etc/vaultwarden-backup.conf` on the container.
+See [docs/vaultwarden-backup.md](docs/vaultwarden-backup.md).
+
 ## Weekly updates via cron
 `run.sh cronjobs` installs a cronjob (Sunday 03:30) that runs `cron-updates.sh`.
 It logs to `/home/transport/logs/` and reports to an Uptime Kuma push monitor. The push URL
