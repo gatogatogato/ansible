@@ -124,9 +124,7 @@ cloudflared:
     cloudflared_metrics_port: 2000
   hosts:
     cloudflared1:
-      debian-cloudflared1.lan
     cloudflared2:
-      debian-cloudflared2.lan
 
 alpineservers:
   vars:
