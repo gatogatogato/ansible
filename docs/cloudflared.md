@@ -85,13 +85,15 @@ Vorher gab es nur `debian-cloudflared` (192.168.1.75, proxmox-n01), von Hand mit
    Name bleibt vorerst) und `debian-cloudflared2.lan` auf 192.168.1.72.
 2. **Nextcloud:** die neue IP als vertrauenswürdigen Proxy ergänzen, *bevor* cloudflared2
    Verkehr bekommt. Sonst sieht Nextcloud für diese Anfragen nur 192.168.1.72 als Absender,
-   und der Brute-Force-Schutz wirft alle in einen Topf. Auf TrueNAS (Befehle wie in
-   `nextcloud-haertung.md` im shell-Repo):
+   und der Brute-Force-Schutz wirft alle in einen Topf. In der TrueNAS-Shell als root:
 
    ```
-   occ config:system:get trusted_proxies          # erwartet: 127.0.0.1 und 192.168.1.75
-   occ config:system:set trusted_proxies 2 --value=192.168.1.72
+   docker exec -u www-data ix-nextcloud-nextcloud-1 php occ config:system:get trusted_proxies
+   docker exec -u www-data ix-nextcloud-nextcloud-1 php occ config:system:set trusted_proxies 2 --value=192.168.1.72
    ```
+
+   Der erste Befehl muss vorher `127.0.0.1` und `192.168.1.75` zeigen (Index 0 und 1),
+   danach zusätzlich `192.168.1.72`.
 
 3. **PR mergen**, dann auf debian-ansible als transport:
 
