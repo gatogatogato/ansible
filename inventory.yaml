@@ -83,6 +83,15 @@ debianservers:
       ansible_host: debian-npm.lan
     camsnaps:
       ansible_host: debian-camsnaps.lan
+      # Gallery of Home Assistant's camera snapshots (private repo, read via deploy key,
+      # see docs/camsnaps.md). SSH over port 443 like the website repo.
+      camsnaps_repo: ssh://git@ssh.github.com:443/gatogatogato/camsnaps.git
+      camsnaps_dir: /opt/camsnaps
+      # Pictures, thumbnails and index.html, served by Apache as /snapshots/
+      camsnaps_web: /var/www/html/snapshots
+      # Home of the user camsnaps, holds the SSH key for Home Assistant
+      camsnaps_home: /var/lib/camsnaps
+      camsnaps_ha_host: root@homeassistant.lan
     mbusmaster:
       ansible_host: debian-mbusmaster.lan
     inventar:
