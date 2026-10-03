@@ -47,6 +47,10 @@ Tasks:
     camsnaps-setup    set up debian-camsnaps: camera snapshot gallery from the camsnaps repo,
                       its own user and key for Home Assistant, cronjobs (docs/camsnaps.md)
     camsnaps-deploy   pull the camsnaps repo on debian-camsnaps
+    cloudflared-setup set up the Cloudflare Tunnel connectors: package, token file,
+                      metrics port for Uptime Kuma, one restart at a time (docs/cloudflared.md)
+    cloudflared-token-backup
+                      copy the tunnel token from a connector to debian-ansible
     vaultwarden-backup
                       install the nightly backup script from the shell repo on vaultwarden
                       (docs/vaultwarden-backup.md)
@@ -134,6 +138,10 @@ case "${task}" in
         # Show the pulled commit
         export ANSIBLE_DISPLAY_OK_HOSTS=true
         playbooks=(camsnaps_deploy) ;;
+    cloudflared-setup)
+        playbooks=(cloudflared_setup) ;;
+    cloudflared-token-backup)
+        playbooks=(cloudflared_token_backup) ;;
     vaultwarden-backup)
         playbooks=(vaultwarden_backup) ;;
     newserver)

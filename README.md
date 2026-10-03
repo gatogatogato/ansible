@@ -65,6 +65,13 @@ The nightly backup script lives in the public repo `gatogatogato/shell` (`vaultw
 the Uptime Kuma push URL stays in `/etc/vaultwarden-backup.conf` on the container.
 See [docs/vaultwarden-backup.md](docs/vaultwarden-backup.md).
 
+## Cloudflare Tunnel
+Two connectors of the same tunnel, debian-cloudflared1 (proxmox-n01) and debian-cloudflared2
+(proxmox-n02), so the public services survive the loss of one. `run.sh cloudflared-setup` installs
+cloudflared, puts the token into `/etc/cloudflared/token` and restarts one connector at a time;
+`run.sh cloudflared-token-backup` copies the token to debian-ansible.
+See [docs/cloudflared.md](docs/cloudflared.md).
+
 ## Weekly updates via cron
 `run.sh cronjobs` installs a cronjob (Sunday 03:30) that runs `cron-updates.sh`.
 It logs to `/home/transport/logs/` and reports to an Uptime Kuma push monitor. The push URL
