@@ -53,6 +53,12 @@ ping scan), code in the private repo `gatogatogato/inventar`. `run.sh inventar-s
 port 8080, `run.sh inventar-deploy` pulls a new version and restarts the web page,
 `run.sh inventar-secrets-backup` copies the credentials to debian-ansible. See [docs/inventar.md](docs/inventar.md).
 
+## Camera gallery
+debian-camsnaps copies Home Assistant's camera snapshots every 10 minutes and shows them as a
+gallery, code in the private repo `gatogatogato/camsnaps`. `run.sh camsnaps-setup` sets it up
+(own user and SSH key for Home Assistant, cronjobs), `run.sh camsnaps-deploy` pulls a new version.
+See [docs/camsnaps.md](docs/camsnaps.md).
+
 ## Vaultwarden backup
 The nightly backup script lives in the public repo `gatogatogato/shell` (`vaultwarden-backup.sh`).
 `run.sh vaultwarden-backup` installs it on vaultwarden as `/etc/periodic/daily/create-vaultwarden-backup`,

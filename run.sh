@@ -44,6 +44,9 @@ Tasks:
     inventar-deploy   pull the inventar repo on debian-inventar, restart the web page
     inventar-secrets-backup
                       copy debian-inventar's secrets file to debian-ansible
+    camsnaps-setup    set up debian-camsnaps: camera snapshot gallery from the camsnaps repo,
+                      its own user and key for Home Assistant, cronjobs (docs/camsnaps.md)
+    camsnaps-deploy   pull the camsnaps repo on debian-camsnaps
     vaultwarden-backup
                       install the nightly backup script from the shell repo on vaultwarden
                       (docs/vaultwarden-backup.md)
@@ -125,6 +128,12 @@ case "${task}" in
         playbooks=(inventar_deploy inventar_ansible_hosts) ;;
     inventar-secrets-backup)
         playbooks=(inventar_secrets_backup) ;;
+    camsnaps-setup)
+        playbooks=(camsnaps_setup) ;;
+    camsnaps-deploy)
+        # Show the pulled commit
+        export ANSIBLE_DISPLAY_OK_HOSTS=true
+        playbooks=(camsnaps_deploy) ;;
     vaultwarden-backup)
         playbooks=(vaultwarden_backup) ;;
     newserver)

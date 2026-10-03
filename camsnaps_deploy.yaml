@@ -1,0 +1,32 @@
+---
+# Pull the current state of the camsnaps repo with camsnaps-deploy.
+# The script is installed first, so a changed template applies right away.
+# See docs/camsnaps.md.
+- hosts: camsnaps
+  gather_facts: no
+  become: yes
+  name: "camsnaps: deploy"
+  tasks:
+    - name: "Install camsnaps-deploy"
+      ansible.builtin.template:
+        src: templates/camsnaps-deploy.sh.j2
+        dest: /usr/local/bin/camsnaps-deploy
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: "Deploy with camsnaps-deploy"
+      ansible.builtin.command: /usr/local/bin/camsnaps-deploy
+      become_user: gato
+      register: deploy
+      changed_when: "'Server already up to date' not in deploy.stdout"
+      failed_when: false
+
+    - name: "Show the deploy output"
+      ansible.builtin.debug:
+        var: deploy.stdout_lines
+
+    - name: "Stop if the deploy failed"
+      ansible.builtin.fail:
+        msg: "{{ deploy.stderr }}"
+      when: deploy.rc != 0

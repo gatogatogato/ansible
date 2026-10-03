@@ -1,0 +1,222 @@
+---
+# Set up debian-camsnaps: the gallery of Home Assistant's camera snapshots from
+# the private camsnaps repo, run every 10 minutes as the user camsnaps.
+# Replaces the old setup (scp as transport with the ansible key, gallery.sh).
+# Run until it gets through: the first runs stop with a public key to add,
+# once in GitHub (deploy key) and once in Home Assistant. See docs/camsnaps.md.
+- hosts: camsnaps
+  gather_facts: no
+  become: yes
+  name: "camsnaps: set up the gallery"
+  vars:
+    ha_key: "{{ camsnaps_home }}/.ssh/ha_ed25519"
+    ssh_opts: "-o BatchMode=yes -o IdentitiesOnly=yes -o ConnectTimeout=15 -o StrictHostKeyChecking=accept-new"
+  tasks:
+    # acl: Ansible needs setfacl for the tasks that run as gato or camsnaps (become_user)
+    - name: "Install packages"
+      ansible.builtin.apt:
+        name:
+          - apache2
+          - imagemagick
+          - python3
+          - git
+          - acl
+          - openssh-client
+          - tar
+          - logrotate
+
+    # Apache only serves http on port 80, NPM does TLS. Without ssl the
+    # "Listen 443" in ports.conf is off too.
+    - name: "Disable the unused Apache modules ssl and rewrite"
+      community.general.apache2_module:
+        name: "{{ item }}"
+        state: absent
+      loop: [ssl, rewrite]
+      notify: "Restart apache2"
+
+    - name: "Create the user camsnaps (copies the pictures, builds the page)"
+      ansible.builtin.user:
+        name: camsnaps
+        system: yes
+        home: "{{ camsnaps_home }}"
+        create_home: yes
+        shell: /usr/sbin/nologin
+
+    - name: "Create camsnaps's .ssh directory"
+      ansible.builtin.file:
+        path: "{{ camsnaps_home }}/.ssh"
+        state: directory
+        owner: camsnaps
+        group: camsnaps
+        mode: "0700"
+
+    - name: "Create the key for Home Assistant"
+      ansible.builtin.command: ssh-keygen -q -t ed25519 -N "" -C "camsnaps@{{ ansible_host }}" -f {{ ha_key }}
+      args:
+        creates: "{{ ha_key }}"
+      become_user: camsnaps
+
+    - name: "Create the checkout folder"
+      ansible.builtin.file:
+        path: "{{ camsnaps_dir }}"
+        state: directory
+        owner: gato
+        group: gato
+        mode: "0755"
+
+    - name: "Check out the camsnaps repo"
+      ansible.builtin.include_tasks: tasks/github_checkout.yaml
+      vars:
+        checkout_repo: "{{ camsnaps_repo }}"
+        checkout_name: gatogatogato/camsnaps
+        checkout_dir: "{{ camsnaps_dir }}"
+        checkout_key: /home/gato/.ssh/camsnaps_deploy_key
+        # camsnaps-deploy pulls, with checks first
+        checkout_update: false
+
+    - name: "Install camsnaps-deploy"
+      ansible.builtin.template:
+        src: templates/camsnaps-deploy.sh.j2
+        dest: /usr/local/bin/camsnaps-deploy
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: "Start the gallery with 'camsnaps'"
+      ansible.builtin.file:
+        src: "{{ camsnaps_dir }}/camsnaps.py"
+        dest: /usr/local/bin/camsnaps
+        state: link
+
+    - name: "Check that camsnaps can log in to Home Assistant"
+      ansible.builtin.command: ssh -i {{ ha_key }} {{ ssh_opts }} {{ camsnaps_ha_host }} true
+      become_user: camsnaps
+      register: ha_login
+      changed_when: false
+      failed_when: false
+
+    - name: "Read the public key for Home Assistant"
+      ansible.builtin.command: cat {{ ha_key }}.pub
+      register: ha_pubkey
+      changed_when: false
+      when: ha_login.rc != 0
+
+    - name: "Stop until Home Assistant knows the key"
+      ansible.builtin.fail:
+        msg: |
+          camsnaps cannot log in to {{ camsnaps_ha_host }} yet ({{ ha_login.stderr | trim }}).
+          In Home Assistant: Settings > Add-ons > Advanced SSH & Web Terminal >
+          Configuration, add this line under authorized_keys, save, restart the add-on:
+
+          {{ ha_pubkey.stdout }}
+
+          Then run the same run.sh task again.
+      when: ha_login.rc != 0
+
+    # The pictures copied so far belong to transport
+    - name: "Hand the gallery folder to camsnaps"
+      ansible.builtin.file:
+        path: "{{ camsnaps_web }}"
+        state: directory
+        owner: camsnaps
+        group: camsnaps
+        mode: "0755"
+        recurse: yes
+
+    - name: "Create the log file"
+      ansible.builtin.file:
+        path: /var/log/camsnaps.log
+        state: touch
+        owner: camsnaps
+        group: camsnaps
+        mode: "0644"
+        access_time: preserve
+        modification_time: preserve
+
+    - name: "Rotate the log monthly, delete after 3 months"
+      ansible.builtin.copy:
+        dest: /etc/logrotate.d/camsnaps
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          /var/log/camsnaps.log {
+              monthly
+              rotate 3
+              compress
+              missingok
+              notifempty
+              create 0644 camsnaps camsnaps
+          }
+
+    # Before anything old is switched off: the new gallery must work
+    - name: "Copy new pictures and build the page once"
+      ansible.builtin.command: /usr/local/bin/camsnaps run
+      become_user: camsnaps
+      register: first_run
+      changed_when: first_run.stdout | length > 0
+
+    - name: "Show what the first run copied"
+      ansible.builtin.debug:
+        var: first_run.stdout_lines
+      # changed, so the compact output shows it
+      changed_when: true
+      when: first_run.stdout | length > 0
+
+    - name: "camsnaps cronjob: copy and build every 10 minutes"
+      ansible.builtin.cron:
+        user: camsnaps
+        name: "camsnaps"
+        minute: "*/10"
+        job: /usr/local/bin/camsnaps run >> /var/log/camsnaps.log 2>&1
+
+    # camsnaps-deploy --if-changed does nothing unless GitHub has new commits,
+    # so the log only grows when something was deployed
+    - name: "gato cronjob to deploy camsnaps after a push"
+      ansible.builtin.cron:
+        user: gato
+        name: "camsnaps deploy"
+        minute: "*/15"
+        job: test -x /usr/local/bin/camsnaps-deploy && /usr/local/bin/camsnaps-deploy --if-changed >> /home/gato/camsnaps-deploy.log 2>&1
+
+    # --- the old setup ---------------------------------------------------------
+
+    - name: "Remove transport's old cronjobs (scp and gallery.sh)"
+      ansible.builtin.cron:
+        user: transport
+        name: "{{ item }}"
+        state: absent
+      loop: ["Copy files", "Create gallery"]
+
+    - name: "Check for the old gallery.sh"
+      ansible.builtin.stat:
+        path: "{{ camsnaps_web }}/gallery.sh"
+      register: old_gallery
+
+    # Moved, not deleted; remove {{ camsnaps_home }}/alt once all is fine
+    - name: "Move the old gallery.sh out of the web folder"
+      ansible.builtin.shell: |
+        mkdir -p {{ camsnaps_home }}/alt
+        mv {{ camsnaps_web }}/gallery.sh {{ camsnaps_home }}/alt/
+      when: old_gallery.stat.exists
+
+    # transport was in group root to write the gallery folder. sudo stays,
+    # like on every host (newserver_setup_basics.yaml).
+    - name: "Take transport out of group root"
+      ansible.builtin.user:
+        name: transport
+        groups: sudo
+        append: no
+
+    - name: "Next step"
+      changed_when: true
+      ansible.builtin.debug:
+        msg: >-
+          transport's cronjobs no longer use ssh. Delete the private transport key
+          here with: run.sh remove-key --limit camsnaps
+
+  handlers:
+    - name: "Restart apache2"
+      ansible.builtin.service:
+        name: apache2
+        state: restarted
