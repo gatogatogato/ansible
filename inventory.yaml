@@ -69,8 +69,14 @@ debianservers:
       ansible_host: debian-pihole.lan
     pihole-backup:
       ansible_host: debian-pihole-backup.lan
-    cloudflared:
-      ansible_host: debian-cloudflared.lan
+    # Two connectors of the same Cloudflare Tunnel, one per node, see docs/cloudflared.md.
+    # Static IPs (set in the container, DNS in Pi-hole), Nextcloud trusts both as proxies.
+    cloudflared1:
+      # 192.168.1.75 on proxmox-n01, formerly debian-cloudflared
+      ansible_host: debian-cloudflared1.lan
+    cloudflared2:
+      # 192.168.1.72 on proxmox-n02
+      ansible_host: debian-cloudflared2.lan
     glance:
       ansible_host: debian-glance.lan
       # Glance config (private repo, read via deploy key, see docs/glance.md).
@@ -109,6 +115,16 @@ debianservers:
       inventar_data: /var/lib/inventar
       # Web page, later behind NPM as https://inventar.mythenstrasse56.net
       inventar_web_port: 8080
+
+cloudflared:
+  vars:
+    # Copy of the tunnel token on debian-ansible (run.sh cloudflared-token-backup), never in git
+    cloudflared_token_backup: /home/transport/.config/cloudflared-secrets/token
+    # Health endpoint for Uptime Kuma: http://<host>:2000/ready answers 200 while connected
+    cloudflared_metrics_port: 2000
+  hosts:
+    cloudflared1:
+    cloudflared2:
 
 alpineservers:
   vars:
