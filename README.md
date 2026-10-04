@@ -79,6 +79,12 @@ on debian-ansible and on the TrueNAS share NAS-SMB, from where TrueCloud uploads
 `run.sh cronjobs` runs it every Sunday at 05:00 via `cron-run.sh hostconfig-backup`.
 See [docs/proxmox-hostconfig.md](docs/proxmox-hostconfig.md).
 
+## Proxmox QDevice
+The cluster has two nodes, proxmox-n01 and proxmox-n02. The third vote comes from a QDevice:
+corosync-qnetd on the Raspberry Pi debian-qdevice (formerly the node proxmox-n03).
+`run.sh qdevice-setup` installs the packages and the root keys `pvecm qdevice setup` needs.
+See [docs/qdevice.md](docs/qdevice.md).
+
 ## Weekly updates via cron
 `run.sh cronjobs` installs a cronjob (Sunday 03:30) that runs `cron-updates.sh`
 (a wrapper for `cron-run.sh updates`, which any run.sh task can use).

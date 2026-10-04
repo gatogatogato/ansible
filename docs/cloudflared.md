@@ -13,7 +13,7 @@ Node, Update), läuft alles über den anderen weiter.
 | Adresse | 192.168.1.75 | 192.168.1.72 |
 | Zustand | http://debian-cloudflared1.lan:2000/ready | http://debian-cloudflared2.lan:2000/ready |
 
-Beide statisch im Container gesetzt, DNS-Einträge im Pi-hole. Nie auf proxmox-n03.
+Beide statisch im Container gesetzt, DNS-Einträge im Pi-hole.
 
 - **Routen** (Public Hostnames) stehen nur im Cloudflare-Dashboard: Zero Trust >
   Networks > Tunnels. Sie gelten für alle Connectoren, beim Ausbau ändert sich daran nichts.

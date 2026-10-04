@@ -3,7 +3,8 @@
 Kurzanleitung für einen neuen LXC (Debian oder Alpine). Danach ist er bei den
 wöchentlichen Updates und Health-Checks automatisch dabei.
 
-Nie etwas auf **proxmox-n03** anlegen, das ist nur der Raspberry Pi fürs Quorum.
+Container nur auf **proxmox-n01** oder **proxmox-n02** anlegen. Der Raspberry Pi
+(debian-qdevice) ist nur die dritte Stimme fürs Quorum, siehe `docs/qdevice.md`.
 
 ## 1. LXC anlegen (Proxmox-Weboberfläche oder community-script)
 

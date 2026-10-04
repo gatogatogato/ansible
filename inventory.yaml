@@ -22,8 +22,6 @@ proxmoxservers:
       ansible_host: proxmox-n01.lan
     proxmox-n02:
       ansible_host: proxmox-n02.lan
-    proxmox-n03:
-      ansible_host: proxmox-n03.lan
   vars:
     # Host configuration backup (run.sh hostconfig-backup, docs/proxmox-hostconfig.md)
     hostconfig_local_dir: /home/transport/backups/proxmox-hostconfig
@@ -136,6 +134,10 @@ debianservers:
       camsnaps_ha_host: root@homeassistant.lan
     mbusmaster:
       ansible_host: debian-mbusmaster.lan
+    qdevice:
+      # Raspberry Pi with Raspberry Pi OS, formerly proxmox-n03. Static IP 192.168.1.23
+      # (set with nmcli on the Pi, DNS in Pi-hole). Third vote for the cluster, see docs/qdevice.md.
+      ansible_host: debian-qdevice.lan
     inventar:
       # static IP 192.168.1.66 on proxmox-n01 (CT 107), see docs/inventar.md
       ansible_host: debian-inventar.lan
@@ -161,6 +163,16 @@ cloudflared:
   hosts:
     cloudflared1:
     cloudflared2:
+
+# Tie-breaker for the two-node Proxmox cluster (corosync-qnetd), see docs/qdevice.md
+qdevices:
+  vars:
+    # The Proxmox nodes, the only addresses their root key is accepted from (from= in authorized_keys)
+    qdevice_cluster_ips:
+      - 192.168.1.21
+      - 192.168.1.22
+  hosts:
+    qdevice:
 
 alpineservers:
   vars:

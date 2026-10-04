@@ -1,0 +1,69 @@
+---
+# QDevice for the two-node Proxmox cluster, see docs/qdevice.md:
+# corosync-qnetd on the Raspberry Pi, corosync-qdevice on the nodes, and the
+# nodes' root key on the Pi, which "pvecm qdevice setup" logs in with.
+# The setup command itself stays manual (it changes the cluster):
+#
+#   run.sh qdevice-setup
+#   then on proxmox-n01 as root: pvecm qdevice setup 192.168.1.23
+- hosts: proxmoxservers
+  gather_facts: no
+  become: yes
+  name: "Proxmox nodes: corosync-qdevice"
+  tasks:
+    - name: "Install corosync-qdevice"
+      ansible.builtin.apt:
+        name: corosync-qdevice
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: "Read the root key of the node"
+      ansible.builtin.slurp:
+        src: /root/.ssh/id_rsa.pub
+      register: node_root_key
+
+- hosts: qdevices
+  gather_facts: no
+  become: yes
+  name: "QDevice: corosync-qnetd"
+  tasks:
+    - name: "Install corosync-qnetd"
+      ansible.builtin.apt:
+        name: corosync-qnetd
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: "Start corosync-qnetd now and at boot"
+      ansible.builtin.service:
+        name: corosync-qnetd
+        state: started
+        enabled: yes
+
+    # Only accepted from the nodes; Debian's sshd allows root with a key, never with a password
+    - name: "Allow the root key of every Proxmox node, only from the nodes"
+      ansible.posix.authorized_key:
+        user: root
+        key: "{{ hostvars[item].node_root_key.content | b64decode }}"
+        key_options: "from=\"{{ qdevice_cluster_ips | join(',') }}\""
+      loop: "{{ groups['proxmoxservers'] }}"
+      when: hostvars[item].node_root_key is defined
+
+    # Raspberry Pi OS gives its first user sudo without a password. gato keeps sudo via
+    # the sudo group, with gato's own password, like on every other host.
+    - name: "Check whether gato has a password"
+      ansible.builtin.shell: "getent shadow gato | cut -d: -f2"
+      register: gato_password
+      changed_when: false
+
+    - name: "Remove Raspberry Pi OS's password-free sudo"
+      ansible.builtin.file:
+        path: /etc/sudoers.d/010_pi-nopasswd
+        state: absent
+      when: gato_password.stdout.startswith('$')
+
+    - name: "Warn if gato has no password"
+      ansible.builtin.debug:
+        msg: "gato has no password on {{ inventory_hostname }}, kept /etc/sudoers.d/010_pi-nopasswd. Set one with passwd gato and run again."
+      # changed, so the compact output shows it
+      changed_when: true
+      when: not gato_password.stdout.startswith('$')

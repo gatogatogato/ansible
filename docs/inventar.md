@@ -23,7 +23,7 @@ Repo und Pfade stehen in `inventory.yaml` beim Host `inventar`.
 
 1. LXC anlegen, wie in `docs/neue-maschine.md` Schritt 1: CT 107 auf
    proxmox-n01, Hostname `debian-inventar`, IPv4 statisch `192.168.1.66/24`,
-   DNS-Eintrag `debian-inventar.lan` in Pi-hole. Nie auf proxmox-n03.
+   DNS-Eintrag `debian-inventar.lan` in Pi-hole.
 2. Auf debian-ansible als transport, wie in `docs/neue-maschine.md`:
 
    ```

@@ -6,7 +6,7 @@ packt pro Node ein kleines tar mit allem, was man für den Neuaufbau eines Nodes
 | | |
 | --- | --- |
 | Playbook | `proxmox_hostconfig_backup.yaml`, Einstellungen in `inventory.yaml` bei `proxmoxservers` |
-| Nodes | proxmox-n01, proxmox-n02, proxmox-n03 |
+| Nodes | proxmox-n01, proxmox-n02 (die alten Stände von proxmox-n03 bleiben im Ordner `proxmox-n03` liegen) |
 | Lauf | So 05:00 auf debian-ansible (`cron-run.sh hostconfig-backup`, nach vzdump, vor dem Storj-Upload um 06:00) |
 | Kopie 1 | debian-ansible `/home/transport/backups/proxmox-hostconfig/<node>/`, nur `transport` darf lesen |
 | Kopie 2 | Share NAS-SMB, also TrueNAS `/mnt/tank01/proxmox-raw-backups/hostconfig/<node>/` |
