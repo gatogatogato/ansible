@@ -29,3 +29,11 @@
         hour: "5"
         minute: "0"
         job: /home/transport/ansible/cron-run.sh hostconfig-backup > /dev/null 2>&1
+
+    - name: "transport cronjob for the daily Proxmox update reminder"
+      ansible.builtin.cron:
+        user: transport
+        name: "proxmox update check"
+        hour: "7"
+        minute: "0"
+        job: /home/transport/ansible/cron-run.sh updates-proxmox-check > /dev/null 2>&1
