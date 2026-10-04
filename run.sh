@@ -16,6 +16,8 @@ Usage: $(basename "$0") [-h] [-f] TASK [ansible-playbook options]
 Tasks:
     updates           apt (Debian), apk (Alpine), micro plugins
     updates-proxmox   apt on the Proxmox nodes
+    hostconfig-backup save /etc/pve, network, cron etc. of the Proxmox nodes to debian-ansible
+                      and the TrueNAS share NAS-SMB (docs/proxmox-hostconfig.md)
     install           install packages on the Debian servers
     cronjobs          create cronjobs
     shutdown          shut down hercules, flickr and the ansible server
@@ -82,6 +84,8 @@ case "${task}" in
                    update_debianservers_micro inventar_ansible_hosts) ;;
     updates-proxmox)
         playbooks=(update_proxmoxservers_apt) ;;
+    hostconfig-backup)
+        playbooks=(proxmox_hostconfig_backup) ;;
     install)
         playbooks=(install_all_packages install_webservers_packages
                    install_flickrservers_packages install_ansibleservers_packages) ;;

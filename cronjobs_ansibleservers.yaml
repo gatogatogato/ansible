@@ -20,3 +20,12 @@
         hour: "2"
         minute: "0"
         job: /home/transport/ansible/git-mirror.sh > /dev/null 2>&1
+
+    - name: "transport cronjob for the weekly Proxmox host configuration backup"
+      ansible.builtin.cron:
+        user: transport
+        name: "proxmox hostconfig backup"
+        weekday: "0"
+        hour: "5"
+        minute: "0"
+        job: /home/transport/ansible/cron-run.sh hostconfig-backup > /dev/null 2>&1
