@@ -25,6 +25,9 @@ proxmoxservers:
     proxmox-n03:
       ansible_host: proxmox-n03.lan
   vars:
+    # Kuma reminder (run.sh updates-proxmox-check, docs/proxmox-updates.md):
+    # red when updates wait and the last apt upgrade is older than this
+    proxmox_update_max_days: 30
     # Host configuration backup (run.sh hostconfig-backup, docs/proxmox-hostconfig.md)
     hostconfig_local_dir: /home/transport/backups/proxmox-hostconfig
     # Storage NAS-SMB = TrueNAS share proxmox-raw-backups, uploaded to Storj by TrueCloud

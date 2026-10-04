@@ -15,6 +15,7 @@ Clones the repo on first use, afterwards only does a `git pull`. Bootstrap once 
 ```
 /home/transport/ansible/run.sh updates           # apt, apk, micro on all LXCs and VMs
 /home/transport/ansible/run.sh updates-proxmox   # apt on the Proxmox nodes
+/home/transport/ansible/run.sh updates-proxmox-check  # read-only: have updates waited too long?
 /home/transport/ansible/run.sh install
 /home/transport/ansible/run.sh cronjobs
 /home/transport/ansible/run.sh shutdown
@@ -78,6 +79,12 @@ cron, SSH and a few more files of every Proxmox node into a tar and keeps the ne
 on debian-ansible and on the TrueNAS share NAS-SMB, from where TrueCloud uploads them.
 `run.sh cronjobs` runs it every Sunday at 05:00 via `cron-run.sh hostconfig-backup`.
 See [docs/proxmox-hostconfig.md](docs/proxmox-hostconfig.md).
+
+## Proxmox update reminder
+The Proxmox nodes are updated by hand. `run.sh cronjobs` installs a daily check (07:00,
+`cron-run.sh updates-proxmox-check`) that turns its Uptime Kuma push monitor red when a node has
+updates waiting and its last apt upgrade is older than 30 days. It installs nothing.
+See [docs/proxmox-updates.md](docs/proxmox-updates.md).
 
 ## Weekly updates via cron
 `run.sh cronjobs` installs a cronjob (Sunday 03:30) that runs `cron-updates.sh`
