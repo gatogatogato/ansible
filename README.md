@@ -72,8 +72,16 @@ cloudflared, puts the token into `/etc/cloudflared/token` and restarts one conne
 `run.sh cloudflared-token-backup` copies the token to debian-ansible.
 See [docs/cloudflared.md](docs/cloudflared.md).
 
+## Proxmox host configuration
+vzdump saves the guests, not the nodes. `run.sh hostconfig-backup` packs `/etc/pve`, network,
+cron, SSH and a few more files of every Proxmox node into a tar and keeps the newest 8 per node
+on debian-ansible and on the TrueNAS share NAS-SMB, from where TrueCloud uploads them.
+`run.sh cronjobs` runs it every Sunday at 05:00 via `cron-run.sh hostconfig-backup`.
+See [docs/proxmox-hostconfig.md](docs/proxmox-hostconfig.md).
+
 ## Weekly updates via cron
-`run.sh cronjobs` installs a cronjob (Sunday 03:30) that runs `cron-updates.sh`.
+`run.sh cronjobs` installs a cronjob (Sunday 03:30) that runs `cron-updates.sh`
+(a wrapper for `cron-run.sh updates`, which any run.sh task can use).
 It logs to `/home/transport/logs/` and reports to an Uptime Kuma push monitor. The push URL
 stays out of the repo, in `/home/transport/.config/ansible-updates.env`:
 ```

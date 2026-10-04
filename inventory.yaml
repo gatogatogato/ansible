@@ -24,6 +24,42 @@ proxmoxservers:
       ansible_host: proxmox-n02.lan
     proxmox-n03:
       ansible_host: proxmox-n03.lan
+  vars:
+    # Host configuration backup (run.sh hostconfig-backup, docs/proxmox-hostconfig.md)
+    hostconfig_local_dir: /home/transport/backups/proxmox-hostconfig
+    # Storage NAS-SMB = TrueNAS share proxmox-raw-backups, uploaded to Storj by TrueCloud
+    hostconfig_nas_mount: /mnt/pve/NAS-SMB
+    hostconfig_nas_subdir: hostconfig
+    hostconfig_keep: 8
+    # Relative to /, missing ones are skipped
+    hostconfig_paths:
+      - etc/pve
+      - etc/network
+      - etc/hosts
+      - etc/hostname
+      - etc/resolv.conf
+      - etc/fstab
+      - etc/crontab
+      - etc/cron.d
+      - var/spool/cron/crontabs
+      - root/.ssh
+      - etc/ssh
+      - home/transport/.ssh
+      - etc/sudoers.d
+      - etc/apt
+      - etc/modules
+      - etc/modprobe.d
+      - etc/default/grub
+      - etc/kernel/cmdline
+      - etc/sysctl.conf
+      - etc/sysctl.d
+      - etc/udev/rules.d
+      - etc/systemd/network
+      - etc/systemd/system
+      - etc/vzdump.conf
+      - etc/lvm/lvm.conf
+      - etc/postfix/main.cf
+      - etc/timezone
 
 debianservers:
   hosts:
