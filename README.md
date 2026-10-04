@@ -29,6 +29,11 @@ e.g. `run.sh updates --limit pihole`.
 After an apt upgrade every host is checked: all ports that listened before must listen
 again and no service may newly fail. Otherwise the host is marked as failed.
 
+## Emergency
+What to do when DNS, a node, TrueNAS, Vaultwarden or everything is gone, rebuild order and
+where backups and credentials live (including the offline USB disk LastResort):
+[docs/notfall.md](docs/notfall.md).
+
 ## New machines
 See [docs/neue-maschine.md](docs/neue-maschine.md): `run.sh bootstrap` sets up a new LXC from its
 Proxmox node via `pct exec`, `run.sh newserver` does the basic setup.
