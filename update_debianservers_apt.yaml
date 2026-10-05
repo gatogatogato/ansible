@@ -25,24 +25,6 @@
         force_apt_get: yes
       throttle: 1
 
-    - name: "Remove useless packages from the cache"
-      ansible.builtin.apt:
-        autoclean: yes
-
-    - name: "Remove dependencies that are no longer required"
-      ansible.builtin.apt:
-        autoremove: yes
-
-    - name: "Remove dependencies that are no longer required and purge their configuration files"
-      ansible.builtin.apt:
-        autoremove: yes
-        purge: true
-
-    - name: "Run the equivalent of apt-get clean as a separate step"
-      apt:
-        clean: yes
-      changed_when: false
-
     - name: "Check if a reboot is needed"
       become: true
       register: reboot_required_file

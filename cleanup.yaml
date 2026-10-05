@@ -1,0 +1,122 @@
+---
+# Free disk space in all LXCs and VMs (not the Proxmox nodes): apt cache and
+# unused packages, leftover config of removed packages, journal, old rotated
+# logs, dangling Docker images. Runs with every "run.sh updates" (weekly cron)
+# and alone as "run.sh cleanup". /tmp and /var/tmp are left to systemd-tmpfiles.
+- import_playbook: find_reachable.yaml
+  vars:
+    target_group: debianservers
+
+- hosts: reachable_debianservers
+  gather_facts: no
+  become: yes
+  name: "Debian: clean up"
+  vars:
+    # Keep the journal below this size and age (journald default: 10% of the disk, up to 4 GB)
+    journal_max_use: 200M
+    journal_max_age: 1month
+    rotated_logs_max_age: 4w
+  handlers:
+    - name: "Restart journald"
+      ansible.builtin.service:
+        name: systemd-journald
+        state: restarted
+  tasks:
+    - name: "Remember free disk space"
+      ansible.builtin.command: df --output=avail -m /
+      register: df_before
+      changed_when: false
+      check_mode: false
+
+    - name: "Remove dependencies that are no longer required, with their configuration"
+      ansible.builtin.apt:
+        autoremove: yes
+        purge: yes
+
+    - name: "Find configuration left behind by removed packages"
+      ansible.builtin.shell: >-
+        dpkg-query -W -f='${db:Status-Abbrev} ${Package}\n' | awk '$1 == "rc" {print $2}'
+      register: residual_packages
+      changed_when: false
+      check_mode: false
+
+    - name: "Purge that configuration"
+      ansible.builtin.command: "dpkg --purge {{ residual_packages.stdout_lines | join(' ') }}"
+      when: residual_packages.stdout_lines | length > 0
+
+    - name: "Empty the apt package cache"
+      ansible.builtin.apt:
+        clean: yes
+      changed_when: false
+
+    - name: "Create the journald drop-in folder"
+      ansible.builtin.file:
+        path: /etc/systemd/journald.conf.d
+        state: directory
+        mode: "0755"
+
+    - name: "Limit the size and age of the journal"
+      ansible.builtin.copy:
+        dest: /etc/systemd/journald.conf.d/50-size.conf
+        content: |
+          # Managed by Ansible (cleanup.yaml)
+          [Journal]
+          SystemMaxUse={{ journal_max_use }}
+          MaxRetentionSec={{ journal_max_age }}
+        mode: "0644"
+      notify: "Restart journald"
+
+    - name: "Shrink the journal to that limit now"
+      ansible.builtin.command: "journalctl --vacuum-size={{ journal_max_use }} --vacuum-time={{ journal_max_age }}"
+      register: journal_vacuum
+      changed_when: "'freed 0B' not in journal_vacuum.stderr"
+
+    - ansible.builtin.import_tasks: tasks/cleanup_rotated_logs.yaml
+
+    - name: "Check for Docker"
+      ansible.builtin.stat:
+        path: /usr/bin/docker
+      register: docker_binary
+
+    - name: "Remove dangling Docker images (untagged leftovers of updates)"
+      ansible.builtin.command: docker image prune --force
+      register: docker_prune
+      changed_when: "'Total reclaimed space: 0B' not in docker_prune.stdout"
+      when: docker_binary.stat.exists
+
+    - name: "Measure free disk space"
+      ansible.builtin.command: df --output=avail,pcent -m /
+      register: df_after
+      changed_when: false
+      check_mode: false
+
+    - name: "Report freed space"
+      vars:
+        freed_mb: "{{ (df_after.stdout_lines[1].split()[0] | int) - (df_before.stdout_lines[1] | trim | int) }}"
+      ansible.builtin.debug:
+        msg: "Freed {{ freed_mb }} MB, / is {{ df_after.stdout_lines[1].split()[1] }} full"
+      # Shown in the compact output only when something was freed
+      changed_when: freed_mb | int > 0
+
+- hosts: alpineservers
+  gather_facts: no
+  become: yes
+  name: "Alpine: clean up"
+  vars:
+    rotated_logs_max_age: 4w
+  tasks:
+    - name: "Find cached apk packages"
+      ansible.builtin.find:
+        paths: /var/cache/apk
+        file_type: file
+      register: apk_cache
+
+    - name: "Empty the apk package cache"
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ apk_cache.files }}"
+      loop_control:
+        label: "{{ item.path }}"
+
+    - ansible.builtin.import_tasks: tasks/cleanup_rotated_logs.yaml

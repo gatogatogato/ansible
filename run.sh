@@ -14,13 +14,15 @@ usage() {
 Usage: $(basename "$0") [-h] [-f] TASK [ansible-playbook options]
 
 Tasks:
-    updates           apt (Debian), apk (Alpine), micro plugins
+    updates           apt (Debian), apk (Alpine), micro plugins, then cleanup
     updates-proxmox   apt on the Proxmox nodes
     updates-proxmox-check
                       read-only: fail for nodes whose updates wait longer than 30 days
                       (Uptime Kuma reminder, docs/proxmox-updates.md)
     hostconfig-backup save /etc/pve, network, cron etc. of the Proxmox nodes to debian-ansible
                       and the TrueNAS share NAS-SMB (docs/proxmox-hostconfig.md)
+    cleanup           free disk space in all LXCs and VMs: unused packages, package cache,
+                      journal, old rotated logs, dangling Docker images (docs/aufraeumen.md)
     install           install packages on the Debian servers
     cronjobs          create cronjobs
     shutdown          shut down hercules, flickr and the ansible server
@@ -84,7 +86,9 @@ shift
 case "${task}" in
     updates)
         playbooks=(update_debianservers_apt update_alpineservers_apk
-                   update_debianservers_micro inventar_ansible_hosts) ;;
+                   update_debianservers_micro inventar_ansible_hosts cleanup) ;;
+    cleanup)
+        playbooks=(cleanup) ;;
     updates-proxmox)
         playbooks=(update_proxmoxservers_apt) ;;
     updates-proxmox-check)

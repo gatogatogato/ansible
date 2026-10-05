@@ -13,7 +13,8 @@ Clones the repo on first use, afterwards only does a `git pull`. Bootstrap once 
 
 ## Running playbooks
 ```
-/home/transport/ansible/run.sh updates           # apt, apk, micro on all LXCs and VMs
+/home/transport/ansible/run.sh updates           # apt, apk, micro on all LXCs and VMs, then cleanup
+/home/transport/ansible/run.sh cleanup           # free disk space in all LXCs and VMs (docs/aufraeumen.md)
 /home/transport/ansible/run.sh updates-proxmox   # apt on the Proxmox nodes
 /home/transport/ansible/run.sh updates-proxmox-check  # read-only: have updates waited too long?
 /home/transport/ansible/run.sh install
