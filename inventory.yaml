@@ -104,10 +104,14 @@ debianservers:
       ansible_host: debian-ansible.lan
     hercules:
       ansible_host: debian-hercules.lan
-    pihole:
-      ansible_host: debian-pihole.lan
-    pihole-backup:
-      ansible_host: debian-pihole-backup.lan
+    # Two Pi-holes, nebula-sync copies the settings from pihole1 to pihole2.
+    # Static IPs (set in the container, DNS in Pi-hole).
+    pihole1:
+      # 192.168.1.99, CT 117 on proxmox-n02, formerly debian-pihole
+      ansible_host: debian-pihole1.lan
+    pihole2:
+      # 192.168.1.59, CT 105 on proxmox-n01, formerly debian-pihole-backup
+      ansible_host: debian-pihole2.lan
     # Two connectors of the same Cloudflare Tunnel, one per node, see docs/cloudflared.md.
     # Static IPs (set in the container, DNS in Pi-hole), Nextcloud trusts both as proxies.
     cloudflared1:
