@@ -5,8 +5,8 @@
 # Run until it gets through: the first runs stop with a public key to add,
 # once in GitHub (deploy key) and once in Home Assistant. See docs/camsnaps.md.
 - hosts: camsnaps
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   name: "camsnaps: set up the gallery"
   vars:
     ha_key: "{{ camsnaps_home }}/.ssh/ha_ed25519"
@@ -37,9 +37,9 @@
     - name: "Create the user camsnaps (copies the pictures, builds the page)"
       ansible.builtin.user:
         name: camsnaps
-        system: yes
+        system: true
         home: "{{ camsnaps_home }}"
-        create_home: yes
+        create_home: true
         shell: /usr/sbin/nologin
 
     - name: "Create camsnaps's .ssh directory"
@@ -121,7 +121,7 @@
         owner: camsnaps
         group: camsnaps
         mode: "0755"
-        recurse: yes
+        recurse: true
 
     - name: "Create the log file"
       ansible.builtin.file:
@@ -206,7 +206,7 @@
       ansible.builtin.user:
         name: transport
         groups: sudo
-        append: no
+        append: false
 
     - name: "Next step"
       changed_when: true

@@ -7,8 +7,8 @@
 # docs/proxmox-hostconfig.md. The tars hold secrets (/etc/pve/priv, /root/.ssh): 0600 on
 # debian-ansible, and the share is only reachable from the LAN.
 - hosts: proxmoxservers
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   name: "Proxmox: pack the host configuration"
   vars:
     hostconfig_tar: "/var/tmp/hostconfig-{{ inventory_hostname }}-{{ hostconfig_date }}.tar.gz"
@@ -16,7 +16,7 @@
     - name: "Fix the date for all nodes"
       ansible.builtin.set_fact:
         hostconfig_date: "{{ lookup('ansible.builtin.pipe', 'date +%Y-%m-%d') }}"
-      run_once: yes
+      run_once: true
 
     - name: "Restrict the backup folder"
       ansible.builtin.file:
@@ -24,8 +24,8 @@
         state: directory
         mode: "0700"
       delegate_to: localhost
-      become: no
-      run_once: yes
+      become: false
+      run_once: true
 
     - name: "Pack the configuration"
       ansible.builtin.shell: |
@@ -57,7 +57,7 @@
       ansible.builtin.fetch:
         src: "{{ hostconfig_tar }}"
         dest: "{{ hostconfig_local_dir }}/{{ inventory_hostname }}/"
-        flat: yes
+        flat: true
 
     - name: "Delete the tar on the node"
       ansible.builtin.file:
@@ -80,8 +80,8 @@
       ansible.builtin.shell: chmod 0600 {{ hostconfig_local_dir }}/*/*.tar.gz
       changed_when: false
       delegate_to: localhost
-      become: no
-      run_once: yes
+      become: false
+      run_once: true
 
     - name: "Delete all but the newest tars per node"
       ansible.builtin.shell: |
@@ -91,8 +91,8 @@
       register: pruned
       changed_when: pruned.stdout | length > 0
       delegate_to: localhost
-      become: no
-      run_once: yes
+      become: false
+      run_once: true
 
     - name: "Stop when no node has the NAS share"
       ansible.builtin.fail:
@@ -102,12 +102,12 @@
           Datacenter -> Storage.
       when: groups['hostconfig_nas_nodes'] | default([]) | length == 0
       delegate_to: localhost
-      become: no
-      run_once: yes
+      become: false
+      run_once: true
 
 - hosts: hostconfig_nas_nodes[0]
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   name: "TrueNAS: copy the tars to the share"
   vars:
     nas_dir: "{{ hostconfig_nas_mount }}/{{ hostconfig_nas_subdir }}"
@@ -117,10 +117,10 @@
       ansible.builtin.find:
         paths: "{{ hostconfig_local_dir }}"
         patterns: "hostconfig-*.tar.gz"
-        recurse: yes
+        recurse: true
       register: found
       delegate_to: localhost
-      become: no
+      become: false
 
     - name: "List them"
       ansible.builtin.set_fact:

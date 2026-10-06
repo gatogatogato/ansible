@@ -8,13 +8,13 @@
     target_group: proxmoxservers
 
 - hosts: reachable_proxmoxservers
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   name: "Proxmox: check how long updates have been waiting"
   tasks:
     - name: "Refresh the package lists if older than a day"
       ansible.builtin.apt:
-        update_cache: yes
+        update_cache: true
         cache_valid_time: 86400
       changed_when: false
 
@@ -64,4 +64,4 @@
           {{ pending_count }} updates waiting and the last upgrade was
           {{ days_since_upgrade }} days ago (limit {{ proxmox_update_max_days }}),
           run "run.sh updates-proxmox"
-        quiet: yes
+        quiet: true

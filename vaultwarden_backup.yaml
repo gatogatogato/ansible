@@ -4,8 +4,8 @@
 # Uptime Kuma stays out of both repos, in /etc/vaultwarden-backup.conf.
 # Run again after the script changed in the shell repo. See docs/vaultwarden-backup.md.
 - hosts: vaultwarden
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   name: "vaultwarden: install the backup script"
   vars:
     shell_repo: https://github.com/gatogatogato/shell.git
@@ -24,12 +24,12 @@
       ansible.builtin.git:
         repo: "{{ shell_repo }}"
         dest: "{{ shell_checkout }}"
-        update: yes
+        update: true
       delegate_to: localhost
-      become: no
-      run_once: yes
+      become: false
+      run_once: true
       # also in --check, so the copy below can compare against the script
-      check_mode: no
+      check_mode: false
 
     - name: "Check the config"
       ansible.builtin.stat:
@@ -43,7 +43,7 @@
       register: old_push_url
       changed_when: false
       failed_when: false
-      check_mode: no
+      check_mode: false
       no_log: true
       when: not config_file.stat.exists
 
@@ -57,7 +57,7 @@
         owner: root
         group: root
         mode: "0600"
-        force: no
+        force: false
       no_log: true
       when: not config_file.stat.exists
 
@@ -81,7 +81,7 @@
       register: has_push_url
       changed_when: false
       failed_when: false
-      check_mode: no
+      check_mode: false
 
     # The script is installed and works without it, this only makes the gap visible
     - name: "Stop when the push URL is missing"

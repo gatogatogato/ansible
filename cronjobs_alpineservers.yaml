@@ -4,8 +4,8 @@
 # 00:30 local time, before the Proxmox backup and the Sunday updates.
 # Without tzdata Alpine uses UTC, which would shift that by one or two hours.
 - hosts: alpineservers
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   name: "Timezone and periodic jobs on the Alpine servers"
   tasks:
     - name: "Install tzdata"
@@ -16,7 +16,7 @@
       ansible.builtin.copy:
         src: "/usr/share/zoneinfo/{{ timezone }}"
         dest: /etc/localtime
-        remote_src: yes
+        remote_src: true
         mode: "0644"
       notify: Restart crond
 

@@ -5,8 +5,8 @@
 # connector set up by hand with "cloudflared service install <token>", in its
 # systemd unit. Never overwrites a different backup. See docs/cloudflared.md.
 - hosts: cloudflared
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   name: "cloudflared: back up the tunnel token"
   tasks:
     - name: "Read the token file"
@@ -41,7 +41,7 @@
         path: "{{ cloudflared_token_backup }}"
       register: backup
       delegate_to: localhost
-      become: no
+      become: false
 
     - name: "Stop when the backup holds a different token"
       ansible.builtin.fail:
@@ -57,8 +57,8 @@
         state: directory
         mode: "0700"
       delegate_to: localhost
-      become: no
-      run_once: yes
+      become: false
+      run_once: true
 
     - name: "Write the backup"
       ansible.builtin.copy:
@@ -66,6 +66,6 @@
         dest: "{{ cloudflared_token_backup }}"
         mode: "0600"
       delegate_to: localhost
-      become: no
+      become: false
       when: not backup.stat.exists
-      no_log: yes
+      no_log: true

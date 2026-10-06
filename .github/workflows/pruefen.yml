@@ -1,0 +1,32 @@
+---
+# Prueft jeden Push und PR mit yamllint und ansible-lint (inkl. Syntax-Check).
+# Regeln: .yamllint und .ansible-lint
+name: Prüfen
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pruefen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Werkzeuge installieren
+        run: pip install ansible==14.5.0 ansible-lint==26.9.0 yamllint==1.38.0
+
+      - name: yamllint
+        run: yamllint .
+
+      - name: ansible-lint
+        run: ansible-lint --nocolor

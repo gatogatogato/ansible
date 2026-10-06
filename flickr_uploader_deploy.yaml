@@ -3,8 +3,8 @@
 # The script is installed first, so a changed template applies right away.
 # See docs/flickr-uploader.md.
 - hosts: flickr
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   name: "flickr uploader: deploy"
   tasks:
     - name: "Install flickr-uploader-deploy"

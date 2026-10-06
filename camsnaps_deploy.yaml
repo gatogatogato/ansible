@@ -3,8 +3,8 @@
 # The script is installed first, so a changed template applies right away.
 # See docs/camsnaps.md.
 - hosts: camsnaps
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   name: "camsnaps: deploy"
   tasks:
     - name: "Install camsnaps-deploy"

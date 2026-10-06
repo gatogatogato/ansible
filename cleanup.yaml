@@ -8,8 +8,8 @@
     target_group: debianservers
 
 - hosts: reachable_debianservers
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   name: "Debian: clean up"
   vars:
     # Keep the journal below this size and age (journald default: 10% of the disk, up to 4 GB)
@@ -30,8 +30,8 @@
 
     - name: "Remove dependencies that are no longer required, with their configuration"
       ansible.builtin.apt:
-        autoremove: yes
-        purge: yes
+        autoremove: true
+        purge: true
 
     - name: "Find configuration left behind by removed packages"
       ansible.builtin.shell: >-
@@ -46,7 +46,7 @@
 
     - name: "Empty the apt package cache"
       ansible.builtin.apt:
-        clean: yes
+        clean: true
       changed_when: false
 
     - name: "Create the journald drop-in folder"
@@ -71,7 +71,8 @@
       register: journal_vacuum
       changed_when: "'freed 0B' not in journal_vacuum.stderr"
 
-    - ansible.builtin.import_tasks: tasks/cleanup_rotated_logs.yaml
+    - name: "Clean up old rotated logs"
+      ansible.builtin.import_tasks: tasks/cleanup_rotated_logs.yaml
 
     - name: "Check for Docker"
       ansible.builtin.stat:
@@ -99,8 +100,8 @@
       changed_when: freed_mb | int > 0
 
 - hosts: alpineservers
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   name: "Alpine: clean up"
   vars:
     rotated_logs_max_age: 4w
@@ -119,4 +120,5 @@
       loop_control:
         label: "{{ item.path }}"
 
-    - ansible.builtin.import_tasks: tasks/cleanup_rotated_logs.yaml
+    - name: "Clean up old rotated logs"
+      ansible.builtin.import_tasks: tasks/cleanup_rotated_logs.yaml

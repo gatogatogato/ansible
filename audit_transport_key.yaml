@@ -7,14 +7,14 @@
     target_group: all
 
 - hosts: "reachable_all:!ansible"
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   name: "Audit: private transport key outside the ansible server"
   tasks:
     - name: "Look for the private key"
       ansible.builtin.stat:
         path: /home/transport/.ssh/id_ed25519
-        get_checksum: no
+        get_checksum: false
       register: private_key
 
     # known_hosts only grows when transport connects somewhere from this host

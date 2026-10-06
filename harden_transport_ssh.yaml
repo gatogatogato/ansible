@@ -8,8 +8,8 @@
     target_group: all
 
 - hosts: reachable_all
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   name: "SSH: allow the transport key only from the ansible server"
   vars:
     # controller_ips is set in inventory.yaml
@@ -18,7 +18,7 @@
     # If a host sees us under another address (e.g. IPv6), from= would lock us out
     - name: "Check that the host sees the ansible server under an allowed address"
       ansible.builtin.shell: echo "${SSH_CONNECTION%% *}"
-      become: no
+      become: false
       register: ssh_source
       changed_when: false
 

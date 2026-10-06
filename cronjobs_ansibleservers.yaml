@@ -1,7 +1,7 @@
 ---
 - hosts: ansible
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   name: "Create cronjobs on the ansible server"
   tasks:
     - name: "transport cronjob for weekly updates of all LXCs and VMs"

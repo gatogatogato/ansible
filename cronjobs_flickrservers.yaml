@@ -1,7 +1,7 @@
 ---
 - hosts: flickr
-  gather_facts: yes
-  become: yes
+  gather_facts: true
+  become: true
   name: "Create cronjobs on flickservers"
   tasks:
     - name: "gato cronjob for commenter"
