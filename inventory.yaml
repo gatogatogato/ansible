@@ -165,9 +165,22 @@ cloudflared:
     cloudflared_token_backup: /home/transport/.config/cloudflared-secrets/token
     # Health endpoint for Uptime Kuma: http://<host>:2000/ready answers 200 while connected
     cloudflared_metrics_port: 2000
+    # cloudflared itself takes the daily security run too (security_updates.yaml)
+    security_updates_extra_sites:
+      - pkg.cloudflare.com
   hosts:
     cloudflared1:
     cloudflared2:
+
+# Hosts that see traffic from the internet: security updates every day
+# (run.sh security-updates, docs/sicherheitsupdates.md), everything else on Sunday
+security_daily:
+  hosts:
+    cloudflared1:
+    cloudflared2:
+    websrv:
+    npm:
+    vaultwarden:
 
 alpineservers:
   vars:
