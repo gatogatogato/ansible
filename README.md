@@ -104,7 +104,7 @@ See [docs/proxmox-updates.md](docs/proxmox-updates.md).
 ## Weekly updates via cron
 `run.sh cronjobs` installs a cronjob (Sunday 03:30) that runs `cron-updates.sh`
 (a wrapper for `cron-run.sh updates`, which any run.sh task can use).
-It logs to `/home/transport/logs/` and reports to an Uptime Kuma push monitor. The push URL
+It logs to `/home/transport/logs/ansible-TASK-DATE_TIME.log` (one file per run) and reports to an Uptime Kuma push monitor. The push URL
 stays out of the repo, in `/home/transport/.config/ansible-updates.env`:
 ```
 UPTIME_KUMA_PUSH_URL="https://<kuma>/api/push/<token>"

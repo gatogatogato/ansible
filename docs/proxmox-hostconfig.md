@@ -12,7 +12,7 @@ packt pro Node ein kleines tar mit allem, was man für den Neuaufbau eines Nodes
 | Kopie 2 | Share NAS-SMB, also TrueNAS `/mnt/tank01/proxmox-raw-backups/hostconfig/<node>/` |
 | Kopie 3 | Storj, über den TrueCloud-Task „Proxmox raw backups“ (ganzes Dataset) |
 | Stände | die letzten 8 pro Node, an beiden Orten |
-| Log | debian-ansible `/home/transport/logs/ansible-hostconfig-backup-<Datum>.log` |
+| Log | debian-ansible `/home/transport/logs/ansible-hostconfig-backup-<Datum>_<Uhrzeit>.log` |
 | Meldung | Uptime-Kuma-Push-Monitor „Proxmox Host-Config“ |
 
 ## Was drin ist
