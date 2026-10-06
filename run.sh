@@ -15,6 +15,8 @@ Usage: $(basename "$0") [-h] [-f] TASK [ansible-playbook options]
 
 Tasks:
     updates           apt (Debian), apk (Alpine), micro plugins, then cleanup
+    security-updates  daily security updates for the hosts reachable from the internet,
+                      no reboot (docs/sicherheitsupdates.md)
     updates-proxmox   apt on the Proxmox nodes
     updates-proxmox-check
                       read-only: fail for nodes whose updates wait longer than 30 days
@@ -89,6 +91,10 @@ case "${task}" in
                    update_debianservers_micro inventar_ansible_hosts cleanup) ;;
     cleanup)
         playbooks=(cleanup) ;;
+    security-updates)
+        # Show the upgraded packages and waiting reboots in the log
+        export ANSIBLE_DISPLAY_OK_HOSTS=true
+        playbooks=(security_updates) ;;
     updates-proxmox)
         playbooks=(update_proxmoxservers_apt) ;;
     updates-proxmox-check)

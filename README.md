@@ -15,6 +15,7 @@ Clones the repo on first use, afterwards only does a `git pull`. Bootstrap once 
 ```
 /home/transport/ansible/run.sh updates           # apt, apk, micro on all LXCs and VMs, then cleanup
 /home/transport/ansible/run.sh cleanup           # free disk space in all LXCs and VMs (docs/aufraeumen.md)
+/home/transport/ansible/run.sh security-updates  # security updates for the hosts reachable from the internet
 /home/transport/ansible/run.sh updates-proxmox   # apt on the Proxmox nodes
 /home/transport/ansible/run.sh updates-proxmox-check  # read-only: have updates waited too long?
 /home/transport/ansible/run.sh install
@@ -85,6 +86,14 @@ cron, SSH and a few more files of every Proxmox node into a tar and keeps the ne
 on debian-ansible and on the TrueNAS share NAS-SMB, from where TrueCloud uploads them.
 `run.sh cronjobs` runs it every Sunday at 05:00 via `cron-run.sh hostconfig-backup`.
 See [docs/proxmox-hostconfig.md](docs/proxmox-hostconfig.md).
+
+## Daily security updates
+The hosts that see traffic from the internet (group `security_daily`: cloudflared1/2, websrv,
+npm, vaultwarden) get security updates every day at 06:30 via `cron-run.sh security-updates`:
+unattended-upgrades with the Debian-Security repo only (and Cloudflare's repo on the
+connectors), needrestart restarts affected services one host at a time, apk upgrade on Alpine.
+No reboots, Sunday's `run.sh updates` does those. Reports to its own Uptime Kuma push monitor.
+See [docs/sicherheitsupdates.md](docs/sicherheitsupdates.md).
 
 ## Proxmox update reminder
 The Proxmox nodes are updated by hand. `run.sh cronjobs` installs a daily check (07:00,

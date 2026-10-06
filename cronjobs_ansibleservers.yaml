@@ -13,6 +13,14 @@
         minute: "30"
         job: /home/transport/ansible/cron-updates.sh > /dev/null 2>&1
 
+    - name: "transport cronjob for the daily security updates of the hosts reachable from the internet"
+      ansible.builtin.cron:
+        user: transport
+        name: "daily security updates"
+        hour: "6"
+        minute: "30"
+        job: /home/transport/ansible/cron-run.sh security-updates > /dev/null 2>&1
+
     - name: "transport cronjob for the nightly mirror of all GitHub repos"
       ansible.builtin.cron:
         user: transport
