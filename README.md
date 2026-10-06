@@ -25,7 +25,7 @@ Clones the repo on first use, afterwards only does a `git pull`. Bootstrap once 
 /home/transport/ansible/run.sh remove-key        # delete it there (keeps it where cron uses ssh)
 ```
 `-f` shows the full output. Everything after the task goes to `ansible-playbook`,
-e.g. `run.sh updates --limit pihole`.
+e.g. `run.sh updates --limit pihole1`.
 
 After an apt upgrade every host is checked: all ports that listened before must listen
 again and no service may newly fail. Otherwise the host is marked as failed.

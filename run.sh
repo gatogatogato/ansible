@@ -67,7 +67,7 @@ Options:
     -f    Full output (also show unchanged and skipped tasks)
 
 Everything after TASK is passed to ansible-playbook, e.g.
-    $(basename "$0") updates --limit pihole --check
+    $(basename "$0") updates --limit pihole1 --check
 EOF
     exit 1
 }
