@@ -126,5 +126,16 @@ UPTIME_KUMA_PUSH_URL="https://<kuma>/api/push/<token>"   # optional
 ```
 Restore: `git clone /home/transport/git-mirror/<repo>.git`.
 
+## Checks on GitHub
+Every push and pull request runs `yamllint` and `ansible-lint` (which includes
+`ansible-playbook --syntax-check`), see `.github/workflows/pruefen.yml`. Rules live in
+`.yamllint` and `.ansible-lint`: a few style rules are skipped, and rules where a change would
+touch the servers (pipes without pipefail, git via command, missing changed_when, ...) only
+warn. Run the same checks locally:
+```
+pip install ansible ansible-lint yamllint
+yamllint . && ansible-lint
+```
+
 ## License
 See [LICENSE](LICENSE).

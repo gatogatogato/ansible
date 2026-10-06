@@ -7,8 +7,8 @@
 # Restarts cloudflared only when something changed, one connector at a time and only
 # after the previous one is connected again, so the tunnel stays up. See docs/cloudflared.md.
 - hosts: cloudflared
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   serial: 1
   name: "cloudflared: tunnel connector"
   tasks:
@@ -17,7 +17,7 @@
         path: "{{ cloudflared_token_backup }}"
       register: backup
       delegate_to: localhost
-      become: no
+      become: false
 
     - name: "Stop when there is no token backup"
       ansible.builtin.fail:
@@ -83,7 +83,7 @@
         owner: root
         group: root
         mode: "0600"
-      no_log: yes
+      no_log: true
       notify: Restart cloudflared
 
     # Replaces the unit of "cloudflared service install", which may hold the token
@@ -97,9 +97,9 @@
     - name: "Enable and start cloudflared"
       ansible.builtin.systemd_service:
         name: cloudflared
-        enabled: yes
+        enabled: true
         state: started
-        daemon_reload: yes
+        daemon_reload: true
 
     - name: "Restart now if needed"
       ansible.builtin.meta: flush_handlers
@@ -112,11 +112,11 @@
       retries: 12
       delay: 5
       delegate_to: localhost
-      become: no
+      become: false
 
   handlers:
     - name: Restart cloudflared
       ansible.builtin.systemd_service:
         name: cloudflared
         state: restarted
-        daemon_reload: yes
+        daemon_reload: true

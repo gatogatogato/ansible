@@ -5,8 +5,8 @@
 # Run twice the first time: the first run creates the deploy key and stops with
 # the public key to add in GitHub. See docs/inventar.md.
 - hosts: inventar
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   name: "inventar: set up the collector"
   tasks:
     # acl: Ansible needs setfacl for the tasks that run as gato (become_user)
@@ -73,7 +73,7 @@
         path: "{{ inventar_secrets_backup }}"
       register: secrets_backup
       delegate_to: localhost
-      become: no
+      become: false
 
     - name: "Restore the secrets from the backup"
       ansible.builtin.copy:
@@ -135,13 +135,13 @@
       ansible.builtin.systemd_service:
         name: inventar-collect.timer
         state: started
-        enabled: yes
+        enabled: true
 
     - name: "Watch for refresh and DNS requests from the web page, now and at boot"
       ansible.builtin.systemd_service:
         name: "{{ item }}"
         state: started
-        enabled: yes
+        enabled: true
       loop:
         - inventar-collect-refresh.path
         - inventar-dns.path
@@ -151,19 +151,19 @@
       ansible.builtin.systemd_service:
         name: inventar-web.service
         state: restarted
-        enabled: yes
+        enabled: true
 
     # the timer waits 15 minutes after setup, so fill the database right away
     - name: "Start a first collector run in the background"
       ansible.builtin.systemd_service:
         name: inventar-collect.service
         state: started
-        no_block: yes
+        no_block: true
 
   handlers:
     - name: "Reload systemd"
       ansible.builtin.systemd_service:
-        daemon_reload: yes
+        daemon_reload: true
 
     - name: "Restart inventar-web"
       ansible.builtin.systemd_service:

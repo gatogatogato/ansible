@@ -1,0 +1,26 @@
+---
+# Regeln fuer die Pruefung in GitHub (.github/workflows/pruefen.yml).
+
+# Wird nur importiert und bekommt target_group vom importierenden Playbook.
+exclude_paths:
+  - find_reachable.yaml
+  - .github/
+
+# Reine Stilregeln, die zum bestehenden Stil nicht passen.
+skip_list:
+  - key-order[play]        # Reihenfolge der Play-Schluessel
+  - name[casing]           # Namen duerfen klein anfangen
+  - name[play]             # importierte Playbooks brauchen keinen Namen
+  - partial-become[task]   # become_user ohne become ist hier gewollt (become kommt vom Play)
+  - run-once[task]         # run_once mit strategy linear ist korrekt
+
+# Hinweise, die gelesen, aber die Pruefung nicht rot machen sollen.
+# Jede Stelle ist bewusst so geschrieben; Aenderungen hier haetten Folgen auf den Servern.
+warn_list:
+  - risky-shell-pipe          # grep ohne Treffer soll Pipes nicht abbrechen
+  - command-instead-of-module # git/systemctl/apt-get bewusst als Befehl
+  - command-instead-of-shell
+  - latest[git]               # Checkouts sollen immer den neuesten Stand holen
+  - no-changed-when
+  - no-handler
+  - risky-file-permissions    # Rechte bestehender Dateien nicht anfassen

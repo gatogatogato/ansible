@@ -3,8 +3,8 @@
 # the web root for the picker page, lighttpd. Safe to run again at any time.
 # See docs/flickr-server.md.
 - hosts: flickr
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   name: "flickr server: folders and web server"
   tasks:
     - name: "Create gato's folders"
@@ -36,7 +36,7 @@
       ansible.builtin.systemd_service:
         name: lighttpd
         state: started
-        enabled: yes
+        enabled: true
 
     # Shown at every SSH login, same box as 30-glance and 30-ansible. Lives here and not
     # in newserver_install_all_basicfiles.yaml, so run.sh flickr-server brings it back

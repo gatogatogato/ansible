@@ -5,8 +5,8 @@
     target_group: debianservers
 
 - hosts: reachable_debianservers
-  gather_facts: yes
-  become: yes
+  gather_facts: true
+  become: true
   name: "Install stuff on all Debian servers"
   vars:
     base_packages:
@@ -34,7 +34,7 @@
   tasks:
     - name: "Update apt cache"
       ansible.builtin.apt:
-        update_cache: yes
+        update_cache: true
         cache_valid_time: 3600
       changed_when: false
 

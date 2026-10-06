@@ -4,7 +4,7 @@
 - name: "Find old rotated logs"
   ansible.builtin.find:
     paths: /var/log
-    recurse: yes
+    recurse: true
     file_type: file
     patterns: ["*.gz", "*.xz", "*.bz2", "*.[0-9]", "*.[0-9].log", "*.old"]
     age: "{{ rotated_logs_max_age }}"

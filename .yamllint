@@ -1,0 +1,20 @@
+---
+# Wird von yamllint und ansible-lint gelesen.
+extends: default
+
+rules:
+  # Lange Shell-Befehle und Meldungen bleiben lieber auf einer Zeile.
+  line-length:
+    max: 220
+  # Ansible-Stil: { a: b } und {{ var }}
+  braces:
+    max-spaces-inside: 1
+  # "on:" in GitHub-Workflows ist ein Schluessel, kein Wahrheitswert.
+  truthy:
+    check-keys: false
+  comments:
+    min-spaces-from-content: 1
+  comments-indentation: false
+  octal-values:
+    forbid-implicit-octal: true
+    forbid-explicit-octal: true

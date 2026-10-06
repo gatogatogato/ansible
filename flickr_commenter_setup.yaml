@@ -4,8 +4,8 @@
 # only), so this is also how commenter changes reach the server. run.sh
 # commenter-setup also runs cronjobs_flickrservers. See docs/flickr-server.md.
 - hosts: flickr
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   name: "flickr commenter: check out flickr-scripts"
   tasks:
     # acl: Ansible needs setfacl for the tasks that run as gato (become_user)
@@ -31,7 +31,7 @@
         src: /home/gato/.config/flickr-scripts/flickr-credentials.yml
         dest: "{{ commenter_dir }}/flickr-credentials.yml"
         state: link
-        force: yes
+        force: true
       become_user: gato
 
     - name: "Create the commenter's log directory"

@@ -7,19 +7,20 @@
 # one connector. Runs daily from cron-run.sh, which reports to Uptime Kuma.
 # Unreachable hosts fail on purpose. See docs/sicherheitsupdates.md.
 - hosts: security_daily:&debianservers
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   serial: 1
   name: "Debian: security updates, one host at a time"
   tasks:
-    - ansible.builtin.import_tasks: tasks/health_snapshot.yaml
+    - name: "Record health before the upgrade"
+      ansible.builtin.import_tasks: tasks/health_snapshot.yaml
 
     - name: "Install unattended-upgrades and needrestart"
       ansible.builtin.apt:
         name:
           - unattended-upgrades
           - needrestart
-        update_cache: yes
+        update_cache: true
         cache_valid_time: 3600
 
     - name: "Allow only security updates"
@@ -50,7 +51,7 @@
 
     - name: "Refresh the package lists"
       ansible.builtin.apt:
-        update_cache: yes
+        update_cache: true
       changed_when: false
 
     - name: "Install security updates"
@@ -96,10 +97,11 @@
       retries: 12
       delay: 5
       delegate_to: localhost
-      become: no
+      become: false
       when: "'cloudflared' in group_names"
 
-    - ansible.builtin.import_tasks: tasks/health_check.yaml
+    - name: "Check health after the upgrade"
+      ansible.builtin.import_tasks: tasks/health_check.yaml
 
     - name: "Check whether a reboot is waiting"
       ansible.builtin.stat:
@@ -112,16 +114,16 @@
       when: reboot_required.stat.exists
 
 - hosts: security_daily:&alpineservers
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   serial: 1
   name: "Alpine: daily apk upgrade"
   tasks:
     # Alpine's stable branches only get fixes, so this is security updates too
     - name: "Update apk index and upgrade all packages"
       community.general.apk:
-        update_cache: yes
-        upgrade: yes
+        update_cache: true
+        upgrade: true
       register: apk_upgrade
 
     - name: "Restart services after package upgrades"

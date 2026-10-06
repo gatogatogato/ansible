@@ -11,8 +11,8 @@
     target_group: all
 
 - hosts: "reachable_all:!ansible"
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   name: "Remove the private transport key outside the ansible server"
   tasks:
     - name: "Check whether cron jobs need the key"

@@ -4,37 +4,38 @@
     target_group: debianservers
 
 - hosts: reachable_debianservers
-  gather_facts: yes
-  become: yes
+  gather_facts: true
+  become: true
   name: "Debian: apt upgrade, one host at a time"
   tasks:
-    - ansible.builtin.import_tasks: tasks/health_snapshot.yaml
+    - name: "Record health before the upgrade"
+      ansible.builtin.import_tasks: tasks/health_snapshot.yaml
 
     - name: "Update apt repo and cache on all servers"
       become: true
-      apt:
-        update_cache: yes
-        force_apt_get: yes
+      ansible.builtin.apt:
+        update_cache: true
+        force_apt_get: true
         cache_valid_time: 3600
       changed_when: false
 
     - name: "Upgrade all packages on all servers"
       become: true
-      apt:
+      ansible.builtin.apt:
         upgrade: dist
-        force_apt_get: yes
+        force_apt_get: true
       throttle: 1
 
     - name: "Check if a reboot is needed"
       become: true
       register: reboot_required_file
-      stat:
+      ansible.builtin.stat:
         path: /var/run/reboot-required
-        get_checksum: no
+        get_checksum: false
 
     - name: "Reboot if kernel updated"
       become: true
-      reboot:
+      ansible.builtin.reboot:
         msg: "Reboot initiated by Ansible for kernel updates"
         connect_timeout: 5
         reboot_timeout: 300
@@ -44,4 +45,5 @@
       throttle: 1
       when: reboot_required_file.stat.exists
 
-    - ansible.builtin.import_tasks: tasks/health_check.yaml
+    - name: "Check health after the upgrade"
+      ansible.builtin.import_tasks: tasks/health_check.yaml
