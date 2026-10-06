@@ -35,6 +35,6 @@ Auf debian-ansible als transport:
 
 ```
 /home/transport/ansible/run.sh cleanup --check          # nur zeigen, was passieren würde
-/home/transport/ansible/run.sh cleanup --limit pihole   # nur ein Host
+/home/transport/ansible/run.sh cleanup --limit pihole1  # nur ein Host
 /home/transport/ansible/run.sh cleanup
 ```
