@@ -75,8 +75,12 @@
       register: needrestart_list
       changed_when: false
 
+    # Plain text UI: the default debconf UI can fail without a terminal (rc 128)
     - name: "Restart them"
       ansible.builtin.command: needrestart -r a -l
+      environment:
+        DEBIAN_FRONTEND: noninteractive
+        NEEDRESTART_UI: NeedRestart::UI::stdio
       when: needrestart_list.stdout is search('NEEDRESTART-SVC')
 
     - name: "Show the restarted services"
