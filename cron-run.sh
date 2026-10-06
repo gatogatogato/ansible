@@ -16,7 +16,9 @@ readonly TASK="$1"
 readonly REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly ENV_FILE="${HOME}/.config/ansible-${TASK}.env"
 readonly LOG_DIR="${HOME}/logs"
-readonly LOG_FILE="${LOG_DIR}/ansible-${TASK}-$(date +%Y-%m-%d).log"
+# Date and time, so a second run on the same day (e.g. by hand after a red
+# run) keeps the earlier log
+readonly LOG_FILE="${LOG_DIR}/ansible-${TASK}-$(date +%Y-%m-%d_%H%M%S).log"
 
 # cron starts with a minimal PATH
 export PATH="${HOME}/.local/bin:/usr/local/bin:/usr/bin:/bin"

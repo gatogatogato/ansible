@@ -9,7 +9,7 @@ holt `run.sh security-updates` für diese Container jeden Morgen die Sicherheits
 | Playbook | `security_updates.yaml`, Vorlage `templates/50unattended-upgrades.j2` |
 | Container | Gruppe `security_daily` in `inventory.yaml`: cloudflared1, cloudflared2, websrv, npm, vaultwarden |
 | Lauf | täglich 06:30 auf debian-ansible (`cron-run.sh security-updates`) |
-| Log | debian-ansible `/home/transport/logs/ansible-security-updates-<Datum>.log` |
+| Log | debian-ansible `/home/transport/logs/ansible-security-updates-<Datum>_<Uhrzeit>.log` |
 | Meldung | Uptime-Kuma-Push-Monitor „Sicherheitsupdates“ |
 
 ## Was passiert
