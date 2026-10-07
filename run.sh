@@ -21,6 +21,8 @@ Tasks:
     updates-proxmox-check
                       read-only: fail for nodes whose updates wait longer than 30 days
                       (Uptime Kuma reminder, docs/proxmox-updates.md)
+    helper-tag        remove the tag proxmox-helper-scripts from all guests, weekly cronjob on
+                      n01 and n02 (docs/proxmox-helper-tag.md)
     hostconfig-backup save /etc/pve, network, cron etc. of the Proxmox nodes to debian-ansible
                       and the TrueNAS share NAS-SMB (docs/proxmox-hostconfig.md)
     cleanup           free disk space in all LXCs and VMs: unused packages, package cache,
@@ -100,6 +102,10 @@ case "${task}" in
     updates-proxmox-check)
         export ANSIBLE_DISPLAY_OK_HOSTS=true
         playbooks=(proxmox_update_check) ;;
+    helper-tag)
+        # Show which guests lost the tag
+        export ANSIBLE_DISPLAY_OK_HOSTS=true
+        playbooks=(proxmox_helper_tag) ;;
     hostconfig-backup)
         playbooks=(proxmox_hostconfig_backup) ;;
     install)

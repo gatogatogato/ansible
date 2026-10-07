@@ -87,6 +87,12 @@ on debian-ansible and on the TrueNAS share NAS-SMB, from where TrueCloud uploads
 `run.sh cronjobs` runs it every Sunday at 05:00 via `cron-run.sh hostconfig-backup`.
 See [docs/proxmox-hostconfig.md](docs/proxmox-hostconfig.md).
 
+## Proxmox helper script tag
+The Proxmox helper scripts tag every guest with `proxmox-helper-scripts`. `run.sh helper-tag`
+installs a script on proxmox-n01 and proxmox-n02 that removes this tag from all VMs and
+containers, with a root cronjob on the nodes (Sunday 04:30). It runs once right away.
+See [docs/proxmox-helper-tag.md](docs/proxmox-helper-tag.md).
+
 ## Daily security updates
 The hosts that see traffic from the internet (group `security_daily`: cloudflared1/2, websrv,
 npm, vaultwarden) get security updates every day at 06:30 via `cron-run.sh security-updates`:
