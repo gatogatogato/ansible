@@ -1,7 +1,7 @@
 ---
 - hosts: websrv
-  gather_facts: yes
-  become: yes
+  gather_facts: true
+  become: true
   name: "Create cronjobs on webservers"
   tasks:
     - name: "Log folder for gato's cronjobs"

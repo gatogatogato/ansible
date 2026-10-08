@@ -1,0 +1,36 @@
+---
+# The Proxmox helper scripts add the tag "proxmox-helper-scripts" to every guest they create.
+# Install a script on proxmox-n01 and proxmox-n02 that removes it again, and a weekly cronjob
+# on the nodes themselves (no push from debian-ansible needed).
+# Runs the script once now, see docs/proxmox-helper-tag.md.
+- import_playbook: find_reachable.yaml
+  vars:
+    target_group: proxmoxservers
+
+- hosts: reachable_proxmoxservers
+  gather_facts: false
+  become: true
+  name: "Proxmox: remove the tag proxmox-helper-scripts weekly"
+  tasks:
+    - name: "Install the script"
+      ansible.builtin.copy:
+        src: files/proxmox-remove-helper-tag.sh
+        dest: /usr/local/sbin/proxmox-remove-helper-tag.sh
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: "Cronjob on the node: Sunday 04:30, after vzdump, before the host config backup"
+      ansible.builtin.cron:
+        cron_file: proxmox-remove-helper-tag
+        user: root
+        name: "remove tag proxmox-helper-scripts"
+        weekday: "0"
+        hour: "4"
+        minute: "30"
+        job: /usr/local/sbin/proxmox-remove-helper-tag.sh 2>&1 | /usr/bin/logger -t proxmox-helper-tag
+
+    - name: "Run the script once now"
+      ansible.builtin.command: /usr/local/sbin/proxmox-remove-helper-tag.sh
+      register: helper_tag
+      changed_when: helper_tag.stdout | length > 0

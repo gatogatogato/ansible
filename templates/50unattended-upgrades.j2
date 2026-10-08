@@ -1,0 +1,24 @@
+// {{ ansible_managed }}, source: templates/50unattended-upgrades.j2 in the ansible repo
+// Only security updates (plus the repos in security_updates_extra_sites).
+// Run daily by debian-ansible (run.sh security-updates), not by the apt timer,
+// see docs/sicherheitsupdates.md. Everything else waits for Sunday's run.sh updates.
+Unattended-Upgrade::Origins-Pattern {
+        "origin=Debian,codename=${distro_codename}-security,label=Debian-Security";
+{% for site in security_updates_extra_sites | default([]) %}
+        "site={{ site }}";
+{% endfor %}
+};
+
+// Never reboot; Sunday's run.sh updates reboots one host at a time when needed
+Unattended-Upgrade::Automatic-Reboot "false";
+
+// Leave cleaning up to run.sh cleanup
+Unattended-Upgrade::Remove-Unused-Kernel-Packages "false";
+Unattended-Upgrade::Remove-New-Unused-Dependencies "false";
+Unattended-Upgrade::Remove-Unused-Dependencies "false";
+
+// Keep changed config files, never ask
+Dpkg::Options {
+        "--force-confdef";
+        "--force-confold";
+};

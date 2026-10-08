@@ -1,7 +1,7 @@
 ---
 - hosts: ansible
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   name: "Create cronjobs on the ansible server"
   tasks:
     - name: "transport cronjob for weekly updates of all LXCs and VMs"
@@ -12,6 +12,14 @@
         hour: "3"
         minute: "30"
         job: /home/transport/ansible/cron-updates.sh > /dev/null 2>&1
+
+    - name: "transport cronjob for the daily security updates of the hosts reachable from the internet"
+      ansible.builtin.cron:
+        user: transport
+        name: "daily security updates"
+        hour: "6"
+        minute: "30"
+        job: /home/transport/ansible/cron-run.sh security-updates > /dev/null 2>&1
 
     - name: "transport cronjob for the nightly mirror of all GitHub repos"
       ansible.builtin.cron:
@@ -29,3 +37,11 @@
         hour: "5"
         minute: "0"
         job: /home/transport/ansible/cron-run.sh hostconfig-backup > /dev/null 2>&1
+
+    - name: "transport cronjob for the daily Proxmox update reminder"
+      ansible.builtin.cron:
+        user: transport
+        name: "proxmox update check"
+        hour: "7"
+        minute: "0"
+        job: /home/transport/ansible/cron-run.sh updates-proxmox-check > /dev/null 2>&1

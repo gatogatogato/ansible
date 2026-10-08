@@ -14,10 +14,19 @@ usage() {
 Usage: $(basename "$0") [-h] [-f] TASK [ansible-playbook options]
 
 Tasks:
-    updates           apt (Debian), apk (Alpine), micro plugins
+    updates           apt (Debian), apk (Alpine), micro plugins, then cleanup
+    security-updates  daily security updates for the hosts reachable from the internet,
+                      no reboot (docs/sicherheitsupdates.md)
     updates-proxmox   apt on the Proxmox nodes
+    updates-proxmox-check
+                      read-only: fail for nodes whose updates wait longer than 30 days
+                      (Uptime Kuma reminder, docs/proxmox-updates.md)
+    helper-tag        remove the tag proxmox-helper-scripts from all guests, weekly cronjob on
+                      n01 and n02 (docs/proxmox-helper-tag.md)
     hostconfig-backup save /etc/pve, network, cron etc. of the Proxmox nodes to debian-ansible
                       and the TrueNAS share NAS-SMB (docs/proxmox-hostconfig.md)
+    cleanup           free disk space in all LXCs and VMs: unused packages, package cache,
+                      journal, old rotated logs, dangling Docker images (docs/aufraeumen.md)
     install           install packages on the Debian servers
     cronjobs          create cronjobs
     shutdown          shut down hercules, flickr and the ansible server
@@ -64,7 +73,7 @@ Options:
     -f    Full output (also show unchanged and skipped tasks)
 
 Everything after TASK is passed to ansible-playbook, e.g.
-    $(basename "$0") updates --limit pihole --check
+    $(basename "$0") updates --limit pihole1 --check
 EOF
     exit 1
 }
@@ -83,9 +92,22 @@ shift
 case "${task}" in
     updates)
         playbooks=(update_debianservers_apt update_alpineservers_apk
-                   update_debianservers_micro inventar_ansible_hosts) ;;
+                   update_debianservers_micro inventar_ansible_hosts cleanup) ;;
+    cleanup)
+        playbooks=(cleanup) ;;
+    security-updates)
+        # Show the upgraded packages and waiting reboots in the log
+        export ANSIBLE_DISPLAY_OK_HOSTS=true
+        playbooks=(security_updates) ;;
     updates-proxmox)
         playbooks=(update_proxmoxservers_apt) ;;
+    updates-proxmox-check)
+        export ANSIBLE_DISPLAY_OK_HOSTS=true
+        playbooks=(proxmox_update_check) ;;
+    helper-tag)
+        # Show which guests lost the tag
+        export ANSIBLE_DISPLAY_OK_HOSTS=true
+        playbooks=(proxmox_helper_tag) ;;
     hostconfig-backup)
         playbooks=(proxmox_hostconfig_backup) ;;
     install)

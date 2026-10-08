@@ -4,8 +4,8 @@
     target_group: debianservers
 
 - hosts: reachable_debianservers
-  gather_facts: yes
-  become: yes
+  gather_facts: true
+  become: true
   name: "Debian: update micro editor plugins"
   tasks:
     - name: "micro plugin update"

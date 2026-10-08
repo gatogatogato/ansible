@@ -4,8 +4,8 @@
 # inventory (no updates) and inventory hosts it cannot find. Runs with inventar-setup,
 # inventar-deploy and the weekly updates, so a changed inventory arrives within a week.
 - hosts: inventar
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   name: "inventar: list of Ansible hosts"
   tasks:
     - name: "Write ansible-hosts.json next to the database"

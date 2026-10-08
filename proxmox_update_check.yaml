@@ -1,0 +1,67 @@
+---
+# Read-only reminder for the manual "run.sh updates-proxmox": fails for every
+# node that has updates waiting and whose last apt upgrade is older than
+# proxmox_update_max_days. cron-run.sh turns that into a red Uptime Kuma push.
+# Installs nothing; the package lists are refreshed at most once a day.
+- import_playbook: find_reachable.yaml
+  vars:
+    target_group: proxmoxservers
+
+- hosts: reachable_proxmoxservers
+  gather_facts: false
+  become: true
+  name: "Proxmox: check how long updates have been waiting"
+  tasks:
+    - name: "Refresh the package lists if older than a day"
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 86400
+      changed_when: false
+
+    - name: "Count waiting updates"
+      ansible.builtin.shell: apt-get -s dist-upgrade | grep -c '^Inst ' || true
+      register: pending
+      changed_when: false
+
+    # apt writes a Start-Date and an Upgrade line to history.log for every run
+    # that upgraded something. The rotated logs reach back a year.
+    - name: "Find the date of the last apt upgrade"
+      ansible.builtin.shell: >-
+        zcat -f /var/log/apt/history.log* 2>/dev/null
+        | awk '/^Start-Date:/ {d = $2} /^Upgrade:/ {print d}' | sort | tail -n 1
+      register: last_upgrade
+      changed_when: false
+
+    # Debian sets reboot-required for some packages; a newer installed kernel
+    # than the running one also needs a reboot. Shown only, not a failure.
+    - name: "Check whether a reboot is waiting"
+      ansible.builtin.shell: |
+        [ -e /run/reboot-required ] && { echo yes; exit; }
+        newest=$(ls /boot/vmlinuz-* 2>/dev/null | sed 's|/boot/vmlinuz-||' | sort -V | tail -n 1)
+        [ -n "$newest" ] && [ "$newest" != "$(uname -r)" ] && echo yes || echo no
+      register: reboot
+      changed_when: false
+
+    - name: "Work out the age of the last upgrade"
+      ansible.builtin.set_fact:
+        pending_count: "{{ pending.stdout | int }}"
+        days_since_upgrade: >-
+          {{ ((now() - (last_upgrade.stdout | to_datetime('%Y-%m-%d'))).days)
+             if last_upgrade.stdout else 9999 }}
+
+    - name: "Show the state"
+      ansible.builtin.debug:
+        msg: >-
+          {{ pending_count }} updates waiting,
+          last upgrade {{ last_upgrade.stdout | default('unknown', true) }}
+          ({{ days_since_upgrade }} days ago),
+          reboot waiting: {{ reboot.stdout }}
+
+    - name: "Fail if updates have been waiting too long"
+      ansible.builtin.assert:
+        that: pending_count | int == 0 or days_since_upgrade | int <= proxmox_update_max_days | int
+        fail_msg: >-
+          {{ pending_count }} updates waiting and the last upgrade was
+          {{ days_since_upgrade }} days ago (limit {{ proxmox_update_max_days }}),
+          run "run.sh updates-proxmox"
+        quiet: true

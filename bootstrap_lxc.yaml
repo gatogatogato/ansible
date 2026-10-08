@@ -6,9 +6,9 @@
 #
 #   run.sh bootstrap --limit proxmox-n01 -e ctid=118
 - hosts: proxmoxservers
-  gather_facts: no
-  become: yes
-  name: "Bootstrap LXC {{ ctid | default('?') }} for Ansible"
+  gather_facts: false
+  become: true
+  name: "Bootstrap LXC for Ansible: {{ ctid | default('?') }}"
   vars:
     transport_pubkey: "{{ lookup('file', lookup('env', 'HOME') + '/.ssh/id_ed25519.pub') }}"
     pct_exec: "pct exec {{ ctid }} --"
@@ -96,4 +96,3 @@
         path: "/tmp/bootstrap-{{ ctid }}-{{ item }}"
         state: absent
       loop: [authorized_keys, sudoers]
-

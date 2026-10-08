@@ -1,12 +1,12 @@
 ---
 - hosts: debianservers
-  gather_facts: yes
-  become: yes
+  gather_facts: true
+  become: true
   name: "Create basic files on a new server"
   tasks:
     - name: "Create sudoers file for transport"
-      become: yes
-      copy:
+      become: true
+      ansible.builtin.copy:
         dest: "/etc/sudoers.d/transport"
         content: |
           transport ALL=(ALL:ALL) NOPASSWD:ALL
@@ -19,49 +19,49 @@
         state: absent
 
     - name: "Find files in /etc/update-motd.d/"
-      find:
+      ansible.builtin.find:
         paths: /etc/update-motd.d/
         patterns: "*"
       register: files_to_delete
 
     - name: "Delete files in /etc/update-motd.d/"
-      file:
+      ansible.builtin.file:
         path: "{{ item.path }}"
         state: absent
       with_items: "{{ files_to_delete.files }}"
 
     - name: "Create motd uname"
-      become: yes
-      copy:
+      become: true
+      ansible.builtin.copy:
         dest: "/etc/update-motd.d/10-uname"
         content: |
           #!/bin/sh
           uname -snvr
 
     - name: "Create motd gato"
-      become: yes
-      copy:
+      become: true
+      ansible.builtin.copy:
         dest: "/etc/update-motd.d/20-gato"
         content: |
           #!/bin/sh
           banner $(hostname | awk 'BEGIN { FS = "-" } ; { print $2 }')
 
     - name: "Set permissions for uname"
-      file:
+      ansible.builtin.file:
         path: "/etc/update-motd.d/10-uname"
         state: touch
         mode: u=rwx,g=rx,o=rx
 
     - name: "Set permissions for gato"
-      file:
+      ansible.builtin.file:
         path: "/etc/update-motd.d/20-gato"
         state: touch
         mode: u=rwx,g=rx,o=rx
 
 # This is only for the one glance server
 - hosts: glance
-  gather_facts: yes
-  become: yes
+  gather_facts: true
+  become: true
   name: "Create glance specific motd script"
   tasks:
     - name: "Login message: how to edit the glance config"
@@ -79,8 +79,8 @@
 
 # This is only for the ansible server
 - hosts: ansible
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   name: "Create ansible server specific motd script"
   tasks:
     - name: "Login message: run Ansible as transport"

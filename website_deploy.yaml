@@ -4,8 +4,8 @@
 # The pull here keeps the checkout's URL and deploy.sh itself current.
 # See docs/webseite.md.
 - hosts: websrv
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   become_user: gato
   name: "Webservers: deploy the website"
   tasks:

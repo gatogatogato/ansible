@@ -4,8 +4,8 @@
 # as long as that certificate exists; without it, plain HTTP on port 80.
 # See docs/webseite.md.
 - hosts: websrv
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   name: "Webservers: Apache virtual host for the website"
   tasks:
     - name: "Enable the Apache module headers (security headers in the virtual host)"

@@ -3,8 +3,8 @@
 # Run twice: the first run creates the deploy key and stops with the public key
 # to add in GitHub, the second run clones. See docs/webseite.md.
 - hosts: websrv
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   name: "Webservers: check out the website repo"
   vars:
     deploy_key: /home/gato/.ssh/website_deploy_key
@@ -68,7 +68,7 @@
         state: directory
         owner: gato
         group: gato
-        recurse: yes
+        recurse: true
 
     - name: "Look for the website folder"
       ansible.builtin.stat:
@@ -99,7 +99,7 @@
         dest: "{{ website_dir }}"
         key_file: "{{ deploy_key }}"
         ssh_opts: "-o ConnectTimeout=15"
-        update: no
+        update: false
       become_user: gato
 
     - name: "Use the deploy key for manual git pulls in the checkout"

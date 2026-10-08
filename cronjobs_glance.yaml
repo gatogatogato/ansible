@@ -1,7 +1,7 @@
 ---
 - hosts: glance
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   name: "Create cronjobs on the glance server"
   tasks:
     # glance-deploy --if-changed does nothing unless GitHub has new commits,

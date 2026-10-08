@@ -1,3 +1,4 @@
+---
 all:
   vars:
     ansible_user: transport
@@ -23,6 +24,9 @@ proxmoxservers:
     proxmox-n02:
       ansible_host: proxmox-n02.lan
   vars:
+    # Kuma reminder (run.sh updates-proxmox-check, docs/proxmox-updates.md):
+    # red when updates wait and the last apt upgrade is older than this
+    proxmox_update_max_days: 30
     # Host configuration backup (run.sh hostconfig-backup, docs/proxmox-hostconfig.md)
     hostconfig_local_dir: /home/transport/backups/proxmox-hostconfig
     # Storage NAS-SMB = TrueNAS share proxmox-raw-backups, uploaded to Storj by TrueCloud
@@ -99,10 +103,14 @@ debianservers:
       ansible_host: debian-ansible.lan
     hercules:
       ansible_host: debian-hercules.lan
-    pihole:
-      ansible_host: debian-pihole.lan
-    pihole-backup:
-      ansible_host: debian-pihole-backup.lan
+    # Two Pi-holes, nebula-sync copies the settings from pihole1 to pihole2.
+    # Static IPs (set in the container, DNS in Pi-hole).
+    pihole1:
+      # 192.168.1.99, CT 117
+      ansible_host: debian-pihole1.lan
+    pihole2:
+      # 192.168.1.59, CT 105
+      ansible_host: debian-pihole2.lan
     # Two connectors of the same Cloudflare Tunnel, one per node, see docs/cloudflared.md.
     # Static IPs (set in the container, DNS in Pi-hole), Nextcloud trusts both as proxies.
     cloudflared1:
@@ -160,9 +168,22 @@ cloudflared:
     cloudflared_token_backup: /home/transport/.config/cloudflared-secrets/token
     # Health endpoint for Uptime Kuma: http://<host>:2000/ready answers 200 while connected
     cloudflared_metrics_port: 2000
+    # cloudflared itself takes the daily security run too (security_updates.yaml)
+    security_updates_extra_sites:
+      - pkg.cloudflare.com
   hosts:
     cloudflared1:
     cloudflared2:
+
+# Hosts that see traffic from the internet: security updates every day
+# (run.sh security-updates, docs/sicherheitsupdates.md), everything else on Sunday
+security_daily:
+  hosts:
+    cloudflared1:
+    cloudflared2:
+    websrv:
+    npm:
+    vaultwarden:
 
 # Tie-breaker for the two-node Proxmox cluster (corosync-qnetd), see docs/qdevice.md
 qdevices:

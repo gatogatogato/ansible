@@ -7,14 +7,14 @@
 #   run.sh qdevice-setup
 #   then on proxmox-n01 as root: pvecm qdevice setup 192.168.1.23
 - hosts: proxmoxservers
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   name: "Proxmox nodes: corosync-qdevice"
   tasks:
     - name: "Install corosync-qdevice"
       ansible.builtin.apt:
         name: corosync-qdevice
-        update_cache: yes
+        update_cache: true
         cache_valid_time: 3600
 
     - name: "Read the root key of the node"
@@ -23,21 +23,21 @@
       register: node_root_key
 
 - hosts: qdevices
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   name: "QDevice: corosync-qnetd"
   tasks:
     - name: "Install corosync-qnetd"
       ansible.builtin.apt:
         name: corosync-qnetd
-        update_cache: yes
+        update_cache: true
         cache_valid_time: 3600
 
     - name: "Start corosync-qnetd now and at boot"
       ansible.builtin.service:
         name: corosync-qnetd
         state: started
-        enabled: yes
+        enabled: true
 
     # Only accepted from the nodes; Debian's sshd allows root with a key, never with a password
     - name: "Allow the root key of every Proxmox node, only from the nodes"
