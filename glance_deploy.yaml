@@ -3,8 +3,8 @@
 # copy glance.yml and assets/, restart Glance). The script is installed first,
 # so a changed template applies right away. See docs/glance.md.
 - hosts: glance
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   name: "Glance: deploy the config"
   tasks:
     - name: "Install glance-deploy"

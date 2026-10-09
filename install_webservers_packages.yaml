@@ -1,22 +1,19 @@
 ---
 - hosts: websrv
-  gather_facts: yes
-  become: yes
+  gather_facts: true
+  become: true
   name: "Install stuff on web servers"
   tasks:
     - name: "Install a list of apt packages"
       ansible.builtin.apt:
         pkg:
-        - apache2
-        # keeps vpn.mythenstrasse56.net at Cloudflare up to date (DynDNS for the VPN),
-        # /etc/ddclient.conf holds the API token and is not in this repo
-        - ddclient
-        - hugo
-        - rsync
-        - micro
-        - git
-        # lets Ansible run tasks as gato (become_user) on websrv
-        - acl
+          - apache2
+          - hugo
+          - rsync
+          - micro
+          - git
+          # lets Ansible run tasks as gato (become_user) on websrv
+          - acl
 
     # The Cloudflare Tunnel does HTTPS and reaches websrv via plain HTTP, so
     # certbot (snap) and snapd are no longer needed
@@ -28,7 +25,17 @@
     - name: "Remove snapd together with the certbot snap"
       ansible.builtin.apt:
         pkg:
-        - snapd
+          - snapd
+        state: absent
+        purge: true
+        autoremove: true
+
+    # VPN now runs via UniFi Teleport, so the DynDNS name vpn.mythenstrasse56.net
+    # is no longer needed. Purging also deletes /etc/ddclient.conf with its API token
+    - name: "Remove ddclient"
+      ansible.builtin.apt:
+        pkg:
+          - ddclient
         state: absent
         purge: true
         autoremove: true

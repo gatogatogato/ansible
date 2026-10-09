@@ -1,0 +1,147 @@
+---
+# Back up the configuration of the Proxmox hosts themselves; vzdump only saves the guests.
+# Each node packs /etc/pve, network, cron, SSH and a few more files into one tar. The tars
+# are kept on debian-ansible ({{ hostconfig_local_dir }}) and on the TrueNAS share NAS-SMB
+# next to the vzdump archives, so the TrueCloud upload takes them offsite.
+# Keeps {{ hostconfig_keep }} per node in both places. Weekly via cron-run.sh, see
+# docs/proxmox-hostconfig.md. The tars hold secrets (/etc/pve/priv, /root/.ssh): 0600 on
+# debian-ansible, and the share is only reachable from the LAN.
+- hosts: proxmoxservers
+  gather_facts: false
+  become: true
+  name: "Proxmox: pack the host configuration"
+  vars:
+    hostconfig_tar: "/var/tmp/hostconfig-{{ inventory_hostname }}-{{ hostconfig_date }}.tar.gz"
+  tasks:
+    - name: "Fix the date for all nodes"
+      ansible.builtin.set_fact:
+        hostconfig_date: "{{ lookup('ansible.builtin.pipe', 'date +%Y-%m-%d') }}"
+      run_once: true
+
+    - name: "Restrict the backup folder"
+      ansible.builtin.file:
+        path: "{{ hostconfig_local_dir }}"
+        state: directory
+        mode: "0700"
+      delegate_to: localhost
+      become: false
+      run_once: true
+
+    - name: "Pack the configuration"
+      ansible.builtin.shell: |
+        set -uo pipefail
+        umask 077
+        info=$(mktemp -d)
+        trap 'rm -rf "${info}"' EXIT
+        # What a rebuild needs to know but is not in a file
+        {
+          echo "### pveversion -v"; pveversion -v
+          echo; echo "### ip -br addr"; ip -br addr
+          echo; echo "### lsblk"; lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINT,MODEL
+          echo; echo "### zpool status"; zpool status 2>&1
+          echo; echo "### pvecm status"; pvecm status 2>&1
+          echo; echo "### pvesm status"; pvesm status 2>&1
+        } > "${info}/system-info.txt" 2>&1
+        # Missing paths only warn (--ignore-failed-read), so one list fits all nodes
+        tar -czf "{{ hostconfig_tar }}" --ignore-failed-read --warning=no-file-changed \
+          -C / {{ hostconfig_paths | join(' ') }} \
+          -C "${info}" system-info.txt
+        rc=$?
+        # 1 = a file changed while it was read, the tar is still usable
+        [ "${rc}" -le 1 ]
+      args:
+        executable: /bin/bash
+      changed_when: true
+
+    - name: "Copy the tar to debian-ansible"
+      ansible.builtin.fetch:
+        src: "{{ hostconfig_tar }}"
+        dest: "{{ hostconfig_local_dir }}/{{ inventory_hostname }}/"
+        flat: true
+
+    - name: "Delete the tar on the node"
+      ansible.builtin.file:
+        path: "{{ hostconfig_tar }}"
+        state: absent
+
+    - name: "Check whether the node has the NAS share mounted"
+      ansible.builtin.command: mountpoint -q {{ hostconfig_nas_mount }}
+      register: nas_mounted
+      changed_when: false
+      failed_when: false
+
+    - name: "Group the nodes with the share"
+      ansible.builtin.group_by:
+        key: hostconfig_nas_nodes
+      when: nas_mounted.rc == 0
+      changed_when: false
+
+    - name: "Make the tars readable only for transport"
+      ansible.builtin.shell: chmod 0600 {{ hostconfig_local_dir }}/*/*.tar.gz
+      changed_when: false
+      delegate_to: localhost
+      become: false
+      run_once: true
+
+    - name: "Delete all but the newest tars per node"
+      ansible.builtin.shell: |
+        for dir in {{ hostconfig_local_dir }}/*/; do
+          ls -1 "${dir}"hostconfig-*.tar.gz 2>/dev/null | sort -r | tail -n +{{ hostconfig_keep + 1 }} | xargs -r rm -v
+        done
+      register: pruned
+      changed_when: pruned.stdout | length > 0
+      delegate_to: localhost
+      become: false
+      run_once: true
+
+    - name: "Stop when no node has the NAS share"
+      ansible.builtin.fail:
+        msg: |
+          No Proxmox node has {{ hostconfig_nas_mount }} mounted, the tars are only on
+          debian-ansible ({{ hostconfig_local_dir }}). Check the storage NAS-SMB in
+          Datacenter -> Storage.
+      when: groups['hostconfig_nas_nodes'] | default([]) | length == 0
+      delegate_to: localhost
+      become: false
+      run_once: true
+
+- hosts: hostconfig_nas_nodes[0]
+  gather_facts: false
+  become: true
+  name: "TrueNAS: copy the tars to the share"
+  vars:
+    nas_dir: "{{ hostconfig_nas_mount }}/{{ hostconfig_nas_subdir }}"
+  tasks:
+    # The whole local set, so a node that failed last week is filled in too
+    - name: "Find the tars on debian-ansible"
+      ansible.builtin.find:
+        paths: "{{ hostconfig_local_dir }}"
+        patterns: "hostconfig-*.tar.gz"
+        recurse: true
+      register: found
+      delegate_to: localhost
+      become: false
+
+    - name: "List them"
+      ansible.builtin.set_fact:
+        local_tars: "{{ found.files | map(attribute='path') | sort }}"
+
+    - name: "Create a folder per node"
+      ansible.builtin.file:
+        path: "{{ nas_dir }}/{{ item }}"
+        state: directory
+      loop: "{{ local_tars | map('dirname') | map('basename') | unique }}"
+
+    - name: "Copy the tars"
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "{{ nas_dir }}/{{ item | dirname | basename }}/"
+      loop: "{{ local_tars }}"
+
+    - name: "Delete all but the newest tars per node"
+      ansible.builtin.shell: |
+        for dir in "{{ nas_dir }}"/*/; do
+          ls -1 "${dir}"hostconfig-*.tar.gz 2>/dev/null | sort -r | tail -n +{{ hostconfig_keep + 1 }} | xargs -r rm -v
+        done
+      register: pruned
+      changed_when: pruned.stdout | length > 0

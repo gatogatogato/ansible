@@ -1,0 +1,19 @@
+---
+# Delete rotated logs (syslog.1, syslog.2.gz, ...) older than rotated_logs_max_age.
+# logrotate normally does this; this catches leftovers of renamed or removed services.
+- name: "Find old rotated logs"
+  ansible.builtin.find:
+    paths: /var/log
+    recurse: true
+    file_type: file
+    patterns: ["*.gz", "*.xz", "*.bz2", "*.[0-9]", "*.[0-9].log", "*.old"]
+    age: "{{ rotated_logs_max_age }}"
+  register: rotated_logs
+
+- name: "Delete old rotated logs"
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ rotated_logs.files }}"
+  loop_control:
+    label: "{{ item.path }}"

@@ -20,9 +20,10 @@ Nichts davon muss vom alten Server gerettet werden, solange die Secrets
 gesichert sind (siehe Vorsorge). Die Fotos liegen in Nextcloud, die Logs des
 Commenters sind nach 7 Tagen ohnehin weg.
 
-Außerhalb von debian-flickr: https://picker.mythenstrasse56.net zeigt auf
-diesen Server (Proxy bzw. Tunnel). Bekommt der neue Server eine andere IP,
-dort das Ziel anpassen.
+Außerhalb von debian-flickr: https://picker.mythenstrasse56.net zeigt über
+NPM (192.168.1.78) auf diesen Server und ist nur intern erreichbar, nicht aus
+dem Internet. Bekommt der neue Server eine andere IP, dort das Ziel anpassen.
+Die Seite gibt es nur unter `/picker.html`, eine Startseite fehlt.
 
 ## Keys und Tokens
 

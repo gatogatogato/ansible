@@ -14,8 +14,19 @@ usage() {
 Usage: $(basename "$0") [-h] [-f] TASK [ansible-playbook options]
 
 Tasks:
-    updates           apt (Debian), apk (Alpine), micro plugins
+    updates           apt (Debian), apk (Alpine), micro plugins, then cleanup
+    security-updates  daily security updates for the hosts reachable from the internet,
+                      no reboot (docs/sicherheitsupdates.md)
     updates-proxmox   apt on the Proxmox nodes
+    updates-proxmox-check
+                      read-only: fail for nodes whose updates wait longer than 30 days
+                      (Uptime Kuma reminder, docs/proxmox-updates.md)
+    helper-tag        remove the tag proxmox-helper-scripts from all guests, weekly cronjob on
+                      n01 and n02 (docs/proxmox-helper-tag.md)
+    hostconfig-backup save /etc/pve, network, cron etc. of the Proxmox nodes to debian-ansible
+                      and the TrueNAS share NAS-SMB (docs/proxmox-hostconfig.md)
+    cleanup           free disk space in all LXCs and VMs: unused packages, package cache,
+                      journal, old rotated logs, dangling Docker images (docs/aufraeumen.md)
     install           install packages on the Debian servers
     cronjobs          create cronjobs
     shutdown          shut down hercules, flickr and the ansible server
@@ -44,6 +55,13 @@ Tasks:
     inventar-deploy   pull the inventar repo on debian-inventar, restart the web page
     inventar-secrets-backup
                       copy debian-inventar's secrets file to debian-ansible
+    camsnaps-setup    set up debian-camsnaps: camera snapshot gallery from the camsnaps repo,
+                      its own user and key for Home Assistant, cronjobs (docs/camsnaps.md)
+    camsnaps-deploy   pull the camsnaps repo on debian-camsnaps
+    cloudflared-setup set up the Cloudflare Tunnel connectors: package, token file,
+                      metrics port for Uptime Kuma, one restart at a time (docs/cloudflared.md)
+    cloudflared-token-backup
+                      copy the tunnel token from a connector to debian-ansible
     vaultwarden-backup
                       install the nightly backup script from the shell repo on vaultwarden
                       (docs/vaultwarden-backup.md)
@@ -53,7 +71,7 @@ Options:
     -f    Full output (also show unchanged and skipped tasks)
 
 Everything after TASK is passed to ansible-playbook, e.g.
-    $(basename "$0") updates --limit pihole --check
+    $(basename "$0") updates --limit pihole1 --check
 EOF
     exit 1
 }
@@ -72,9 +90,24 @@ shift
 case "${task}" in
     updates)
         playbooks=(update_debianservers_apt update_alpineservers_apk
-                   update_debianservers_micro inventar_ansible_hosts) ;;
+                   update_debianservers_micro inventar_ansible_hosts cleanup) ;;
+    cleanup)
+        playbooks=(cleanup) ;;
+    security-updates)
+        # Show the upgraded packages and waiting reboots in the log
+        export ANSIBLE_DISPLAY_OK_HOSTS=true
+        playbooks=(security_updates) ;;
     updates-proxmox)
         playbooks=(update_proxmoxservers_apt) ;;
+    updates-proxmox-check)
+        export ANSIBLE_DISPLAY_OK_HOSTS=true
+        playbooks=(proxmox_update_check) ;;
+    helper-tag)
+        # Show which guests lost the tag
+        export ANSIBLE_DISPLAY_OK_HOSTS=true
+        playbooks=(proxmox_helper_tag) ;;
+    hostconfig-backup)
+        playbooks=(proxmox_hostconfig_backup) ;;
     install)
         playbooks=(install_all_packages install_webservers_packages
                    install_flickrservers_packages install_ansibleservers_packages) ;;
@@ -125,6 +158,16 @@ case "${task}" in
         playbooks=(inventar_deploy inventar_ansible_hosts) ;;
     inventar-secrets-backup)
         playbooks=(inventar_secrets_backup) ;;
+    camsnaps-setup)
+        playbooks=(camsnaps_setup) ;;
+    camsnaps-deploy)
+        # Show the pulled commit
+        export ANSIBLE_DISPLAY_OK_HOSTS=true
+        playbooks=(camsnaps_deploy) ;;
+    cloudflared-setup)
+        playbooks=(cloudflared_setup) ;;
+    cloudflared-token-backup)
+        playbooks=(cloudflared_token_backup) ;;
     vaultwarden-backup)
         playbooks=(vaultwarden_backup) ;;
     newserver)

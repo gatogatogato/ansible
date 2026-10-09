@@ -13,8 +13,11 @@ Clones the repo on first use, afterwards only does a `git pull`. Bootstrap once 
 
 ## Running playbooks
 ```
-/home/transport/ansible/run.sh updates           # apt, apk, micro on all LXCs and VMs
+/home/transport/ansible/run.sh updates           # apt, apk, micro on all LXCs and VMs, then cleanup
+/home/transport/ansible/run.sh cleanup           # free disk space in all LXCs and VMs (docs/aufraeumen.md)
+/home/transport/ansible/run.sh security-updates  # security updates for the hosts reachable from the internet
 /home/transport/ansible/run.sh updates-proxmox   # apt on the Proxmox nodes
+/home/transport/ansible/run.sh updates-proxmox-check  # read-only: have updates waited too long?
 /home/transport/ansible/run.sh install
 /home/transport/ansible/run.sh cronjobs
 /home/transport/ansible/run.sh shutdown
@@ -23,10 +26,15 @@ Clones the repo on first use, afterwards only does a `git pull`. Bootstrap once 
 /home/transport/ansible/run.sh remove-key        # delete it there (keeps it where cron uses ssh)
 ```
 `-f` shows the full output. Everything after the task goes to `ansible-playbook`,
-e.g. `run.sh updates --limit pihole`.
+e.g. `run.sh updates --limit pihole1`.
 
 After an apt upgrade every host is checked: all ports that listened before must listen
 again and no service may newly fail. Otherwise the host is marked as failed.
+
+## Emergency
+What to do when DNS, a node, TrueNAS, Vaultwarden or everything is gone, rebuild order and
+where backups and credentials live (including the offline USB disk LastResort):
+[docs/notfall.md](docs/notfall.md).
 
 ## New machines
 See [docs/neue-maschine.md](docs/neue-maschine.md): `run.sh bootstrap` sets up a new LXC from its
@@ -53,15 +61,56 @@ ping scan), code in the private repo `gatogatogato/inventar`. `run.sh inventar-s
 port 8080, `run.sh inventar-deploy` pulls a new version and restarts the web page,
 `run.sh inventar-secrets-backup` copies the credentials to debian-ansible. See [docs/inventar.md](docs/inventar.md).
 
+## Camera gallery
+debian-camsnaps copies Home Assistant's camera snapshots every 10 minutes and shows them as a
+gallery, code in the private repo `gatogatogato/camsnaps`. `run.sh camsnaps-setup` sets it up
+(own user and SSH key for Home Assistant, cronjobs), `run.sh camsnaps-deploy` pulls a new version.
+See [docs/camsnaps.md](docs/camsnaps.md).
+
 ## Vaultwarden backup
 The nightly backup script lives in the public repo `gatogatogato/shell` (`vaultwarden-backup.sh`).
 `run.sh vaultwarden-backup` installs it on vaultwarden as `/etc/periodic/daily/create-vaultwarden-backup`,
 the Uptime Kuma push URL stays in `/etc/vaultwarden-backup.conf` on the container.
 See [docs/vaultwarden-backup.md](docs/vaultwarden-backup.md).
 
+## Cloudflare Tunnel
+Two connectors of the same tunnel, debian-cloudflared1 (proxmox-n01) and debian-cloudflared2
+(proxmox-n02), so the public services survive the loss of one. `run.sh cloudflared-setup` installs
+cloudflared, puts the token into `/etc/cloudflared/token` and restarts one connector at a time;
+`run.sh cloudflared-token-backup` copies the token to debian-ansible.
+See [docs/cloudflared.md](docs/cloudflared.md).
+
+## Proxmox host configuration
+vzdump saves the guests, not the nodes. `run.sh hostconfig-backup` packs `/etc/pve`, network,
+cron, SSH and a few more files of every Proxmox node into a tar and keeps the newest 8 per node
+on debian-ansible and on the TrueNAS share NAS-SMB, from where TrueCloud uploads them.
+`run.sh cronjobs` runs it every Sunday at 05:00 via `cron-run.sh hostconfig-backup`.
+See [docs/proxmox-hostconfig.md](docs/proxmox-hostconfig.md).
+
+## Proxmox helper script tag
+The Proxmox helper scripts tag every guest with `proxmox-helper-scripts`. `run.sh helper-tag`
+installs a script on proxmox-n01 and proxmox-n02 that removes this tag from all VMs and
+containers, with a root cronjob on the nodes (Sunday 04:30). It runs once right away.
+See [docs/proxmox-helper-tag.md](docs/proxmox-helper-tag.md).
+
+## Daily security updates
+The hosts that see traffic from the internet (group `security_daily`: cloudflared1/2, websrv,
+npm, vaultwarden) get security updates every day at 06:30 via `cron-run.sh security-updates`:
+unattended-upgrades with the Debian-Security repo only (and Cloudflare's repo on the
+connectors), needrestart restarts affected services one host at a time, apk upgrade on Alpine.
+No reboots, Sunday's `run.sh updates` does those. Reports to its own Uptime Kuma push monitor.
+See [docs/sicherheitsupdates.md](docs/sicherheitsupdates.md).
+
+## Proxmox update reminder
+The Proxmox nodes are updated by hand. `run.sh cronjobs` installs a daily check (07:00,
+`cron-run.sh updates-proxmox-check`) that turns its Uptime Kuma push monitor red when a node has
+updates waiting and its last apt upgrade is older than 30 days. It installs nothing.
+See [docs/proxmox-updates.md](docs/proxmox-updates.md).
+
 ## Weekly updates via cron
-`run.sh cronjobs` installs a cronjob (Sunday 03:30) that runs `cron-updates.sh`.
-It logs to `/home/transport/logs/` and reports to an Uptime Kuma push monitor. The push URL
+`run.sh cronjobs` installs a cronjob (Sunday 03:30) that runs `cron-updates.sh`
+(a wrapper for `cron-run.sh updates`, which any run.sh task can use).
+It logs to `/home/transport/logs/ansible-TASK-DATE_TIME.log` (one file per run) and reports to an Uptime Kuma push monitor. The push URL
 stays out of the repo, in `/home/transport/.config/ansible-updates.env`:
 ```
 UPTIME_KUMA_PUSH_URL="https://<kuma>/api/push/<token>"
@@ -82,6 +131,17 @@ MIRROR_DIR="/home/transport/git-mirror"    # optional, e.g. a TrueNAS share late
 UPTIME_KUMA_PUSH_URL="https://<kuma>/api/push/<token>"   # optional
 ```
 Restore: `git clone /home/transport/git-mirror/<repo>.git`.
+
+## Checks on GitHub
+Every push and pull request runs `yamllint` and `ansible-lint` (which includes
+`ansible-playbook --syntax-check`), see `.github/workflows/pruefen.yml`. Rules live in
+`.yamllint` and `.ansible-lint`: a few style rules are skipped, and rules where a change would
+touch the servers (pipes without pipefail, git via command, missing changed_when, ...) only
+warn. Run the same checks locally:
+```
+pip install ansible ansible-lint yamllint
+yamllint . && ansible-lint
+```
 
 ## License
 See [LICENSE](LICENSE).

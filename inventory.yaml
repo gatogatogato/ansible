@@ -1,3 +1,4 @@
+---
 all:
   vars:
     ansible_user: transport
@@ -24,6 +25,45 @@ proxmoxservers:
       ansible_host: proxmox-n02.lan
     proxmox-n03:
       ansible_host: proxmox-n03.lan
+  vars:
+    # Kuma reminder (run.sh updates-proxmox-check, docs/proxmox-updates.md):
+    # red when updates wait and the last apt upgrade is older than this
+    proxmox_update_max_days: 30
+    # Host configuration backup (run.sh hostconfig-backup, docs/proxmox-hostconfig.md)
+    hostconfig_local_dir: /home/transport/backups/proxmox-hostconfig
+    # Storage NAS-SMB = TrueNAS share proxmox-raw-backups, uploaded to Storj by TrueCloud
+    hostconfig_nas_mount: /mnt/pve/NAS-SMB
+    hostconfig_nas_subdir: hostconfig
+    hostconfig_keep: 8
+    # Relative to /, missing ones are skipped
+    hostconfig_paths:
+      - etc/pve
+      - etc/network
+      - etc/hosts
+      - etc/hostname
+      - etc/resolv.conf
+      - etc/fstab
+      - etc/crontab
+      - etc/cron.d
+      - var/spool/cron/crontabs
+      - root/.ssh
+      - etc/ssh
+      - home/transport/.ssh
+      - etc/sudoers.d
+      - etc/apt
+      - etc/modules
+      - etc/modprobe.d
+      - etc/default/grub
+      - etc/kernel/cmdline
+      - etc/sysctl.conf
+      - etc/sysctl.d
+      - etc/udev/rules.d
+      - etc/systemd/network
+      - etc/systemd/system
+      - etc/vzdump.conf
+      - etc/lvm/lvm.conf
+      - etc/postfix/main.cf
+      - etc/timezone
 
 debianservers:
   hosts:
@@ -65,12 +105,22 @@ debianservers:
       ansible_host: debian-ansible.lan
     hercules:
       ansible_host: debian-hercules.lan
-    pihole:
-      ansible_host: debian-pihole.lan
-    pihole-backup:
-      ansible_host: debian-pihole-backup.lan
-    cloudflared:
-      ansible_host: debian-cloudflared.lan
+    # Two Pi-holes, nebula-sync copies the settings from pihole1 to pihole2.
+    # Static IPs (set in the container, DNS in Pi-hole).
+    pihole1:
+      # 192.168.1.99, CT 117
+      ansible_host: debian-pihole1.lan
+    pihole2:
+      # 192.168.1.59, CT 105
+      ansible_host: debian-pihole2.lan
+    # Two connectors of the same Cloudflare Tunnel, one per node, see docs/cloudflared.md.
+    # Static IPs (set in the container, DNS in Pi-hole), Nextcloud trusts both as proxies.
+    cloudflared1:
+      # 192.168.1.75 on proxmox-n01, formerly debian-cloudflared
+      ansible_host: debian-cloudflared1.lan
+    cloudflared2:
+      # 192.168.1.72 on proxmox-n02
+      ansible_host: debian-cloudflared2.lan
     glance:
       ansible_host: debian-glance.lan
       # Glance config (private repo, read via deploy key, see docs/glance.md).
@@ -83,6 +133,15 @@ debianservers:
       ansible_host: debian-npm.lan
     camsnaps:
       ansible_host: debian-camsnaps.lan
+      # Gallery of Home Assistant's camera snapshots (private repo, read via deploy key,
+      # see docs/camsnaps.md). SSH over port 443 like the website repo.
+      camsnaps_repo: ssh://git@ssh.github.com:443/gatogatogato/camsnaps.git
+      camsnaps_dir: /opt/camsnaps
+      # Pictures, thumbnails and index.html, served by Apache as /snapshots/
+      camsnaps_web: /var/www/html/snapshots
+      # Home of the user camsnaps, holds the SSH key for Home Assistant
+      camsnaps_home: /var/lib/camsnaps
+      camsnaps_ha_host: root@homeassistant.lan
     mbusmaster:
       ansible_host: debian-mbusmaster.lan
     ntfy:
@@ -102,6 +161,29 @@ debianservers:
       inventar_data: /var/lib/inventar
       # Web page, later behind NPM as https://inventar.mythenstrasse56.net
       inventar_web_port: 8080
+
+cloudflared:
+  vars:
+    # Copy of the tunnel token on debian-ansible (run.sh cloudflared-token-backup), never in git
+    cloudflared_token_backup: /home/transport/.config/cloudflared-secrets/token
+    # Health endpoint for Uptime Kuma: http://<host>:2000/ready answers 200 while connected
+    cloudflared_metrics_port: 2000
+    # cloudflared itself takes the daily security run too (security_updates.yaml)
+    security_updates_extra_sites:
+      - pkg.cloudflare.com
+  hosts:
+    cloudflared1:
+    cloudflared2:
+
+# Hosts that see traffic from the internet: security updates every day
+# (run.sh security-updates, docs/sicherheitsupdates.md), everything else on Sunday
+security_daily:
+  hosts:
+    cloudflared1:
+    cloudflared2:
+    websrv:
+    npm:
+    vaultwarden:
 
 alpineservers:
   vars:

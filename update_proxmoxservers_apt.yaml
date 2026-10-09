@@ -4,43 +4,45 @@
     target_group: proxmoxservers
 
 - hosts: reachable_proxmoxservers
-  gather_facts: yes
-  become: yes
+  gather_facts: true
+  become: true
   name: "Proxmox: apt upgrade, one host at a time"
   tasks:
-    - ansible.builtin.import_tasks: tasks/health_snapshot.yaml
+    - name: "Record health before the upgrade"
+      ansible.builtin.import_tasks: tasks/health_snapshot.yaml
 
     - name: "Update apt repo and cache on all servers"
       become: true
-      apt:
-        update_cache: yes
-        force_apt_get: yes
+      ansible.builtin.apt:
+        update_cache: true
+        force_apt_get: true
         cache_valid_time: 3600
       changed_when: false
 
     - name: "Upgrade all packages on all servers"
       become: true
-      apt:
+      ansible.builtin.apt:
         upgrade: dist
-        force_apt_get: yes
+        force_apt_get: true
       throttle: 1
 
     - name: "Remove useless packages from the cache"
       ansible.builtin.apt:
-        autoclean: yes
+        autoclean: true
 
     - name: "Remove dependencies that are no longer required"
       ansible.builtin.apt:
-        autoremove: yes
+        autoremove: true
 
     - name: "Remove dependencies that are no longer required and purge their configuration files"
       ansible.builtin.apt:
-        autoremove: yes
+        autoremove: true
         purge: true
 
     - name: "Run the equivalent of apt-get clean as a separate step"
-      apt:
-        clean: yes
+      ansible.builtin.apt:
+        clean: true
       changed_when: false
 
-    - ansible.builtin.import_tasks: tasks/health_check.yaml
+    - name: "Check health after the upgrade"
+      ansible.builtin.import_tasks: tasks/health_check.yaml

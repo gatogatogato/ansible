@@ -1,23 +1,23 @@
 ---
 - hosts: flickr
-  gather_facts: yes
-  become: yes
+  gather_facts: true
+  become: true
   name: "Install stuff on flickr servers"
   tasks:
     - name: "Install a list of apt packages"
       ansible.builtin.apt:
         pkg:
-        - exiftool
-        - imagemagick
-        - ruby-dev
-        - build-essential
-        - nextcloud-desktop-cmd
-        - lighttpd
-        - rsync
-        - git
-        - acl
-        - curl
-        - tmux
+          - exiftool
+          - imagemagick
+          - ruby-dev
+          - build-essential
+          - nextcloud-desktop-cmd
+          - lighttpd
+          - rsync
+          - git
+          - acl
+          - curl
+          - tmux
 
     - name: "Install ruby gem date"
       community.general.gem:

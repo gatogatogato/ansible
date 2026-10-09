@@ -1,7 +1,7 @@
 ---
 - hosts: debianservers
-  gather_facts: yes
-  become: yes
+  gather_facts: true
+  become: true
   name: "Set basic stuff on a new server"
   vars:
     shell_users: [gato, transport]
@@ -24,14 +24,14 @@
         name: transport
         shell: /bin/zsh
         groups: sudo
-        append: yes
+        append: true
 
     - name: "Set shell for user gato and add to sudo group"
       ansible.builtin.user:
         name: gato
         shell: /bin/zsh
         groups: sudo
-        append: yes
+        append: true
 
     - name: "Set shell for user root"
       ansible.builtin.user:
@@ -58,7 +58,7 @@
         repo: https://github.com/ohmyzsh/ohmyzsh.git
         dest: "/home/{{ item }}/.oh-my-zsh"
         depth: 1
-        update: no
+        update: false
       loop: "{{ shell_users }}"
 
     - name: "Give Oh My Zsh to its user"
@@ -66,15 +66,15 @@
         path: "/home/{{ item }}/.oh-my-zsh"
         owner: "{{ item }}"
         group: "{{ item }}"
-        recurse: yes
+        recurse: true
       loop: "{{ shell_users }}"
 
     - name: "Create .zshrc from the Oh My Zsh template"
       ansible.builtin.copy:
         src: "/home/{{ item }}/.oh-my-zsh/templates/zshrc.zsh-template"
         dest: "/home/{{ item }}/.zshrc"
-        remote_src: yes
-        force: no
+        remote_src: true
+        force: false
         owner: "{{ item }}"
         group: "{{ item }}"
         mode: "0644"

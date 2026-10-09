@@ -4,8 +4,8 @@
 # run.sh uploader-setup also runs cronjobs_flickrservers, so the thumbnail cronjob
 # points to the checkout right away. See docs/flickr-uploader.md.
 - hosts: flickr
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   name: "flickr uploader: check out the repo"
   vars:
     # The old copies in the Nextcloud folder, moved to flickr_old_dir once

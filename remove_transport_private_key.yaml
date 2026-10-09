@@ -2,8 +2,8 @@
 # Delete the PRIVATE transport key from every host except the ansible server.
 # It only belongs on debian-ansible; a copy elsewhere lets whoever breaks into
 # that host reach all others. Check first with run.sh audit-key.
-# Hosts whose cron jobs use ssh/scp/rsync keep the key (e.g. camsnaps copies
-# snapshots from Home Assistant with it). To undo on one host, copy
+# Hosts whose cron jobs use ssh/scp/rsync keep the key (camsnaps did until
+# camsnaps_setup.yaml gave it its own key for Home Assistant). To undo on one host, copy
 # /home/transport/.ssh/id_ed25519 back from debian-ansible.
 #   run.sh remove-key
 - import_playbook: find_reachable.yaml
@@ -11,8 +11,8 @@
     target_group: all
 
 - hosts: "reachable_all:!ansible"
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   name: "Remove the private transport key outside the ansible server"
   tasks:
     - name: "Check whether cron jobs need the key"

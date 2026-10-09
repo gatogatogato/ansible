@@ -1,0 +1,122 @@
+---
+# Set up a Cloudflare Tunnel connector. All connectors share one tunnel (token-based,
+# routes in the Cloudflare dashboard), Cloudflare spreads the traffic over them.
+# Installs cloudflared from Cloudflare's apt repo when missing (same files as the
+# community-script), puts the token from debian-ansible into /etc/cloudflared/token
+# (never in the unit, never in git) and opens the metrics port for Uptime Kuma.
+# Restarts cloudflared only when something changed, one connector at a time and only
+# after the previous one is connected again, so the tunnel stays up. See docs/cloudflared.md.
+- hosts: cloudflared
+  gather_facts: false
+  become: true
+  serial: 1
+  name: "cloudflared: tunnel connector"
+  tasks:
+    - name: "Check the token backup on debian-ansible"
+      ansible.builtin.stat:
+        path: "{{ cloudflared_token_backup }}"
+      register: backup
+      delegate_to: localhost
+      become: false
+
+    - name: "Stop when there is no token backup"
+      ansible.builtin.fail:
+        msg: |
+          {{ cloudflared_token_backup }} is missing on debian-ansible.
+          Run "run.sh cloudflared-token-backup --limit cloudflared1" first,
+          see docs/cloudflared.md.
+      when: not backup.stat.exists
+
+    - name: "Check whether cloudflared is installed"
+      ansible.builtin.stat:
+        path: /usr/bin/cloudflared
+      register: binary
+
+    # Only on a fresh container: the community-script writes the same two files,
+    # a second definition of the repo with another key would break apt
+    - name: "Add Cloudflare's apt key"
+      ansible.builtin.get_url:
+        url: https://pkg.cloudflare.com/cloudflare-main.gpg
+        dest: /etc/apt/keyrings/cloudflared.gpg
+        mode: "0644"
+      when: not binary.stat.exists
+
+    - name: "Add Cloudflare's apt repo"
+      ansible.builtin.copy:
+        dest: /etc/apt/sources.list.d/cloudflared.sources
+        content: |
+          Types: deb
+          URIs: https://pkg.cloudflare.com/cloudflared/
+          Suites: any
+          Components: main
+          Signed-By: /etc/apt/keyrings/cloudflared.gpg
+        mode: "0644"
+      when: not binary.stat.exists
+
+    - name: "Install cloudflared"
+      ansible.builtin.apt:
+        name: cloudflared
+        update_cache: "{{ not binary.stat.exists }}"
+
+    - name: "Check that cloudflared knows --token-file"
+      ansible.builtin.shell: cloudflared tunnel run --help | grep -q -- --token-file
+      changed_when: false
+      register: token_file_flag
+      failed_when: false
+
+    - name: "Stop when cloudflared is too old"
+      ansible.builtin.fail:
+        msg: "cloudflared on {{ inventory_hostname }} is too old for --token-file, run.sh updates --limit {{ inventory_hostname }} first."
+      when: token_file_flag.rc != 0
+
+    - name: "Create /etc/cloudflared"
+      ansible.builtin.file:
+        path: /etc/cloudflared
+        state: directory
+        mode: "0755"
+
+    # lookup reads the file on debian-ansible and drops a trailing newline
+    - name: "Write the token file"
+      ansible.builtin.copy:
+        content: "{{ lookup('ansible.builtin.file', cloudflared_token_backup) }}"
+        dest: /etc/cloudflared/token
+        owner: root
+        group: root
+        mode: "0600"
+      no_log: true
+      notify: Restart cloudflared
+
+    # Replaces the unit of "cloudflared service install", which may hold the token
+    - name: "Write the systemd unit"
+      ansible.builtin.template:
+        src: templates/cloudflared.service.j2
+        dest: /etc/systemd/system/cloudflared.service
+        mode: "0644"
+      notify: Restart cloudflared
+
+    - name: "Enable and start cloudflared"
+      ansible.builtin.systemd_service:
+        name: cloudflared
+        enabled: true
+        state: started
+        daemon_reload: true
+
+    - name: "Restart now if needed"
+      ansible.builtin.meta: flush_handlers
+
+    - name: "Wait until the connector is connected to Cloudflare"
+      ansible.builtin.uri:
+        url: "http://{{ ansible_host }}:{{ cloudflared_metrics_port }}/ready"
+      register: ready
+      until: ready.status == 200
+      retries: 12
+      delay: 5
+      delegate_to: localhost
+      become: false
+
+  handlers:
+    - name: Restart cloudflared
+      ansible.builtin.systemd_service:
+        name: cloudflared
+        state: restarted
+        daemon_reload: true

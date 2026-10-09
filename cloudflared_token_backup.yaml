@@ -1,0 +1,71 @@
+---
+# Copy the Cloudflare Tunnel token from a connector to debian-ansible
+# ({{ cloudflared_token_backup }}), so cloudflared-setup can hand it to new connectors.
+# Read-only on the connector: finds the token in /etc/cloudflared/token or, on a
+# connector set up by hand with "cloudflared service install <token>", in its
+# systemd unit. Never overwrites a different backup. See docs/cloudflared.md.
+- hosts: cloudflared
+  gather_facts: false
+  become: true
+  name: "cloudflared: back up the tunnel token"
+  tasks:
+    - name: "Read the token file"
+      ansible.builtin.slurp:
+        src: /etc/cloudflared/token
+      register: token_file
+      failed_when: false
+
+    - name: "Read the systemd unit"
+      ansible.builtin.slurp:
+        src: /etc/systemd/system/cloudflared.service
+      register: unit_file
+      failed_when: false
+      when: token_file.content is not defined
+
+    - name: "Pick the token"
+      ansible.builtin.set_fact:
+        tunnel_token: >-
+          {{ (token_file.content | b64decode | trim) if token_file.content is defined
+             else ((unit_file.content | default('') | b64decode | regex_search('--token[ =](\S+)', '\1') or ['']) | first) }}
+
+    - name: "Stop when the connector has no token"
+      ansible.builtin.fail:
+        msg: |
+          Found no token on {{ inventory_hostname }}: neither /etc/cloudflared/token
+          nor --token in /etc/systemd/system/cloudflared.service.
+          Copy it from the Cloudflare dashboard instead, see docs/cloudflared.md.
+      when: tunnel_token | length == 0
+
+    - name: "Check the backup on debian-ansible"
+      ansible.builtin.stat:
+        path: "{{ cloudflared_token_backup }}"
+      register: backup
+      delegate_to: localhost
+      become: false
+
+    - name: "Stop when the backup holds a different token"
+      ansible.builtin.fail:
+        msg: |
+          {{ cloudflared_token_backup }} on debian-ansible holds a different token than
+          {{ inventory_hostname }}. Nothing was changed. If the token was rotated in the
+          Cloudflare dashboard, delete the backup and run cloudflared-token-backup again.
+      when: backup.stat.exists and lookup('ansible.builtin.file', cloudflared_token_backup) != tunnel_token
+
+    - name: "Create the backup folder"
+      ansible.builtin.file:
+        path: "{{ cloudflared_token_backup | dirname }}"
+        state: directory
+        mode: "0700"
+      delegate_to: localhost
+      become: false
+      run_once: true
+
+    - name: "Write the backup"
+      ansible.builtin.copy:
+        content: "{{ tunnel_token }}"
+        dest: "{{ cloudflared_token_backup }}"
+        mode: "0600"
+      delegate_to: localhost
+      become: false
+      when: not backup.stat.exists
+      no_log: true

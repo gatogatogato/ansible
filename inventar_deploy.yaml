@@ -3,8 +3,8 @@
 # into its venv (new dependencies) and restart the web page. The collector timer
 # picks up the new code on its next run. See docs/inventar.md.
 - hosts: inventar
-  gather_facts: no
-  become: yes
+  gather_facts: false
+  become: true
   name: "inventar: deploy"
   tasks:
     - name: "Pull from GitHub (fast-forward only)"
