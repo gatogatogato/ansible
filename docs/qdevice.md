@@ -44,7 +44,7 @@ darum schreibt er so wenig wie möglich, und er bietet nur an, was ein QDevice b
 Wenn sich `config.txt` ändert, startet Ansible den Pi einmal neu; der Cluster bleibt quorate.
 
 Schreiblast messen (auf debian-qdevice als gato), zweimal im Abstand von einer Minute;
-die zehnte Zahl ist die Summe der geschriebenen Sektoren zu 512 Byte:
+die siebte Zahl ist die Summe der geschriebenen Sektoren zu 512 Byte:
 
 ```
 cat /sys/block/mmcblk0/stat
