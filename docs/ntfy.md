@@ -97,16 +97,17 @@ ablegen. `ntfy user list` und `ntfy token list` zeigen den Stand.
 
 ## 4. Erreichbarkeit
 
-**Zuhause:** `*.mythenstrasse56.net` zeigt im LAN auf NPM. In NPM einen Proxy
-Host anlegen:
-- Domain `ntfy.mythenstrasse56.net`, Scheme `http`, Host `192.168.1.68`, Port `80`
-- **Websockets Support** an, **Block Common Exploits** an
-- SSL: Wildcard-Zertifikat, **Force SSL** an
+Nur über den Cloudflare Tunnel, kein NPM-Eintrag und kein Pi-hole-Eintrag für
+`ntfy.mythenstrasse56.net` nötig: Ohne lokalen Eintrag löst der Name auch
+zuhause öffentlich auf und geht über Cloudflare.
 
-**Unterwegs:** im Cloudflare-Dashboard beim Tunnel einen Public Hostname
+Im Cloudflare-Dashboard beim Tunnel einen Public Hostname
 `ntfy.mythenstrasse56.net` → `HTTP` `192.168.1.68:80`. **Kein** Cloudflare
 Access davor, sonst kommt die App nicht durch; die Anmeldung macht ntfy
 selbst. Die Länder-Regel (CH, DE, IT, NL) gilt auch hier.
+
+Absender im LAN (Kuma, Skripte) nehmen direkt `http://debian-ntfy.lan`, damit
+Meldungen auch ohne Internet bei ntfy ankommen.
 
 ## 5. Testen (auf debian-ansible oder dem Mac)
 
