@@ -83,7 +83,7 @@ Erwartet: `{"healthy":true}`.
 Benutzer und Rechte anlegen (die Passwort-Abfrage kommt jeweils interaktiv):
 
 ```
-ntfy user add --role=admin tobi
+ntfy user add --role=admin gato
 ntfy user add kuma
 ntfy access kuma homelab write-only
 ntfy token add kuma
@@ -92,7 +92,7 @@ ntfy access flickr flickr write-only
 ntfy token add flickr
 ```
 
-Die beiden Tokens (`tk_...`) und das Passwort von tobi in Vaultwarden
+Die beiden Tokens (`tk_...`) und das Passwort von gato in Vaultwarden
 ablegen. `ntfy user list` und `ntfy token list` zeigen den Stand.
 
 ## 4. Erreichbarkeit
@@ -126,7 +126,7 @@ curl -s -o /dev/null -w '%{http_code}\n' -d "x" http://debian-ntfy.lan/homelab
 ## 6. iPhone
 
 ntfy-App aus dem App Store. In den Einstellungen bei **Users** den Server
-`https://ntfy.mythenstrasse56.net` mit `tobi` hinzufügen, dann **Subscribe**,
+`https://ntfy.mythenstrasse56.net` mit `gato` hinzufügen, dann **Subscribe**,
 **Use another server**, gleiche Adresse, Themen `homelab` und `flickr`.
 
 ## 7. Uptime Kuma
