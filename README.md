@@ -110,7 +110,8 @@ See [docs/proxmox-updates.md](docs/proxmox-updates.md).
 ## Proxmox QDevice
 The cluster has two nodes, proxmox-n01 and proxmox-n02. The third vote comes from a QDevice:
 corosync-qnetd on the Raspberry Pi debian-qdevice (formerly the node proxmox-n03).
-`run.sh qdevice-setup` installs the packages and the root keys `pvecm qdevice setup` needs.
+`run.sh qdevice-setup` installs the packages and the root keys `pvecm qdevice setup` needs,
+hardens the Pi and keeps writes to its SD card low.
 See [docs/qdevice.md](docs/qdevice.md).
 
 ## Weekly updates via cron

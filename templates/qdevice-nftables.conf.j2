@@ -1,0 +1,31 @@
+#!/usr/sbin/nft -f
+# Managed by Ansible (qdevice_harden.yaml): only SSH and corosync-qnetd from the LAN
+
+flush ruleset
+
+table inet filter {
+    chain input {
+        type filter hook input priority filter; policy drop;
+
+        ct state established,related accept
+        ct state invalid drop
+        iif lo accept
+
+        # Ping (Uptime Kuma) and IPv6 neighbour discovery
+        ip protocol icmp accept
+        meta l4proto ipv6-icmp accept
+
+        # SSH: ansible server, Mac, Proxmox nodes (pvecm qdevice setup)
+        ip saddr {{ qdevice_allowed_net }} tcp dport 22 accept
+        # corosync-qnetd: the Proxmox nodes and Uptime Kuma's TCP monitor
+        ip saddr {{ qdevice_allowed_net }} tcp dport 5403 accept
+    }
+
+    chain forward {
+        type filter hook forward priority filter; policy drop;
+    }
+
+    chain output {
+        type filter hook output priority filter; policy accept;
+    }
+}

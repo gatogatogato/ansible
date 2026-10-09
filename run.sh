@@ -63,7 +63,8 @@ Tasks:
     cloudflared-token-backup
                       copy the tunnel token from a connector to debian-ansible
     qdevice-setup     corosync-qnetd on debian-qdevice (the Raspberry Pi), corosync-qdevice
-                      on the Proxmox nodes, root key of the nodes on the Pi (docs/qdevice.md)
+                      on the Proxmox nodes, root key of the nodes on the Pi, hardening and
+                      few writes to the SD card on the Pi (docs/qdevice.md)
     vaultwarden-backup
                       install the nightly backup script from the shell repo on vaultwarden
                       (docs/vaultwarden-backup.md)
@@ -173,7 +174,7 @@ case "${task}" in
     vaultwarden-backup)
         playbooks=(vaultwarden_backup) ;;
     qdevice-setup)
-        playbooks=(qdevice_setup) ;;
+        playbooks=(qdevice_setup qdevice_harden) ;;
     newserver)
         playbooks=(install_all_packages newserver_setup_basics newserver_install_all_basicfiles
                    update_debianservers_apt) ;;

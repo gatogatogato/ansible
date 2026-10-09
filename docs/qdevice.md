@@ -25,6 +25,37 @@ Der Pi ist kein Proxmox-Node mehr (früher proxmox-n03), auf ihm läuft nur Rasp
 
 Ein Neustart des Pi (etwa nach einem Kernel-Update im Sonntags-Lauf) stört den Cluster nicht.
 
+## Härtung und SD-Karte
+
+`run.sh qdevice-setup` spielt auch `qdevice_harden.yaml` ein. Der Pi läuft von einer SD-Karte,
+darum schreibt er so wenig wie möglich, und er bietet nur an, was ein QDevice braucht.
+
+| | |
+| --- | --- |
+| Journal | nur im RAM (`Storage=volatile`, höchstens 32 MB), nach einem Neustart leer |
+| `/` | `noatime,commit=600`: Metadaten höchstens alle 10 Minuten auf die Karte. Ein Stromausfall kann die letzten 10 Minuten verlieren |
+| Swap | nur zram im RAM, der Timer `rpi-zram-writeback` (Swap auf die Karte) ist maskiert |
+| Timer | `apt-daily`, `apt-daily-upgrade` und `man-db` maskiert; Updates kommen sonntags von debian-ansible |
+| entfernt | avahi-daemon (`debian-qdevice.local` geht nicht mehr), bluez, rpi-connect-lite, udisks2 |
+| aus | cloud-init (`/etc/cloud/cloud-init.disabled`), wpa_supplicant; WLAN, Bluetooth, Audio, Kamera und Display in `/boot/firmware/config.txt` |
+| SSH | root nur von 192.168.1.21 und .22 (`/etc/ssh/sshd_config.d/20-root-from-nodes.conf`), Passwörter für niemanden |
+| Firewall | nftables (`/etc/nftables.conf`): eingehend nur Ping, SSH (22) und corosync-qnetd (5403) aus 192.168.1.0/24 |
+
+Wenn sich `config.txt` ändert, startet Ansible den Pi einmal neu; der Cluster bleibt quorate.
+
+Schreiblast messen (auf debian-qdevice als gato), zweimal im Abstand von einer Minute;
+die zehnte Zahl ist die Summe der geschriebenen Sektoren zu 512 Byte:
+
+```
+cat /sys/block/mmcblk0/stat
+```
+
+Kurz nach dem Flashen schreibt der Pi viel, weil ext4 die Inode-Tabellen der grossen Partition
+im Hintergrund nullt (`ext4lazyinit`). Das hört nach einigen Stunden von selbst auf.
+
+Ausgesperrt (Firewall oder SSH)? Bildschirm und Tastatur an den Pi, als gato anmelden,
+`sudo nft flush ruleset` bzw. die Datei in `/etc/ssh/sshd_config.d/` korrigieren.
+
 ## Zustand prüfen (auf proxmox-n01 als root)
 
 ```
