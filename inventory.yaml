@@ -85,6 +85,8 @@ debianservers:
       ansible_host: debian-camsnaps.lan
     mbusmaster:
       ansible_host: debian-mbusmaster.lan
+    ntfy:
+      ansible_host: debian-ntfy.lan
     inventar:
       # static IP 192.168.1.66 on proxmox-n01 (CT 107), see docs/inventar.md
       ansible_host: debian-inventar.lan
