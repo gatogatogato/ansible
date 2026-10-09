@@ -1,0 +1,176 @@
+---
+# Hardening and few writes to the SD card on debian-qdevice (the Raspberry Pi), see
+# docs/qdevice.md. Part of run.sh qdevice-setup. Reboots the Pi once when the
+# hardware settings in config.txt change; the cluster keeps quorum with both nodes.
+- hosts: qdevices
+  gather_facts: false
+  become: true
+  name: "QDevice: hardening and few writes to the SD card"
+  vars:
+    # Packages a headless QDevice does not need. Not cloud-init: Raspberry Pi
+    # Imager's network setup lives in its files, so it is only switched off.
+    qdevice_purge_packages:
+      - avahi-daemon        # mDNS (debian-qdevice.local), DNS comes from the Pi-holes
+      - bluez               # Bluetooth
+      - bluez-firmware
+      - rpi-connect-lite    # remote access through Raspberry Pi's cloud
+      - udisks2             # automounting USB disks
+    # Timers that write to the card for nothing: apt runs from debian-ansible,
+    # man pages are not needed, zram writeback would move swap onto the card
+    qdevice_masked_units:
+      - apt-daily.timer
+      - apt-daily-upgrade.timer
+      - man-db.timer
+      - rpi-zram-writeback.timer
+      - wpa_supplicant.service
+  handlers:
+    - name: "Restart journald"
+      ansible.builtin.service:
+        name: systemd-journald
+        state: restarted
+
+    - name: "Remount /"
+      ansible.builtin.command: mount -o remount /
+
+    - name: "Restart sshd"
+      ansible.builtin.service:
+        name: ssh
+        state: restarted
+
+    - name: "Load the firewall"
+      ansible.builtin.service:
+        name: nftables
+        state: restarted
+
+    - name: "Reboot the Pi"
+      ansible.builtin.reboot:
+        msg: "Reboot by Ansible for the hardware settings in config.txt"
+        connect_timeout: 5
+        reboot_timeout: 300
+        post_reboot_delay: 30
+        test_command: systemctl is-active corosync-qnetd
+
+  tasks:
+    # --- Fewer writes to the SD card ---
+
+    # Logs stay in RAM and are gone after a reboot. cleanup.yaml's SystemMaxUse
+    # no longer matters here, RuntimeMaxUse limits the RAM.
+    - name: "Create the journald drop-in folder"
+      ansible.builtin.file:
+        path: /etc/systemd/journald.conf.d
+        state: directory
+        mode: "0755"
+
+    - name: "Keep the journal in RAM only"
+      ansible.builtin.copy:
+        dest: /etc/systemd/journald.conf.d/60-volatile.conf
+        content: |
+          # Managed by Ansible (qdevice_harden.yaml): no journal on the SD card
+          [Journal]
+          Storage=volatile
+          RuntimeMaxUse=32M
+        mode: "0644"
+      notify: "Restart journald"
+
+    - name: "Switch journald over before removing its files"
+      ansible.builtin.meta: flush_handlers
+
+    - name: "Remove the journal on the card"
+      ansible.builtin.file:
+        path: /var/log/journal
+        state: absent
+
+    # Write metadata at most every 10 minutes instead of every 5 seconds. A power cut
+    # can lose up to 10 minutes of changes, which on the QDevice are only logs and apt.
+    - name: "Mount / with commit=600"
+      ansible.builtin.replace:
+        path: /etc/fstab
+        regexp: '^(\S+\s+/\s+ext4\s+)defaults,noatime(\s)'
+        replace: '\1defaults,noatime,commit=600\2'
+      notify: "Remount /"
+
+    - name: "Switch off cloud-init (only needed on the first boot)"
+      ansible.builtin.copy:
+        dest: /etc/cloud/cloud-init.disabled
+        content: "Managed by Ansible (qdevice_harden.yaml)\n"
+        mode: "0644"
+
+    - name: "Remove packages a headless QDevice does not need"
+      ansible.builtin.apt:
+        name: "{{ qdevice_purge_packages }}"
+        state: absent
+        purge: true
+
+    - name: "Stop and mask timers and services that write for nothing"
+      ansible.builtin.systemd_service:
+        name: "{{ item }}"
+        state: stopped
+        masked: true
+      loop: "{{ qdevice_masked_units }}"
+
+    # --- Hardening ---
+
+    # Takes effect after the reboot below
+    - name: "Switch off audio, camera and display detection"
+      ansible.builtin.lineinfile:
+        path: /boot/firmware/config.txt
+        regexp: "^{{ item.key }}="
+        line: "{{ item.key }}={{ item.value }}"
+      loop:
+        - { key: dtparam=audio, value: "off" }
+        - { key: camera_auto_detect, value: "0" }
+        - { key: display_auto_detect, value: "0" }
+      notify: "Reboot the Pi"
+
+    - name: "Switch off WLAN and Bluetooth"
+      ansible.builtin.blockinfile:
+        path: /boot/firmware/config.txt
+        marker: "# {mark} Managed by Ansible (qdevice_harden.yaml)"
+        block: |
+          [all]
+          dtoverlay=disable-wifi
+          dtoverlay=disable-bt
+      notify: "Reboot the Pi"
+
+    # root only for "pvecm qdevice setup/remove" from the nodes (their keys also
+    # carry from=). "Match all" ends the block, so Debian's own lines stay global.
+    - name: "SSH: root only from the Proxmox nodes"
+      ansible.builtin.copy:
+        dest: /etc/ssh/sshd_config.d/20-root-from-nodes.conf
+        content: |
+          # Managed by Ansible (qdevice_harden.yaml)
+          PermitRootLogin no
+          Match Address {{ qdevice_cluster_ips | join(',') }}
+              PermitRootLogin prohibit-password
+          Match all
+        mode: "0644"
+      notify: "Restart sshd"
+
+    - name: "Check the SSH configuration"
+      ansible.builtin.command: sshd -t
+      changed_when: false
+
+    - name: "Check what sshd allows root and gato"
+      ansible.builtin.shell: |
+        set -e
+        sshd -T -C user=root,addr={{ qdevice_cluster_ips[0] }},host=node,laddr=0.0.0.0,lport=22 | grep -qx 'permitrootlogin without-password'
+        sshd -T -C user=root,addr=192.168.1.133,host=other,laddr=0.0.0.0,lport=22 | grep -qx 'permitrootlogin no'
+        sshd -T -C user=gato,addr=192.168.1.133,host=other,laddr=0.0.0.0,lport=22 | grep -qx 'passwordauthentication no'
+      changed_when: false
+
+    - name: "Install nftables"
+      ansible.builtin.apt:
+        name: nftables
+
+    - name: "Firewall: only SSH and corosync-qnetd from the LAN"
+      ansible.builtin.template:
+        src: templates/qdevice-nftables.conf.j2
+        dest: /etc/nftables.conf
+        mode: "0755"
+        validate: nft -c -f %s
+      notify: "Load the firewall"
+
+    - name: "Load the firewall at boot"
+      ansible.builtin.service:
+        name: nftables
+        enabled: true
