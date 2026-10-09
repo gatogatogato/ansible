@@ -31,8 +31,8 @@ Drei Dateien, jede nur für gato lesbar (0600):
 
 | Datei auf dem Server | Inhalt | Name in der Sicherung |
 |---|---|---|
-| `/home/gato/.config/flickr-uploader/credentials.yml` | flickr-App des Uploaders (Key, Secret, Access-Token), Mastodon-Token, Pushover | `uploader-credentials.yml` |
-| `/home/gato/.config/flickr-scripts/flickr-credentials.yml` | flickr-App des Commenters (eigene App, eigene Tokens), Pushover | `flickr-credentials.yml` |
+| `/home/gato/.config/flickr-uploader/credentials.yml` | flickr-App des Uploaders (Key, Secret, Access-Token), Mastodon-Token, ntfy-Token, Pushover (Rückfall) | `uploader-credentials.yml` |
+| `/home/gato/.config/flickr-scripts/flickr-credentials.yml` | flickr-App des Commenters (eigene App, eigene Tokens), ntfy-Token, Pushover (Rückfall) | `flickr-credentials.yml` |
 | `/home/gato/.netrc` | Nextcloud-Login für den UPLOADS-Sync | `netrc` |
 
 Vorlagen: `credentials.example.yml` im flickr-uploader-Repo,
@@ -63,7 +63,8 @@ in Vaultwarden ablegen, für den Fall, dass auch debian-ansible weg ist.
   `flickr-credentials.yml` übernehmen, Kopie löschen.
 - **flickr Key und Secret:** https://www.flickr.com/services/apps/ (beide Apps).
 - **Mastodon:** ohai.social, Einstellungen > Entwicklung, App des Uploaders.
-- **Pushover:** pushover.net, User-Key und App-Token.
+- **ntfy:** auf debian-ntfy `ntfy token add flickr` (Benutzer flickr, schreibt nur ins Thema `flickr`), siehe `docs/ntfy.md`.
+- **Pushover:** pushover.net, User-Key und App-Token (nur noch Rückfall).
 - **Nextcloud:** `.netrc` mit `machine truenas.lan login gato password …`
   (ein App-Passwort aus Nextcloud nehmen).
 

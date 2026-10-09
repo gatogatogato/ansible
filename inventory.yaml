@@ -96,8 +96,8 @@ debianservers:
       # Copy of the secrets on debian-ansible (run.sh flickr-secrets-backup), never in git
       flickr_secrets_dir: /home/transport/.config/flickr-secrets
       flickr_secrets:
-        - { name: uploader-credentials.yml, dest: /home/gato/.config/flickr-uploader/credentials.yml, what: "flickr, Mastodon, Pushover for the uploader" }
-        - { name: flickr-credentials.yml, dest: /home/gato/.config/flickr-scripts/flickr-credentials.yml, what: "flickr, Pushover for the commenter" }
+        - { name: uploader-credentials.yml, dest: /home/gato/.config/flickr-uploader/credentials.yml, what: "flickr, Mastodon, ntfy, Pushover for the uploader" }
+        - { name: flickr-credentials.yml, dest: /home/gato/.config/flickr-scripts/flickr-credentials.yml, what: "flickr, ntfy, Pushover for the commenter" }
         - { name: netrc, dest: /home/gato/.netrc, what: "Nextcloud login for the UPLOADS sync" }
     ansible:
       ansible_host: debian-ansible.lan
@@ -146,6 +146,9 @@ debianservers:
       # Raspberry Pi with Raspberry Pi OS, formerly proxmox-n03. Static IP 192.168.1.23
       # (set with nmcli on the Pi, DNS in Pi-hole). Third vote for the cluster, see docs/qdevice.md.
       ansible_host: debian-qdevice.lan
+    ntfy:
+      # static IP 192.168.1.68, push notifications, see docs/ntfy.md
+      ansible_host: debian-ntfy.lan
     inventar:
       # static IP 192.168.1.66 on proxmox-n01 (CT 107), see docs/inventar.md
       ansible_host: debian-inventar.lan
@@ -184,6 +187,10 @@ security_daily:
     websrv:
     npm:
     vaultwarden:
+    ntfy:
+      # ntfy itself comes from its own apt repo, see docs/ntfy.md
+      security_updates_extra_sites:
+        - archive.ntfy.sh
 
 # Tie-breaker for the two-node Proxmox cluster (corosync-qnetd), see docs/qdevice.md
 qdevices:
