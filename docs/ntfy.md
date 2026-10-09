@@ -99,17 +99,24 @@ ablegen. `ntfy user list` und `ntfy token list` zeigen den Stand.
 
 ## 4. Erreichbarkeit
 
-Nur über den Cloudflare Tunnel, kein NPM-Eintrag und kein Pi-hole-Eintrag für
-`ntfy.mythenstrasse56.net` nötig: Ohne lokalen Eintrag löst der Name auch
-zuhause öffentlich auf und geht über Cloudflare.
+Von unterwegs über den Cloudflare Tunnel, zuhause über NPM, wie die anderen
+Dienste: Im Pi-hole zeigen alle `*.mythenstrasse56.net` auf NPM (.78), ohne
+NPM-Eintrag landet man im LAN also im Leeren.
 
 Im Cloudflare-Dashboard beim Tunnel einen Public Hostname
 `ntfy.mythenstrasse56.net` → `HTTP` `192.168.1.68:80`. **Kein** Cloudflare
 Access davor, sonst kommt die App nicht durch; die Anmeldung macht ntfy
 selbst. Die Länder-Regel (CH, DE, IT, NL) gilt auch hier.
 
+Im NPM einen Proxy Host `ntfy.mythenstrasse56.net` → `http` `192.168.1.68`
+Port `80`, **Websockets Support** an, SSL mit dem Wildcard-Zertifikat.
+
 Absender im LAN (Kuma, Skripte) nehmen direkt `http://debian-ntfy.lan`, damit
 Meldungen auch ohne Internet bei ntfy ankommen.
+
+`uptimekuma-sync.py` legt für `ntfy.mythenstrasse56.net` keinen Monitor an
+(Ausschlussliste im shell-Repo), weil die Startseite absichtlich `404`
+liefert. Geprüft wird `/v1/health`, siehe Abschnitt 7.
 
 ## 5. Testen (auf debian-ansible oder dem Mac)
 
@@ -152,7 +159,8 @@ Kommen Meldungen nur beim Öffnen der App, aber nicht als Push:
   Wochen parallel laufen lassen.
 
 Zusätzlich einen HTTP-Monitor auf `http://debian-ntfy.lan/v1/health` mit
-Benachrichtigung über **Pushover**, damit ein Ausfall von ntfy selbst auffällt.
+Benachrichtigung **nur** über **Pushover**, damit ein Ausfall von ntfy selbst
+auffällt. Nie auf die Startseite `/` prüfen, die liefert `404`.
 
 ## Neuen Absender anlegen (in debian-ntfy als root)
 
