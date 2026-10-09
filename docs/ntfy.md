@@ -18,8 +18,6 @@ Passwörter gehören nach Vaultwarden, nie ins Repo.
 
 ## 1. Container anlegen (auf proxmox-n01 oder proxmox-n02 als root)
 
-Nie auf proxmox-n03.
-
 ```
 var_os='debian' bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/ct/ntfy.sh)"
 ```
