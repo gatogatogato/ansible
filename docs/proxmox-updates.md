@@ -7,7 +7,7 @@ und meldet das an Uptime Kuma. Installiert wird dabei nichts.
 | | |
 | --- | --- |
 | Playbook | `proxmox_update_check.yaml`, Grenze `proxmox_update_max_days` (30) in `inventory.yaml` bei `proxmoxservers` |
-| Nodes | proxmox-n01, proxmox-n02, proxmox-n03 (ausgeschaltete werden übersprungen) |
+| Nodes | proxmox-n01, proxmox-n02 (ausgeschaltete werden übersprungen) |
 | Lauf | täglich 07:00 auf debian-ansible (`cron-run.sh updates-proxmox-check`) |
 | Log | debian-ansible `/home/transport/logs/ansible-updates-proxmox-check-<Datum>_<Uhrzeit>.log` |
 | Meldung | Uptime-Kuma-Push-Monitor „Proxmox Updates“ |

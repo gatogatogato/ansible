@@ -1,13 +1,13 @@
 ---
 # The Proxmox helper scripts add the tag "proxmox-helper-scripts" to every guest they create.
 # Install a script on proxmox-n01 and proxmox-n02 that removes it again, and a weekly cronjob
-# on the nodes themselves (no push from debian-ansible needed). n03 only keeps the quorum and
-# has no guests. Runs the script once now, see docs/proxmox-helper-tag.md.
+# on the nodes themselves (no push from debian-ansible needed).
+# Runs the script once now, see docs/proxmox-helper-tag.md.
 - import_playbook: find_reachable.yaml
   vars:
     target_group: proxmoxservers
 
-- hosts: reachable_proxmoxservers:!proxmox-n03
+- hosts: reachable_proxmoxservers
   gather_facts: false
   become: true
   name: "Proxmox: remove the tag proxmox-helper-scripts weekly"

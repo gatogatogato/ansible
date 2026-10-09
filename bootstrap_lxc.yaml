@@ -18,8 +18,7 @@
         that:
           - ctid is defined
           - ansible_play_hosts_all | length == 1
-          - inventory_hostname != 'proxmox-n03'
-        fail_msg: "Use: run.sh bootstrap --limit proxmox-n0X -e ctid=NNN (exactly one node, never proxmox-n03)"
+        fail_msg: "Use: run.sh bootstrap --limit proxmox-n0X -e ctid=NNN (exactly one node)"
         quiet: true
       run_once: true
 

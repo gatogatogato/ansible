@@ -6,7 +6,7 @@ Die Proxmox Helper Scripts hängen jedem neuen Gast das Tag `proxmox-helper-scri
 | | |
 | --- | --- |
 | Playbook | `proxmox_helper_tag.yaml`, Skript `files/proxmox-remove-helper-tag.sh` |
-| Nodes | proxmox-n01, proxmox-n02 (n03 hat keine Gäste und wird übersprungen) |
+| Nodes | proxmox-n01, proxmox-n02 |
 | Lauf | So 04:30, Cronjob von root auf dem Node (`/etc/cron.d/proxmox-remove-helper-tag`) |
 | Skript auf dem Node | `/usr/local/sbin/proxmox-remove-helper-tag.sh` |
 | Log | Syslog des Nodes: `journalctl -t proxmox-helper-tag` |

@@ -107,6 +107,12 @@ The Proxmox nodes are updated by hand. `run.sh cronjobs` installs a daily check 
 updates waiting and its last apt upgrade is older than 30 days. It installs nothing.
 See [docs/proxmox-updates.md](docs/proxmox-updates.md).
 
+## Proxmox QDevice
+The cluster has two nodes, proxmox-n01 and proxmox-n02. The third vote comes from a QDevice:
+corosync-qnetd on the Raspberry Pi debian-qdevice (formerly the node proxmox-n03).
+`run.sh qdevice-setup` installs the packages and the root keys `pvecm qdevice setup` needs.
+See [docs/qdevice.md](docs/qdevice.md).
+
 ## Weekly updates via cron
 `run.sh cronjobs` installs a cronjob (Sunday 03:30) that runs `cron-updates.sh`
 (a wrapper for `cron-run.sh updates`, which any run.sh task can use).

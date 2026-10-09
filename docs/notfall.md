@@ -56,13 +56,13 @@ und prüft, steht im Restore-Test (jährlich im November).
 
 ## Reihenfolge beim Wiederaufbau
 
-Was oben steht, brauchen die unteren. Nie etwas auf proxmox-n03 legen, das ist nur der
-Raspberry Pi für das Quorum.
+Was oben steht, brauchen die unteren.
 
 1. **Netz:** UniFi Cloud Gateway (192.168.1.1). DHCP nur für .100 bis .200, alles darunter ist
    im Gerät selbst fest eingestellt.
-2. **Proxmox** n01 und n02, dazu n03 für das Quorum. Neuaufbau eines Nodes:
-   [proxmox-hostconfig.md](proxmox-hostconfig.md).
+2. **Proxmox** n01 und n02, dazu das QDevice (Raspberry Pi debian-qdevice, .23) für das
+   Quorum. Neuaufbau eines Nodes: [proxmox-hostconfig.md](proxmox-hostconfig.md), des QDevice:
+   [qdevice.md](qdevice.md).
 3. **TrueNAS** (192.168.1.79): Hier liegen alle lokalen Backups, ohne TrueNAS kein vzdump-Restore.
 4. **Pi-hole** .99 (CT 117, n02) und .59 (CT 105, n01). Ohne DNS geht im Netz fast nichts,
    denn die UniFi-Regel „DNS extern sperren“ lässt keine anderen DNS-Server zu.
@@ -126,7 +126,7 @@ Vaultwarden, Nextcloud und Home Assistant eigene, neuere Backups (Tabelle oben).
 ### … ein Node ausfällt
 
 - Die Gäste auf diesem Node sind weg, es gibt keine automatische Übernahme. Der Cluster
-  bleibt bedienbar, solange zwei der drei Nodes laufen (n03 zählt mit).
+  bleibt bedienbar, solange zwei der drei Stimmen da sind (der andere Node und das QDevice).
 - Was dringend ist, auf dem anderen Node aus vzdump zurückholen (siehe oben), mit derselben
   CTID. Vorher den Gast im Cluster vom toten Node entfernen, sonst gibt es die CTID zweimal.
 - Doppelt vorhanden und laufen weiter: Pi-hole (.99 auf n02, .59 auf n01) und cloudflared

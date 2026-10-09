@@ -62,6 +62,8 @@ Tasks:
                       metrics port for Uptime Kuma, one restart at a time (docs/cloudflared.md)
     cloudflared-token-backup
                       copy the tunnel token from a connector to debian-ansible
+    qdevice-setup     corosync-qnetd on debian-qdevice (the Raspberry Pi), corosync-qdevice
+                      on the Proxmox nodes, root key of the nodes on the Pi (docs/qdevice.md)
     vaultwarden-backup
                       install the nightly backup script from the shell repo on vaultwarden
                       (docs/vaultwarden-backup.md)
@@ -170,6 +172,8 @@ case "${task}" in
         playbooks=(cloudflared_token_backup) ;;
     vaultwarden-backup)
         playbooks=(vaultwarden_backup) ;;
+    qdevice-setup)
+        playbooks=(qdevice_setup) ;;
     newserver)
         playbooks=(install_all_packages newserver_setup_basics newserver_install_all_basicfiles
                    update_debianservers_apt) ;;
