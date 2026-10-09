@@ -72,6 +72,8 @@ enable-login: true
 # iPhone: Apple-Push nur über ntfy.sh. Dorthin geht nur ein "bitte abholen",
 # der Inhalt bleibt hier.
 upstream-base-url: "https://ntfy.sh"
+# Keine Web-Oberfläche: die iPhone-App und die Absender brauchen nur die API
+web-root: "disable"
 YML
 systemctl restart ntfy
 systemctl status ntfy --no-pager
@@ -187,7 +189,23 @@ ntfy token remove backup tk_...
 ntfy user del backup
 ```
 
+## Sicherheit
+
+Der Server ist über den Tunnel aus dem Internet erreichbar (nur aus CH, DE, IT,
+NL). Deshalb:
+- `deny-all`: ohne Token oder Anmeldung lässt sich nichts lesen oder senden.
+- `web-root: "disable"`: keine Web-Oberfläche mit Login-Seite, nur die API.
+  Die App und die Absender funktionieren weiter. Wer sie doch braucht, die
+  Zeile entfernen und ntfy neu starten.
+- Fehlversuche bei der Anmeldung bremst ntfy pro IP selbst aus. Dafür ist
+  `behind-proxy: true` nötig, sonst sähe ntfy nur die IP von cloudflared.
+- gato bekommt ein langes zufälliges Passwort aus Vaultwarden.
+- Benutzer und Rechte lassen sich nur auf dem Container mit `ntfy user`
+  ändern, nie über das Netz.
+
 ## Updates
 
-ntfy kommt aus dem apt-Repo `archive.ntfy.sh` und wird mit den normalen
-Sonntags-Updates mitaktualisiert.
+ntfy kommt aus dem apt-Repo `archive.ntfy.sh`. Der Container ist in der
+Gruppe `security_daily`: Debian-Sicherheitsupdates und neue ntfy-Versionen
+kommen täglich um 06:30 (`run.sh security-updates`, siehe
+`sicherheitsupdates.md`), alles andere mit den Sonntags-Updates.
