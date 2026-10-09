@@ -98,8 +98,8 @@ debianservers:
       # Copy of the secrets on debian-ansible (run.sh flickr-secrets-backup), never in git
       flickr_secrets_dir: /home/transport/.config/flickr-secrets
       flickr_secrets:
-        - { name: uploader-credentials.yml, dest: /home/gato/.config/flickr-uploader/credentials.yml, what: "flickr, Mastodon, Pushover for the uploader" }
-        - { name: flickr-credentials.yml, dest: /home/gato/.config/flickr-scripts/flickr-credentials.yml, what: "flickr, Pushover for the commenter" }
+        - { name: uploader-credentials.yml, dest: /home/gato/.config/flickr-uploader/credentials.yml, what: "flickr, Mastodon, ntfy, Pushover for the uploader" }
+        - { name: flickr-credentials.yml, dest: /home/gato/.config/flickr-scripts/flickr-credentials.yml, what: "flickr, ntfy, Pushover for the commenter" }
         - { name: netrc, dest: /home/gato/.netrc, what: "Nextcloud login for the UPLOADS sync" }
     ansible:
       ansible_host: debian-ansible.lan

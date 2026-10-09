@@ -21,7 +21,7 @@ nach dem Einschalten innert 15 Minuten.
 Nicht im Repo, nur auf dem Server in
 `/home/gato/.config/flickr-uploader/credentials.yml` (chmod 600, gehört gato):
 flickr API-Key und Secret, flickr Access-Token und -Secret, Mastodon-Token,
-Pushover-Token und -User. Vorlage: `credentials.example.yml` im Repo. Sind die
+ntfy-Token (Benutzer flickr), Pushover als Rückfall. Vorlage: `credentials.example.yml` im Repo. Sind die
 flickr Access-Tokens leer oder ungültig, zeigt der Uploader beim Start die
 Autorisierungs-URL und schreibt die neuen Tokens selbst in die Datei.
 Sicherung auf debian-ansible mit `run.sh flickr-secrets-backup`, siehe
