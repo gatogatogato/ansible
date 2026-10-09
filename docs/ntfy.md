@@ -126,9 +126,19 @@ curl -s -o /dev/null -w '%{http_code}\n' -d "x" http://debian-ntfy.lan/homelab
 
 ## 6. iPhone
 
-ntfy-App aus dem App Store. In den Einstellungen bei **Users** den Server
-`https://ntfy.mythenstrasse56.net` mit `gato` hinzufügen, dann **Subscribe**,
-**Use another server**, gleiche Adresse, Themen `homelab` und `flickr`.
+ntfy-App aus dem App Store, beim ersten Start Mitteilungen **erlauben**. In
+den Einstellungen `https://ntfy.mythenstrasse56.net` als **Default Server**
+setzen (ohne `/` am Ende) und bei **Users** `gato` für diesen Server anlegen.
+Dann die Themen `homelab` und `flickr` abonnieren.
+
+Kommen Meldungen nur beim Öffnen der App, aber nicht als Push:
+- Einstellungen > Mitteilungen > ntfy: erlaubt, mit Sperrbildschirm,
+  Mitteilungszentrale und Banner.
+- Gegentest ohne eigenen Server: Abo auf `https://ntfy.sh` mit zufälligem
+  Thema, dann `curl -d test https://ntfy.sh/<thema>`. Kommt auch das nicht,
+  liegt es am iPhone.
+- Hilft nichts: App löschen und neu installieren (meldet sich neu bei Apple
+  an). So am 2026-10-09 gelöst.
 
 ## 7. Uptime Kuma
 
