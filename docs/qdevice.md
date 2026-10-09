@@ -24,6 +24,9 @@ Der Pi ist kein Proxmox-Node mehr (früher proxmox-n03), auf ihm läuft nur Rasp
 | ein Node und der Pi aus | 1 von 3 | nicht quorate, `/etc/pve` nur lesbar |
 
 Ein Neustart des Pi (etwa nach einem Kernel-Update im Sonntags-Lauf) stört den Cluster nicht.
+Raspberry Pi OS legt nach einem Kernel-Update kein `/run/reboot-required` an. Darum vergleicht
+`update_debianservers_apt.yaml` auf dem Pi den laufenden mit dem installierten Kernel und startet
+ihn bei Bedarf neu.
 
 ## Härtung und SD-Karte
 

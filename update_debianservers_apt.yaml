@@ -33,6 +33,23 @@
         path: /var/run/reboot-required
         get_checksum: false
 
+    # Raspberry Pi OS (debian-qdevice) does not create reboot-required for a new
+    # kernel. Reboot when a newer kernel of the running flavour is installed, or
+    # the running kernel's package was upgraded in place (uname -v shows its version).
+    - name: "Check whether the Pi runs an older kernel than installed"
+      ansible.builtin.shell: |
+        set -o pipefail
+        running=$(uname -r)
+        newest=$(ls /boot/vmlinuz-*"-${running##*-}" 2>/dev/null | sed 's|/boot/vmlinuz-||' | sort -V | tail -n 1)
+        [ -n "$newest" ] && [ "$newest" != "$running" ] && { echo yes; exit; }
+        version=$(dpkg-query -W -f='${Version}' "linux-image-$running" 2>/dev/null)
+        [ -n "$version" ] && ! uname -v | grep -qF "$version" && echo yes || echo no
+      args:
+        executable: /bin/bash
+      register: pi_kernel_outdated
+      changed_when: false
+      when: inventory_hostname in groups['qdevices']
+
     - name: "Reboot if kernel updated"
       become: true
       ansible.builtin.reboot:
@@ -43,7 +60,7 @@
         post_reboot_delay: 30
         test_command: uptime
       throttle: 1
-      when: reboot_required_file.stat.exists
+      when: reboot_required_file.stat.exists or (pi_kernel_outdated.stdout | default('no')) == 'yes'
 
     - name: "Check health after the upgrade"
       ansible.builtin.import_tasks: tasks/health_check.yaml
