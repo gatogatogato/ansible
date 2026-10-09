@@ -185,6 +185,10 @@ security_daily:
     websrv:
     npm:
     vaultwarden:
+    ntfy:
+      # ntfy itself comes from its own apt repo, see docs/ntfy.md
+      security_updates_extra_sites:
+        - archive.ntfy.sh
 
 alpineservers:
   vars:

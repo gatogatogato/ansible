@@ -7,7 +7,7 @@ holt `run.sh security-updates` für diese Container jeden Morgen die Sicherheits
 | | |
 | --- | --- |
 | Playbook | `security_updates.yaml`, Vorlage `templates/50unattended-upgrades.j2` |
-| Container | Gruppe `security_daily` in `inventory.yaml`: cloudflared1, cloudflared2, websrv, npm, vaultwarden |
+| Container | Gruppe `security_daily` in `inventory.yaml`: cloudflared1, cloudflared2, websrv, npm, vaultwarden, ntfy |
 | Lauf | täglich 06:30 auf debian-ansible (`cron-run.sh security-updates`) |
 | Log | debian-ansible `/home/transport/logs/ansible-security-updates-<Datum>_<Uhrzeit>.log` |
 | Meldung | Uptime-Kuma-Push-Monitor „Sicherheitsupdates“ |
@@ -17,7 +17,7 @@ holt `run.sh security-updates` für diese Container jeden Morgen die Sicherheits
 Ein Container nach dem anderen:
 
 - **Debian:** `unattended-upgrade` installiert nur Pakete aus Debian-Security. Auf cloudflared1/2
-  kommt zusätzlich Cloudflares Repo dazu (`security_updates_extra_sites`), weil cloudflared selbst
+  kommt zusätzlich Cloudflares Repo dazu (`security_updates_extra_sites`, auf ntfy ebenso dessen Repo), weil cloudflared selbst
   das Programm am Internet ist. Danach startet `needrestart` die Dienste neu, die noch alte
   Bibliotheken benutzen (z. B. Apache nach einem OpenSSL-Update). Auf cloudflared wartet der Lauf,
   bis der Connector wieder mit Cloudflare verbunden ist, bevor der zweite drankommt; der Tunnel
