@@ -133,13 +133,49 @@ ntfy-App aus dem App Store. In den Einstellungen bei **Users** den Server
 ## 7. Uptime Kuma
 
 **Settings > Notifications > Setup Notification**:
-- Typ **ntfy**, Server URL `http://debian-ntfy.lan`, Topic `homelab`, Priority `5`
+- Typ **ntfy**, Server URL `http://debian-ntfy.lan` (klappt der Test nicht,
+  `http://192.168.1.68`), Topic `homelab`, Priority `5`
 - Authentication **Access Token**, Token von kuma
 - Vorerst **nicht** als Standard markieren, Pushover bleibt. Erst ein paar
   Wochen parallel laufen lassen.
 
 Zusätzlich einen HTTP-Monitor auf `http://debian-ntfy.lan/v1/health` mit
 Benachrichtigung über **Pushover**, damit ein Ausfall von ntfy selbst auffällt.
+
+## Neuen Absender anlegen (in debian-ntfy als root)
+
+Für jede neue App oder jedes Skript ein eigener Benutzer mit eigenem Token, der
+nur in sein Thema schreiben darf. Beispiel: Benutzer `backup`, Thema `backup`.
+
+```
+ntfy user add backup
+ntfy access backup backup write-only
+ntfy token add --label="TrueNAS Backup-Skript" backup
+```
+
+- Das Passwort aus `user add` braucht niemand, nur den Token. Trotzdem ein
+  langes zufälliges nehmen.
+- `token add` zeigt den Token (`tk_...`) einmal an. Sofort in Vaultwarden
+  ablegen, mit Benutzer und Thema.
+- Soll der Absender in ein bestehendes Thema schreiben, z. B. `homelab`, bei
+  `access` einfach dieses Thema angeben.
+- gato ist Admin und darf alle Themen lesen. Neues Thema in der iPhone-App
+  abonnieren: **+**, **Use another server**, Thema eintragen.
+
+Testen (geht nur an ntfy):
+
+```
+curl -H "Authorization: Bearer tk_..." -d "Test" http://debian-ntfy.lan/backup
+```
+
+Nachschauen und aufräumen:
+
+```
+ntfy user list
+ntfy token list backup
+ntfy token remove backup tk_...
+ntfy user del backup
+```
 
 ## Updates
 
