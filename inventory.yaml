@@ -18,7 +18,7 @@ all:
       - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJaUGEqwGh5OuDA7ohKWQrLQIM+c8ZOlBFgVrk2b+UXT gato ecdsa25519 2020-09-15
     # Public key of the Beszel hub (docs/beszel.md), the only key the agents answer.
     # Empty: beszel.yaml does nothing. A public key, so fine in git.
-    beszel_hub_key: ""
+    beszel_hub_key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIyLhF8OuDw9IG7xUg34jHk7h8vdeJsD4Yse4+HeyEQy"
 
 proxmoxservers:
   hosts:
