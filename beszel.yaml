@@ -1,0 +1,214 @@
+---
+# Beszel monitoring, see docs/beszel.md. The hub (debian-beszel, community-script)
+# shows CPU, RAM, disk, network, temperatures and SMART with history and sends
+# alerts to ntfy. It connects to a small agent on every host (port 45876, SSH
+# protocol); an agent only answers the hub's public key (beszel_hub_key in
+# inventory.yaml, a public key, fine in git).
+# Installs the agent where missing and brings the agents and the hub to the
+# latest GitHub release, so it is part of the weekly run.sh updates.
+# Powered-off hosts are skipped. Does nothing until beszel_hub_key is set.
+- hosts: localhost
+  gather_facts: false
+  name: "Beszel: latest release"
+  tasks:
+    - name: "Ask GitHub for the latest Beszel release"
+      ansible.builtin.uri:
+        url: https://api.github.com/repos/henrygd/beszel/releases/latest
+      register: release
+      when: beszel_hub_key | length > 0
+
+    - name: "Remember the version"
+      ansible.builtin.set_fact:
+        beszel_latest: "{{ release.json.tag_name | regex_replace('^v', '') }}"
+      when: release.json is defined
+
+- import_playbook: find_reachable.yaml
+  vars:
+    target_group: beszel_agents
+
+# The community-script installed the hub to /opt/beszel; "beszel update"
+# replaces the binary, the same way the script's own update does it.
+# The list of systems comes from config.yml, built from this inventory: the hub
+# reads it at start, adds new systems and deletes the ones that are missing
+# there (with their history).
+- hosts: reachable_beszel_agents:&beszel_hub
+  gather_facts: false
+  become: true
+  name: "Beszel: update the hub, write its list of systems"
+  vars:
+    beszel_latest: "{{ hostvars['localhost'].beszel_latest | default('') }}"
+    beszel_hub_dir: /opt/beszel
+  tasks:
+    - name: "Stop here while there is no hub key"
+      ansible.builtin.meta: end_play
+      when: beszel_latest | length == 0
+
+    - name: "Read the hub version"
+      ansible.builtin.command: "{{ beszel_hub_dir }}/beszel -v"
+      register: hub_version
+      changed_when: false
+
+    - name: "Update the hub"
+      when: hub_version.stdout.split() | last != beszel_latest
+      block:
+        - name: "Stop the hub"
+          ansible.builtin.systemd_service:
+            name: beszel-hub
+            state: stopped
+
+        - name: "Download the new hub"
+          ansible.builtin.command: "{{ beszel_hub_dir }}/beszel update"
+          args:
+            chdir: "{{ beszel_hub_dir }}"
+
+        - name: "Start the hub"
+          ansible.builtin.systemd_service:
+            name: beszel-hub
+            state: started
+
+    - name: "Check the data folder of the hub"
+      ansible.builtin.stat:
+        path: "{{ beszel_hub_dir }}/beszel_data"
+      register: hub_data
+
+    - name: "Stop when the hub has no data folder"
+      ansible.builtin.fail:
+        msg: "{{ beszel_hub_dir }}/beszel_data is missing, open the hub once in the browser, see docs/beszel.md."
+      when: not hub_data.stat.exists
+
+    - name: "Create the folder for the unit addition"
+      ansible.builtin.file:
+        path: /etc/systemd/system/beszel-hub.service.d
+        state: directory
+        mode: "0755"
+
+    # Links in the ntfy messages point here
+    - name: "Tell the hub its address"
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/beszel-hub.service.d/ansible.conf
+        content: |
+          # Managed by Ansible (beszel.yaml)
+          [Service]
+          Environment="APP_URL={{ beszel_hub_url }}"
+        mode: "0644"
+      notify: Restart beszel-hub
+
+    - name: "Write the list of systems"
+      ansible.builtin.template:
+        src: templates/beszel-config.yml.j2
+        dest: "{{ beszel_hub_dir }}/beszel_data/config.yml"
+        mode: "0644"
+      notify: Restart beszel-hub
+
+  handlers:
+    - name: Restart beszel-hub
+      ansible.builtin.systemd_service:
+        name: beszel-hub
+        state: restarted
+        daemon_reload: true
+
+- hosts: reachable_beszel_agents
+  gather_facts: true
+  gather_subset: [min]
+  become: true
+  name: "Beszel: install and update the agents"
+  vars:
+    beszel_latest: "{{ hostvars['localhost'].beszel_latest | default('') }}"
+    beszel_agent_dir: /opt/beszel-agent
+    beszel_release_url: "https://github.com/henrygd/beszel/releases/download/v{{ beszel_latest }}"
+    beszel_arch: "{{ {'x86_64': 'amd64', 'aarch64': 'arm64', 'armv7l': 'arm'}[ansible_architecture] }}"
+    beszel_archive: "beszel-agent_linux_{{ beszel_arch }}.tar.gz"
+  tasks:
+    - name: "Stop here while there is no hub key"
+      ansible.builtin.meta: end_play
+      when: beszel_latest | length == 0
+
+    - name: "Read the agent version"
+      ansible.builtin.command: "{{ beszel_agent_dir }}/beszel-agent -v"
+      register: agent_version
+      changed_when: false
+      failed_when: false
+
+    - name: "Find the groups that give access to disks and Docker"
+      ansible.builtin.getent:
+        database: group
+
+    # disk: SMART; docker: container stats where Docker runs
+    - name: "Create the user beszel"
+      ansible.builtin.user:
+        name: beszel
+        system: true
+        create_home: false
+        home: /nonexistent
+        shell: /usr/sbin/nologin
+        groups: "{{ ['disk', 'docker'] | select('in', ansible_facts.getent_group) | list }}"
+        append: true
+
+    - name: "Install smartctl for the SMART values"
+      ansible.builtin.apt:
+        name: smartmontools
+      when: beszel_agent_smart | default(false)
+
+    - name: "Install the agent {{ beszel_latest }}"
+      when: agent_version.rc != 0 or agent_version.stdout.split() | last != beszel_latest
+      block:
+        - name: "Download the agent"
+          ansible.builtin.get_url:
+            url: "{{ beszel_release_url }}/{{ beszel_archive }}"
+            dest: "/tmp/{{ beszel_archive }}"
+            checksum: "sha256:{{ beszel_release_url }}/beszel_{{ beszel_latest }}_checksums.txt"
+            mode: "0644"
+
+        - name: "Create {{ beszel_agent_dir }}"
+          ansible.builtin.file:
+            path: "{{ beszel_agent_dir }}"
+            state: directory
+            mode: "0755"
+
+        # Owned by root, so the agent cannot replace itself (updates come from here)
+        - name: "Unpack the agent"
+          ansible.builtin.unarchive:
+            src: "/tmp/{{ beszel_archive }}"
+            dest: "{{ beszel_agent_dir }}"
+            remote_src: true
+            include: [beszel-agent]
+            owner: root
+            group: root
+          notify: Restart beszel-agent
+
+        - name: "Remove the download"
+          ansible.builtin.file:
+            path: "/tmp/{{ beszel_archive }}"
+            state: absent
+
+    - name: "Write the systemd unit"
+      ansible.builtin.template:
+        src: templates/beszel-agent.service.j2
+        dest: /etc/systemd/system/beszel-agent.service
+        mode: "0644"
+      notify: Restart beszel-agent
+
+    - name: "Enable and start the agent"
+      ansible.builtin.systemd_service:
+        name: beszel-agent
+        enabled: true
+        state: started
+        daemon_reload: true
+
+    - name: "Restart now if needed"
+      ansible.builtin.meta: flush_handlers
+
+    - name: "Check that the hub can reach the agent"
+      ansible.builtin.wait_for:
+        host: "{{ ansible_host }}"
+        port: "{{ beszel_agent_port }}"
+        timeout: 15
+      delegate_to: localhost
+      become: false
+
+  handlers:
+    - name: Restart beszel-agent
+      ansible.builtin.systemd_service:
+        name: beszel-agent
+        state: restarted
+        daemon_reload: true

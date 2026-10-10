@@ -1,5 +1,5 @@
 #!/usr/sbin/nft -f
-# Managed by Ansible (qdevice_harden.yaml): only SSH and corosync-qnetd from the LAN
+# Managed by Ansible (qdevice_harden.yaml): only SSH, corosync-qnetd and the Beszel agent from the LAN
 
 flush ruleset
 
@@ -19,6 +19,8 @@ table inet filter {
         ip saddr {{ qdevice_allowed_net }} tcp dport 22 accept
         # corosync-qnetd: the Proxmox nodes and Uptime Kuma's TCP monitor
         ip saddr {{ qdevice_allowed_net }} tcp dport 5403 accept
+        # Beszel agent: the hub (docs/beszel.md)
+        ip saddr {{ qdevice_allowed_net }} tcp dport {{ beszel_agent_port }} accept
     }
 
     chain forward {

@@ -1,0 +1,15 @@
+# {{ ansible_managed }}, source: templates/beszel-config.yml.j2 in the ansible repo
+# Systems of the Beszel hub, read at every start (docs/beszel.md).
+# A system missing here is deleted with its history, so change names with care.
+# Without users the systems belong to the first account of the hub (gato).
+systems:
+{% for host in groups['beszel_agents'] | sort %}
+  - name: {{ host }}
+    host: {{ hostvars[host].ansible_host | default(host) }}
+    port: {{ hostvars[host].beszel_agent_port }}
+{% endfor %}
+{% for system in beszel_extra_systems | default([]) %}
+  - name: {{ system.name }}
+    host: {{ system.host }}
+    port: {{ system.port | default(beszel_agent_port) }}
+{% endfor %}

@@ -14,7 +14,7 @@ usage() {
 Usage: $(basename "$0") [-h] [-f] TASK [ansible-playbook options]
 
 Tasks:
-    updates           apt (Debian), apk (Alpine), micro plugins, then cleanup
+    updates           apt (Debian), apk (Alpine), micro plugins, Beszel, then cleanup
     security-updates  daily security updates for the hosts reachable from the internet,
                       no reboot (docs/sicherheitsupdates.md)
     updates-proxmox   apt on the Proxmox nodes
@@ -25,6 +25,8 @@ Tasks:
                       n01 and n02 (docs/proxmox-helper-tag.md)
     hostconfig-backup save /etc/pve, network, cron etc. of the Proxmox nodes to debian-ansible
                       and the TrueNAS share NAS-SMB (docs/proxmox-hostconfig.md)
+    beszel            install the Beszel agents where missing, bring agents and hub to the
+                      latest release (docs/beszel.md)
     cleanup           free disk space in all LXCs and VMs: unused packages, package cache,
                       journal, old rotated logs, dangling Docker images (docs/aufraeumen.md)
     install           install packages on the Debian servers
@@ -93,9 +95,11 @@ shift
 case "${task}" in
     updates)
         playbooks=(update_debianservers_apt update_alpineservers_apk
-                   update_debianservers_micro inventar_ansible_hosts cleanup) ;;
+                   update_debianservers_micro inventar_ansible_hosts beszel cleanup) ;;
     cleanup)
         playbooks=(cleanup) ;;
+    beszel)
+        playbooks=(beszel) ;;
     security-updates)
         # Show the upgraded packages and waiting reboots in the log
         export ANSIBLE_DISPLAY_OK_HOSTS=true
