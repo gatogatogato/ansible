@@ -13,6 +13,10 @@ all:
       - 192.168.1.133
       - 127.0.0.1
       - ::1
+    # Inventory name of the ansible server. "run.sh updates" never reboots it in the
+    # middle of the run (that would cut off the run itself and its Kuma report);
+    # reboot_controller.yaml schedules its reboot at the very end instead.
+    controller_host: ansible
     # Public SSH keys that may log in as gato (newserver_setup_basics.yaml)
     gato_ssh_keys:
       - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJaUGEqwGh5OuDA7ohKWQrLQIM+c8ZOlBFgVrk2b+UXT gato ecdsa25519 2020-09-15

@@ -14,7 +14,8 @@ usage() {
 Usage: $(basename "$0") [-h] [-f] TASK [ansible-playbook options]
 
 Tasks:
-    updates           apt (Debian), apk (Alpine), micro plugins, then cleanup
+    updates           apt (Debian), apk (Alpine), micro plugins, then cleanup; the ansible
+                      server itself reboots last, 2 minutes after the run
     security-updates  daily security updates for the hosts reachable from the internet,
                       no reboot (docs/sicherheitsupdates.md)
     updates-proxmox   apt on the Proxmox nodes
@@ -93,7 +94,8 @@ shift
 case "${task}" in
     updates)
         playbooks=(update_debianservers_apt update_alpineservers_apk
-                   update_debianservers_micro inventar_ansible_hosts cleanup) ;;
+                   update_debianservers_micro inventar_ansible_hosts cleanup
+                   reboot_controller) ;;
     cleanup)
         playbooks=(cleanup) ;;
     security-updates)

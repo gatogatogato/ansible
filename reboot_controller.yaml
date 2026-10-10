@@ -1,0 +1,21 @@
+---
+# Last step of "run.sh updates": reboot the ansible server itself if an update
+# needs it. update_debianservers_apt.yaml skips it, because a reboot there would
+# kill the running playbook, the remaining hosts and the Uptime Kuma report of
+# cron-run.sh. Here the reboot is only scheduled, so the run ends cleanly first.
+# Cancel a scheduled reboot with "sudo shutdown -c".
+- hosts: "{{ controller_host | default('ansible') }}"
+  gather_facts: false
+  become: true
+  name: "Ansible server: reboot after the run if needed"
+  tasks:
+    - name: "Check if a reboot is needed"
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+        get_checksum: false
+      register: reboot_required_file
+
+    - name: "Schedule the reboot in 2 minutes"
+      ansible.builtin.command: shutdown -r +2 "Reboot after run.sh updates (reboot_controller.yaml)"
+      changed_when: true
+      when: reboot_required_file.stat.exists
