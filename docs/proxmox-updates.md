@@ -19,10 +19,29 @@ ist (Datum aus `/var/log/apt/history.log*`). Ohne wartende Updates bleibt es gr�
 das letzte Upgrade her ist. Die Paketlisten frischt der Check höchstens einmal am Tag auf.
 
 Ob ein Neustart wartet (neuerer Kernel installiert als der laufende), steht nur im Log und
-macht den Monitor nicht rot.
+macht den Monitor nicht rot. Neu gestartet wird mit dem Rolling Reboot (siehe unten).
 
 Nach `run.sh updates-proxmox` wird der Monitor beim nächsten Lauf um 07:00 wieder grün, oder
 sofort mit `~/ansible/cron-run.sh updates-proxmox-check`.
+
+## Neustart nach dem Update
+
+`run.sh updates-proxmox` startet die Nodes nicht neu. Wartet danach ein Neustart (neuer Kernel),
+die Nodes mit dem Rolling Reboot aus dem shell-Repo neu starten: `proxmox-rolling-reboot.sh`
+migriert alle Gäste von n01 nach n02, startet n01 neu, dann umgekehrt für n02, und schiebt
+die Gäste mit Tag `node02` zurück. Gäste mit Tag `nomigrate` (Pi-holes, cloudflared) starten
+mit ihrem Node neu, Gäste mit Tag `stopfirst` (Uptime Kuma) sind während des Laufs aus. Das
+QDevice wird nicht angefasst.
+
+Läuft auf dem Mac (nicht auf debian-ansible und nicht auf n01 oder n02), erst der Probelauf:
+```
+cd ~/Documents/Code/shell && git pull && ./proxmox-rolling-reboot.sh --dry-run
+```
+Passt der Plan, ohne `--dry-run` starten und mit `ja` bestätigen:
+```
+cd ~/Documents/Code/shell && ./proxmox-rolling-reboot.sh
+```
+Details und Einrichtung (Tags, ssh als root): `proxmox-rolling-reboot.md` im shell-Repo.
 
 ## Einrichten (einmal)
 
