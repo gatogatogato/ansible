@@ -60,7 +60,10 @@
         post_reboot_delay: 30
         test_command: uptime
       throttle: 1
-      when: reboot_required_file.stat.exists or (pi_kernel_outdated.stdout | default('no')) == 'yes'
+      # The ansible server reboots after the whole run (reboot_controller.yaml)
+      when:
+        - inventory_hostname != controller_host
+        - reboot_required_file.stat.exists or (pi_kernel_outdated.stdout | default('no')) == 'yes'
 
     - name: "Check health after the upgrade"
       ansible.builtin.import_tasks: tasks/health_check.yaml

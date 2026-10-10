@@ -31,10 +31,16 @@ e.g. `run.sh updates --limit pihole1`.
 After an apt upgrade every host is checked: all ports that listened before must listen
 again and no service may newly fail. Otherwise the host is marked as failed.
 
+The ansible server is not rebooted in the middle of `run.sh updates`, as that would cut off
+the run and its Uptime Kuma report. If it needs a reboot, `reboot_controller.yaml` schedules
+one 2 minutes after the run (`shutdown -r +2`, cancel with `sudo shutdown -c`).
+
 ## Emergency
 What to do when DNS, a node, TrueNAS, Vaultwarden or everything is gone, rebuild order and
 where backups and credentials live (including the offline USB disk LastResort):
 [docs/notfall.md](docs/notfall.md).
+Domains, tokens and certificates that expire, and where to renew them:
+[docs/ablaufliste.md](docs/ablaufliste.md).
 
 ## New machines
 See [docs/neue-maschine.md](docs/neue-maschine.md): `run.sh bootstrap` sets up a new LXC from its
