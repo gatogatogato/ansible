@@ -42,7 +42,7 @@ darum schreibt er so wenig wie möglich, und er bietet nur an, was ein QDevice b
 | entfernt | avahi-daemon (`debian-qdevice.local` geht nicht mehr), bluez, rpi-connect-lite, udisks2 |
 | aus | cloud-init (`/etc/cloud/cloud-init.disabled`), wpa_supplicant; WLAN, Bluetooth, Audio, Kamera und Display in `/boot/firmware/config.txt` |
 | SSH | root nur von 192.168.1.21 und .22 (`/etc/ssh/sshd_config.d/20-root-from-nodes.conf`), Passwörter für niemanden |
-| Firewall | nftables (`/etc/nftables.conf`): eingehend nur Ping, SSH (22) und corosync-qnetd (5403) aus 192.168.1.0/24 |
+| Firewall | nftables (`/etc/nftables.conf`): eingehend nur Ping, SSH (22), corosync-qnetd (5403) und der Beszel-Agent (45876, `beszel.md`) aus 192.168.1.0/24 |
 
 Wenn sich `config.txt` ändert, startet Ansible den Pi einmal neu; der Cluster bleibt quorate.
 

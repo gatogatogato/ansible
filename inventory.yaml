@@ -16,6 +16,9 @@ all:
     # Public SSH keys that may log in as gato (newserver_setup_basics.yaml)
     gato_ssh_keys:
       - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJaUGEqwGh5OuDA7ohKWQrLQIM+c8ZOlBFgVrk2b+UXT gato ecdsa25519 2020-09-15
+    # Public key of the Beszel hub (docs/beszel.md), the only key the agents answer.
+    # Empty: beszel.yaml does nothing. A public key, so fine in git.
+    beszel_hub_key: ""
 
 proxmoxservers:
   hosts:
@@ -27,6 +30,8 @@ proxmoxservers:
     # Kuma reminder (run.sh updates-proxmox-check, docs/proxmox-updates.md):
     # red when updates wait and the last apt upgrade is older than this
     proxmox_update_max_days: 30
+    # Beszel agent also reads SMART values of the disks (beszel.yaml)
+    beszel_agent_smart: true
     # Host configuration backup (run.sh hostconfig-backup, docs/proxmox-hostconfig.md)
     hostconfig_local_dir: /home/transport/backups/proxmox-hostconfig
     # Storage NAS-SMB = TrueNAS share proxmox-raw-backups, uploaded to Storj by TrueCloud
@@ -149,6 +154,9 @@ debianservers:
     ntfy:
       # static IP 192.168.1.68, push notifications, see docs/ntfy.md
       ansible_host: debian-ntfy.lan
+    beszel:
+      # Beszel hub, monitoring with history and alerts to ntfy, see docs/beszel.md
+      ansible_host: debian-beszel.lan
     inventar:
       # static IP 192.168.1.66 on proxmox-n01 (CT 107), see docs/inventar.md
       ansible_host: debian-inventar.lan
@@ -191,6 +199,26 @@ security_daily:
       # ntfy itself comes from its own apt repo, see docs/ntfy.md
       security_updates_extra_sites:
         - archive.ntfy.sh
+
+# Beszel monitoring (run.sh beszel, part of run.sh updates), see docs/beszel.md
+beszel_hub:
+  vars:
+    # Address of the hub, LAN only through NPM (APP_URL, links in the alerts)
+    beszel_hub_url: https://beszel.mythenstrasse56.net
+    # Systems with a hand-installed agent, besides the beszel_agents hosts
+    beszel_extra_systems:
+      # TrueNAS app "beszel-agent", see docs/beszel.md
+      - { name: truenas, host: truenas.lan }
+  hosts:
+    beszel:
+
+beszel_agents:
+  vars:
+    # The hub connects to the agents on this port
+    beszel_agent_port: 45876
+  children:
+    debianservers:
+    proxmoxservers:
 
 # Tie-breaker for the two-node Proxmox cluster (corosync-qnetd), see docs/qdevice.md
 qdevices:
